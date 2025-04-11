@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Applications Dashboard</title>
+    <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
+    <!-- Load Fonts and Icons -->
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+    <!-- Load CSS -->
+    <link href="../assets/css/material-dashboard.css?v=2.2.2" rel="stylesheet" />
+    <link href="../assets/demo/demo.css" rel="stylesheet" />
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 5px; /* Space between buttons */
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body class="">
+    <div class="wrapper">
+        <!-- Sidebar Placeholder -->
+        <div id="sidebar-placeholder"></div>
+        
+        <div class="main-panel">
+            <!-- Navbar Placeholder -->
+            <div id="navbar-placeholder"></div>
+
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Existing Applications</h4>
+                                    <p class="card-category">View, update, download, or delete applications</p>
+                                </div>
+                                <div class="card-body">
+                                    <table id="templatesTable" class="table table-striped table-bordered" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Content</th>
+                                                <th>Created At</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Updating Application -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Update Application</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm">
+                        <input type="hidden" id="updateId">
+                        <div class="form-group">
+                            <label for="updateName">Application Name</label>
+                            <input type="text" class="form-control" id="updateName">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateContent">Application Content</label>
+                            <div id="updateContent"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateTemplate()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="../assets/js/core/jquery.min.js"></script>
+    <script src="../assets/js/core/popper.min.js"></script>
+    <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
+    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
+    <script src="../assets/js/plugins/moment.min.js"></script>
+    <script src="../assets/js/plugins/sweetalert2.js"></script>
+    <script src="../assets/js/plugins/jquery.validate.min.js"></script>
+    <script src="../assets/js/plugins/jquery.bootstrap-wizard.js"></script>
+    <script src="../assets/js/plugins/bootstrap-selectpicker.js"></script>
+    <script src="../assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
+    <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="../assets/js/plugins/bootstrap-tagsinput.js"></script>
+    <script src="../assets/js/plugins/jasny-bootstrap.min.js"></script>
+    <script src="../assets/js/plugins/fullcalendar.min.js"></script>
+    <script src="../assets/js/plugins/jquery-jvectormap.js"></script>
+    <script src="../assets/js/plugins/nouislider.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+    <script src="../assets/js/plugins/arrive.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+    <script src="../assets/js/plugins/chartist.min.js"></script>
+    <script src="../assets/js/plugins/bootstrap-notify.js"></script>
+    <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+    <script>
+        let updateEditor = null;
+
+        $(document).ready(function() {
+            // Load Sidebar and Navbar
+            $("#sidebar-placeholder").load("./sidebar.html", function() {
+                // Highlight the active page
+                $('.nav-link[href="templates.html"]').parent().addClass('active');
+                // Reinitialize sidebar styles
+                if (typeof md !== 'undefined' && md.initSidebarsCheck) {
+                    md.initSidebarsCheck();
+                }
+            });
+
+            $("#navbar-placeholder").load("./navbar.html", function() {
+                // Set navbar title
+                $("#navbarTitle").text("Applications Dashboard");
+                // Reinitialize Material Dashboard components and Bootstrap dropdowns
+                if (typeof md !== 'undefined' && md.initDashboardPageCharts) {
+                    md.initDashboardPageCharts();
+                }
+                $('.dropdown-toggle').dropdown();
+            });
+
+            // Initialize DataTable
+            if (!$.fn.DataTable) {
+                console.error('DataTables not loaded');
+                return;
+            }
+
+            const table = $('#templatesTable').DataTable({
+                ajax: {
+                    url: 'api/templates.php',
+                    dataSrc: function(json) {
+                        console.log('Applications data received:', json);
+                        if (json.error) {
+                            Swal.fire('Error', json.error, 'error');
+                            return [];
+                        }
+                        return json;
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('DataTables AJAX error:', xhr.responseText);
+                        Swal.fire('Error', 'Failed to load applications: ' + error, 'error');
+                    }
+                },
+                columns: [
+                    { data: 'id' },
+                    { data: 'name' },
+                    { 
+                        data: 'content',
+                        render: function(data) {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = data;
+                            const text = tempDiv.textContent || tempDiv.innerText || '';
+                            return text.length > 50 ? text.substr(0, 50) + '...' : text;
+                        }
+                    },
+                    { data: 'created_at' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            const safeContent = row.content.replace(/`/g, '\\`').replace(/'/g, "\\'");
+                            const safeName = row.name.replace(/'/g, "\\'");
+                            return `
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="showUpdateModal(${row.id}, '${safeName}', \`${safeContent}\`)">Update</button>
+                                    <button class="btn btn-sm btn-success" onclick="downloadTemplate(${row.id}, '${safeName}', \`${safeContent}\`)">Download</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${row.id})">Delete</button>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            console.log('DataTable initialized');
+        });
+
+        function showUpdateModal(id, name, content) {
+            $('#updateId').val(id);
+            $('#updateName').val(name);
+
+            if (updateEditor) {
+                updateEditor.destroy().then(() => {
+                    console.log('Previous editor destroyed');
+                    createNewEditor(id, name, content);
+                }).catch(err => {
+                    console.error('Error destroying editor:', err);
+                    createNewEditor(id, name, content);
+                });
+            } else {
+                createNewEditor(id, name, content);
+            }
+        }
+
+        function createNewEditor(id, name, content) {
+            ClassicEditor
+                .create(document.querySelector('#updateContent'), {
+                    toolbar: ['heading', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'undo', 'redo'],
+                    height: 300
+                })
+                .then(editor => {
+                    updateEditor = editor;
+                    editor.setData(content);
+                    $('#updateModal').modal('show');
+                    console.log('New editor created');
+                })
+                .catch(error => {
+                    console.error('CKEditor initialization failed:', error);
+                    Swal.fire('Error', 'Failed to load editor: ' + error.message, 'error');
+                });
+        }
+
+        function updateTemplate() {
+            if (!updateEditor) {
+                Swal.fire('Error', 'Editor not initialized. Please try again.', 'error');
+                return;
+            }
+
+            const id = $('#updateId').val();
+            const name = $('#updateName').val();
+            const content = updateEditor.getData();
+
+            if (!name || !content) {
+                Swal.fire('Error', 'Please fill in both name and content.', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: 'api/update_template.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ id: id, name: name, content: content }),
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire('Success', response.success, 'success');
+                        $('#updateModal').modal('hide');
+                        $('#templatesTable').DataTable().ajax.reload();
+                    } else {
+                        Swal.fire('Error', response.error || 'Failed to update application', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire('Error', 'Failed to update application: ' + error, 'error');
+                    console.error('Update error:', xhr.responseText);
+                }
+            });
+        }
+
+        function downloadTemplate(id, name, content) {
+            $.ajax({
+                url: 'api/generate_pdf.php',
+                method: 'POST',
+                data: { name: name, content: content },
+                xhrFields: { responseType: 'blob' },
+                success: function(data, status, xhr) {
+                    const contentType = xhr.getResponseHeader('Content-Type');
+                    if (contentType.includes('application/pdf')) {
+                        const blob = new Blob([data], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `application_${id}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        Swal.fire('Success', 'PDF downloaded successfully', 'success');
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = function() {
+                            try {
+                                const json = JSON.parse(reader.result);
+                                Swal.fire('Error', json.error || 'Failed to generate PDF', 'error');
+                            } catch (e) {
+                                Swal.fire('Error', 'Failed to generate PDF: Invalid response', 'error');
+                            }
+                        };
+                        reader.readAsText(data);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire('Error', 'Failed to generate PDF: ' + error, 'error');
+                    console.error('PDF generation error:', xhr.responseText);
+                }
+            });
+        }
+
+        function deleteTemplate(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('Sending delete request for ID:', id);
+                    $.ajax({
+                        url: 'api/delete_template.php',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ id: id }),
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log('Delete response:', response);
+                            if (response.success) {
+                                Swal.fire('Deleted!', response.success, 'success');
+                                $('#templatesTable').DataTable().ajax.reload();
+                            } else {
+                                Swal.fire('Error', response.error || 'Failed to delete application', 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Delete AJAX error:', xhr.responseText, 'Status:', status);
+                            Swal.fire('Error', 'Failed to delete application: ' + error, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Create Application</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: inline-block; width: 150px; }
+        input, select, textarea { padding: 5px; width: 300px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>Admin - Create New Application</h1>
+    <form id="applicationForm" method="POST" action="/api/applications/">
+        <div class="form-group">
+            <label for="requested_application">Application Name:</label>
+            <input type="text" id="requested_application" name="requested_application" required>
+        </div>
+        <div class="form-group">
+            <label for="letter_type">Letter Type:</label>
+            <select id="letter_type" name="letter_type" required>
+                <option value="Bona-Fide">Bona-Fide Certificate</option>
+                <option value="Fee_Equivalence">Fee Equivalence Certificate</option>
+                <option value="English_Proficiency">English Proficiency Certificate</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount (PKR):</label>
+            <input type="number" id="amount" name="amount" step="0.01" value="0.00" required>
+        </div>
+        <div class="form-group">
+            <label for="responsible_dept">Responsible Department:</label>
+            <select id="responsible_dept" name="responsible_dept" required>
+                <option value="1">Registration Office</option>
+                <option value="2">Examination Office</option>
+                <option value="3">Others</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="default_responsible_employee">Default Employee:</label>
+            <select id="default_responsible_employee" name="default_responsible_employee" required>
+                <option value="1">Default Employee</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="template_name">Template Name (e.g., template_Bona-Fide):</label>
+            <input type="text" id="template_name" name="template_name" placeholder="e.g., template_Bona-Fide" required>
+        </div>
+        <div class="form-group">
+            <label for="template">Template (with placeholders e.g., {student_name}):</label>
+            <textarea id="template" name="template" rows="10" required>
+This is to certify that {student_name} under Registration No. {registration_no} is a bona-fide student of Capital University of Science and Technology, Islamabad in the degree program of {program}. Issued on {date} by {issuer_name}.
+            </textarea>
+        </div>
+        <button type="submit">Create Application</button>
+    </form>
+
+    <h2>Created Applications</h2>
+    <div id="applications"></div>
+
+    <script>
+        const baseUrl = 'http://127.0.0.1:8000/api/';
+
+        // Function to get the CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            console.log('CSRF Token:', cookieValue); // Debug: Log the CSRF token
+            return cookieValue;
+        }
+
+        // Ensure the CSRF cookie is set by making a preliminary GET request
+        async function ensureCsrfToken() {
+            await fetch('http://127.0.0.1:8000/api/ensure-csrf/', {
+                method: 'GET',
+                credentials: 'include' // Ensure cookies are included in the request
+            });
+        }
+
+        async function loadApplications() {
+            const response = await fetch(`${baseUrl}applications/`, {
+                credentials: 'include' // Ensure cookies are sent with the request
+            });
+            const data = await response.json();
+            const appsDiv = document.getElementById('applications');
+            appsDiv.innerHTML = '<ul>' + data.map(app => `<li>${app.requested_application} (${app.letter_type})</li>`).join('') + '</ul>';
+        }
+
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Ensure CSRF token is set before making the POST request
+            await ensureCsrfToken();
+
+            const formData = new FormData(document.getElementById('applicationForm'));
+            const data = {
+                requested_application: formData.get('requested_application'),
+                letter_type: formData.get('letter_type'),
+                amount: formData.get('amount'),
+                responsible_dept: formData.get('responsible_dept'),
+                default_responsible_employee: formData.get('default_responsible_employee'),
+                template: { 
+                    [formData.get('template_name')]: formData.get('template') // Use the custom template name
+                }
+            };
+
+            const csrftoken = getCookie('csrftoken'); // Retrieve the CSRF token
+            if (!csrftoken) {
+                alert('CSRF token not found. Please ensure you are logged in or refresh the page.');
+                return;
+            }
+
+            const response = await fetch(`${baseUrl}applications/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken, // Include the CSRF token here
+                },
+                credentials: 'include', // Ensure cookies are sent with the request
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('Application created successfully!');
+                loadApplications();
+                document.getElementById('applicationForm').reset();
+            } else {
+                const errorText = await response.text();
+                alert(`Error creating application: ${errorText}`);
+            }
+        });
+
+        // Load applications on page load
+        loadApplications();
+    </script>
+</body>
+</html>
