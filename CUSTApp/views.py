@@ -4,6 +4,7 @@ import re
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
+from django.apps import apps
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -39,7 +40,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
-
 from django.contrib.auth.decorators import login_required
 import pdfkit
 
@@ -502,34 +502,34 @@ class GeneratePDFAPIView(APIView):
 
 class GetAttributesAPIView(APIView):
     permission_classes= [AllowAny]
+    def get_model_fields(self, model_name):
+        try:
+            model = apps.get_model("CUSTApp", model_name)
+            return [field.name for field in model._meta.fields]
+        except LookupError:
+            return []
+    @swagger_auto_schema(
+        operation_description="Get model attributes dynamically by table name",
+        manual_parameters=[
+            openapi.Parameter(
+                'table',
+                openapi.IN_QUERY,
+                description="Name of the model/table (e.g., 'Users')",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ],
+        responses={200: openapi.Response(description="List of attribute names", schema=openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Items(type=openapi.TYPE_STRING)
+        ))}
+    )
     def get(self, request, *args, **kwargs):
         table = request.GET.get("table")
-        user_type = request.GET.get("user_type", "")
-
-        if table == "users":
-            # Define attributes for the Users model
-            attributes = [
-                "name",
-                "email",
-                "father_name",
-                "address",
-                "program_name",
-                "dept_name",
-                "gender",
-                "status",
-                "user_type",
-                "role",
-                "designation",
-                "remark",
-                "phone_number",
-                "cgpa",
-                "term",
-                "DoB",
-                "CNIC",
-            ]
-            return Response(attributes)
-        # Add more tables if needed (e.g., Department, Applications)
-        return Response([])
+        if(not table):
+           return Response([])
+        attributes =self.get_model_fields(table)
+        return Response(attributes)
 
 
 # OTP APIs with jwt token
@@ -636,12 +636,11 @@ class OTPVerifyView(APIView):
             )
 
 
-# @login_required
+
 def admin_dashboard(request):
     return render(request, "CUSTApp/AdminDashboard/index.html")
 
 
-# @login_required
 def user_dashboard(request):
     return render(request, "CUSTApp/UserDashboard/index.html")
 

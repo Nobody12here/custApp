@@ -120,8 +120,8 @@ DATABASES = {
 
 
 # myproject/settings.py (add at the bottom)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.custapp.pk'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
