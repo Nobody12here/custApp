@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="./assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="./assets/img/favicon.png">
+  <link rel="icon" type="image/png" href="./assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>CUST App Dashboard</title>
   <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
@@ -215,23 +215,8 @@
                           <th>Comments</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <tr>
-                          <td>Bonafide Letter Request</td>
-                          <td>John Doe</td>
-                          <td>2023-10-01</td>
-                          <td>Pending</td>
-                          <td>
-                            <button class="btn btn-info btn-sm">View</button>
-                            <button class="btn btn-success btn-sm">Accept</button>
-                            <button class="btn btn-danger btn-sm">Reject</button>
-                          </td>
-                          <td>
-                            <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#commentModal">
-                              <i class="material-icons">comment</i>
-                            </button>
-                          </td>
-                        </tr>
+                      <tbody id="requestTableBody">
+                        <!-- Requests will be dynamically inserted here -->
                       </tbody>
                     </table>
                   </div>
@@ -251,6 +236,103 @@
   <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
   <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
 
+  <!-- JavaScript to Fetch and Display Requests -->
+  <script>
+    $(document).ready(function() {
+      const BASE_URL = 'http://127.0.0.1:8000'; // Adjust if your backend URL is different
+
+      // Store application names for mapping
+      let applicationMap = {};
+
+      // Fetch application names from /api/applications/
+      function loadApplicationNames() {
+        return $.ajax({
+          url: `/api/applications/`,
+          method: 'GET',
+          success: function(response) {
+            response.forEach(app => {
+              applicationMap[app.id] = app.name;
+            });
+          },
+          error: function(xhr, status, error) {
+            console.error('Error fetching applications:', error);
+          }
+        });
+      }
+
+      // Fetch and display requests
+      function loadRequests() {
+        $.ajax({
+          url: `/requests/`,
+          method: 'GET',
+          success: function(requests) {
+            const tbody = $('#requestTableBody');
+            tbody.empty(); // Clear existing rows
+
+            requests.forEach(request => {
+              // For simplicity, using applicant ID as student name placeholder
+              // Replace with actual student name if available via another API
+              const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
+              const requestType = applicationMap[request.application] || `Application ${request.application}`;
+              const date = new Date(request.created_at).toLocaleDateString();
+
+              const row = `
+                <tr>
+                  <td>${requestType}</td>
+                  <td>${studentName}</td>
+                  <td>${date}</td>
+                  <td>${request.status}</td>
+                  <td>
+                    <button class="btn btn-info btn-sm" onclick="viewRequest(${request.request_id})">View</button>
+                    <button class="btn btn-success btn-sm" onclick="acceptRequest(${request.request_id})">Accept</button>
+                    <button class="btn btn-danger btn-sm" onclick="rejectRequest(${request.request_id})">Reject</button>
+                  </td>
+                  <td>
+                    <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#commentModal" 
+                            onclick="setCommentModal(${request.request_id}, '${request.comments || ''}')">
+                      <i class="material-icons">comment</i>
+                    </button>
+                  </td>
+                </tr>
+              `;
+              tbody.append(row);
+            });
+          },
+          error: function(xhr, status, error) {
+            console.error('Error fetching requests:', error);
+            $('#requestTableBody').html('<tr><td colspan="6">Failed to load requests.</td></tr>');
+          }
+        });
+      }
+
+      // Placeholder functions for actions (implement as needed)
+      function viewRequest(requestId) {
+        alert(`Viewing request ${requestId}`);
+        // Add logic to view request details
+      }
+
+      function acceptRequest(requestId) {
+        alert(`Accepting request ${requestId}`);
+        // Add API call to update status to "Approved"
+      }
+
+      function rejectRequest(requestId) {
+        alert(`Rejecting request ${requestId}`);
+        // Add API call to update status to "Rejected"
+      }
+
+      function setCommentModal(requestId, comments) {
+        $('#commentModalTextarea').val(comments);
+        $('#commentModal').data('requestId', requestId);
+      }
+
+      // Load application names first, then requests
+      loadApplicationNames().then(() => {
+        loadRequests();
+      });
+    });
+  </script>
+
   <!-- Comment Modal -->
   <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -262,11 +344,26 @@
           </button>
         </div>
         <div class="modal-body">
-          <textarea class="form-control" rows="4" placeholder="Enter your comment here..."></textarea>
+          <textarea class="form-control" id="commentModalTextarea" rows="4" placeholder="Enter your comment here..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="saveComment()">Save</button>
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    // Save comment (placeholder - implement API call)
+    function saveComment() {
+      const requestId = $('#commentModal').data('requestId');
+      const comment = $('#commentModalTextarea').val();
+      alert(`Saving comment for request ${requestId}: ${comment}`);
+      // Add API call to update comment for the request
+      $('#commentModal').modal('hide');
+    }
+  </script>
 </body>
 
 </html>

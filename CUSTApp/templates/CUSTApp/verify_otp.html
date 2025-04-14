@@ -282,7 +282,7 @@
 
                     // Verify OTP via AJAX
                     $.ajax({
-                        url: '/api/verify-otp/',
+                        url: '/otp/verify/',
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({ email: email, otp: otp }),
@@ -333,7 +333,7 @@
             }
 
             $.ajax({
-                url: '/api/request-otp/',
+                url: '/request-otp/',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ email: email }),
