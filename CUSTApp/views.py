@@ -11,9 +11,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from ApplicationTemplate.models import Applications,Request
 from .models import Users, Department, TemplateAttributes
+from ApplicationTemplate.serializers import ApplicationsSerializer,RequestSerializer
 from .serializers import (
-    UsersSerializer, DepartmentSerializer, ApplicationsSerializer,
-    RequestSerializer, TemplateAttributesSerializer, OTPSendSerializer, OTPVerifySerializer
+    UsersSerializer, DepartmentSerializer,
+     TemplateAttributesSerializer, OTPSendSerializer, OTPVerifySerializer
 )
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -49,7 +50,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from ApplicationTemplate.models import Applications
 from .models import Users
-from .serializers import RequestSerializer
+from ApplicationTemplate.serializers import RequestSerializer
 
 logger = logging.getLogger(__name__)
 
