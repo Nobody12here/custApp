@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from .serializers import ApplicationsSerializer
 from .models import Applications
@@ -22,7 +23,15 @@ class ApplicationTemplateViewset(ModelViewSet):
         if self.action == "list":
             return Applications.objects.filter(status=1)
         return super().get_queryset()
-
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(status=1)  # Save with default status
+        return Response(
+            {"success": "Application Created Successfully", "data": serializer.data},
+            status=status.HTTP_201_CREATED
+        )
     def perform_destroy(self, instance):
         instance.status = 0
         instance.save()

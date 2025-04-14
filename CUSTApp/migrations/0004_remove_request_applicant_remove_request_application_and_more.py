@@ -11,14 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='request',
-            name='applicant',
-        ),
-        migrations.RemoveField(
-            model_name='request',
-            name='application',
-        ),
         migrations.AddField(
             model_name='users',
             name='groups',

@@ -10,7 +10,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Admin Dashboard</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <link href="{% static 'assets/css/material-dashboard.css' %}?v=2.2.2" rel="stylesheet" />
     <link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
@@ -27,7 +28,8 @@
 
 <body class="">
     <div class="wrapper">
-        <div class="sidebar" data-color="rose" data-background-color="black" data-image="{% static 'assets/img/sidebar-1.jpg' %}">
+        <div class="sidebar" data-color="rose" data-background-color="black"
+            data-image="{% static 'assets/img/sidebar-1.jpg' %}">
             <div class="logo">
                 <a href="#" class="simple-text logo-normal">CUST PORTAL</a>
             </div>
@@ -66,7 +68,8 @@
                     <div class="navbar-wrapper">
                         <a class="navbar-brand" href="javascript:;">Admin Dashboard</a>
                     </div>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index"
+                        aria-expanded="false" aria-label="Toggle navigation">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="navbar-toggler-icon icon-bar"></span>
                         <span class="navbar-toggler-icon icon-bar"></span>
@@ -81,7 +84,8 @@
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link" href="javascript:;" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link" href="javascript:;" id="navbarDropdownMenuLink"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="material-icons">notifications</i>
                                     <span class="notification">5</span>
                                     <p class="d-lg-none d-md-block">Some Actions</p>
@@ -117,11 +121,13 @@
                                     <form id="templateForm">
                                         <div class="form-group">
                                             <label for="templateName">Application Name</label>
-                                            <input type="text" class="form-control" id="templateName" placeholder="Enter application name">
+                                            <input type="text" class="form-control" id="templateName"
+                                                placeholder="Enter application name">
                                         </div>
                                         <div class="form-group">
                                             <label for="templateContent">Application Content</label>
-                                            <div id="templateContent" class="form-control" style="min-height: 500px;"></div>
+                                            <div id="templateContent" class="form-control" style="min-height: 500px;">
+                                            </div>
                                             <div class="mt-2">
                                                 <div class="row">
                                                     <div class="col-md-4">
@@ -129,6 +135,7 @@
                                                         <select class="form-control" id="tableSelect">
                                                             <option value="">Select Table</option>
                                                             <option value="users">Users</option>
+                                                            <option value="Department">Department</option>
                                                         </select>
                                                     </div>
                                                     <div class="col-md-4">
@@ -145,12 +152,29 @@
                                                             <option value="">Select Attribute</option>
                                                         </select>
                                                     </div>
+
+                                                    <div class="col-md-4">
+                                                        <label for="departmentSelect">Select Department</label>
+                                                        <select class="form-control" id="departmentSelect"
+                                                            onchange="populateDepartmentHead()"">
+                                                            <option value="">Loading departments...</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class=" col-md-4">
+                                                            <label for="employeeSelect">Select Employee</label>
+                                                            <select class="form-control" id="employeeSelect">
+                                                                <option value="">Loading Employees...</option>
+                                                            </select>
+                                                    </div>
                                                 </div>
-                                                <button type="button" class="btn btn-sm btn-info mt-2" onclick="insertPlaceholder()">Insert Placeholder</button>
+                                                <button type="button" class="btn btn-sm btn-info mt-2"
+                                                    onclick="insertPlaceholder()">Insert Placeholder</button>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save Application</button>
-                                        <button type="button" class="btn btn-success" onclick="generatePDF()">Generate PDF</button>
+                                        <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save
+                                            Application</button>
+                                        <button type="button" class="btn btn-success" onclick="generatePDF()">Generate
+                                            PDF</button>
                                     </form>
                                 </div>
                             </div>
@@ -182,9 +206,75 @@
     <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
     <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
     <script>
-        let editorInstance;
+        let departmentData = [];
 
-        $(document).ready(function() {
+        $(document).ready(function () {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login/';
+            }
+
+            // Add token to all AJAX requests
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                }
+            });
+            fetchDepartments();
+        });
+
+        function fetchDepartments() {
+            $.ajax({
+                url: "/departments/",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    const $departmentSelect = $("#departmentSelect");
+                    const $employeeSelect = $("#employeeSelect");
+
+                    // Reset options
+                    $departmentSelect.html(`<option value="">Select Department</option>`);
+                    $employeeSelect.html(`<option value="">Select Employee</option>`);
+
+                    departmentData = data;
+
+                    data.forEach(department => {
+                        $departmentSelect.append(
+                            `<option value="${department.dept_id}">${department.dept_name}</option>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 401) {
+                        // Handle unauthorized access
+                        Swal.fire('Error', 'Session expired. Please log in again.', 'error').then(() => {
+                            window.location.href = '/login/';
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to fetch departments: ' + error, 'error');
+                    }
+                    console.error("Error fetching departments:", error);
+                    $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+                }
+            });
+        }
+
+        function populateDepartmentHead() {
+            const departmentId = $("#departmentSelect").val();
+            const selectedDept = departmentData.find(dept => dept.dept_id == departmentId);
+            const $headSelect = $("#employeeSelect");
+
+            if (selectedDept && selectedDept.dept_head) {
+                $headSelect.html(`
+            <option value="${selectedDept.dept_head}">${selectedDept.dept_head_name}</option>
+        `);
+            } else {
+                $headSelect.html(`<option value="">No Head Assigned</option>`);
+            }
+        }
+
+        let editorInstance;
+        $(document).ready(function () {
             md.initDashboardPageCharts();
             md.initVectorMap();
 
@@ -204,7 +294,7 @@
                 });
 
             // Handle table selection
-            $('#tableSelect').change(function() {
+            $('#tableSelect').change(function () {
                 const table = $(this).val();
                 const $userTypeSelect = $('#userTypeSelect');
                 const $attributeSelect = $('#attributeSelect');
@@ -220,7 +310,7 @@
             });
 
             // Handle user type selection for users table
-            $('#userTypeSelect').change(function() {
+            $('#userTypeSelect').change(function () {
                 const table = $('#tableSelect').val();
                 const userType = $(this).val();
                 const $attributeSelect = $('#attributeSelect');
@@ -239,7 +329,7 @@
                 url: '/api/get_attributes/?table=' + encodeURIComponent(table) + (userType ? '&user_type=' + encodeURIComponent(userType) : ''),
                 method: 'GET',
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     if (Array.isArray(response) && response.length > 0) {
                         $attributeSelect.prop('disabled', false);
                         response.forEach(attr => {
@@ -249,7 +339,7 @@
                         Swal.fire('Warning', 'No attributes found for table: ' + table + (userType ? ' (' + userType + ')' : ''), 'warning');
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('AJAX Error:', { status, error, responseText: xhr.responseText });
                     Swal.fire('Error', 'Failed to fetch attributes: ' + error, 'error');
                 }
@@ -262,57 +352,48 @@
             const attribute = $('#attributeSelect').val();
 
             if (!table || !attribute) {
-                Swal.fire('Error', 'Please select a table and an attribute.', 'error');
-                return;
-            }
-            if (table === 'users' && !userType) {
-                Swal.fire('Error', 'Please select a user type for the users table.', 'error');
+                alert('Please select both a table and an attribute.');
                 return;
             }
 
-            // Use string concatenation to avoid template literal conflict
-            function insertPlaceholder() {
-                const table = $('#tableSelect').val();
-                const userType = $('#userTypeSelect').val();
-                const attribute = $('#attributeSelect').val();
-            
-                if (!table || !attribute) {
-                    Swal.fire('Error', 'Please select a table and an attribute.', 'error');
-                    return;
-                }
-                if (table === 'users' && !userType) {
-                    Swal.fire('Error', 'Please select a user type for the users table.', 'error');
-                    return;
-                }
-            
-                // Use a different placeholder format to avoid conflict with Django templates
-                const placeholder = table === 'users' ? `[${table}.${userType}.${attribute}]` : `[${table}.${attribute}]`;
-                editorInstance.model.change(writer => {
-                    const insertPosition = editorInstance.model.document.selection.getFirstPosition();
-                    writer.insertText(placeholder, insertPosition);
-                });
+            let placeholder = `{{${table}`;
+            if (table === 'users' && userType) {
+                placeholder += `.${userType}`;
+            }
+            placeholder += `.${attribute}}}`;
+
+            if (editorInstance) {
+                const viewFragment = editorInstance.data.processor.toView(placeholder);
+                const modelFragment = editorInstance.data.toModel(viewFragment);
+                editorInstance.model.insertContent(modelFragment, editorInstance.model.document.selection);
             }
         }
-
         function saveTemplate() {
             const templateName = $('#templateName').val();
-            const templateContent = editorInstance.getData();
-
-            if (!templateName || !templateContent) {
-                Swal.fire('Error', 'Please fill in both application name and content.', 'error');
+            const templateContentHTML = editorInstance.getData();
+            const templateContent = $('<div>').html(templateContentHTML).text(); // Convert HTML to plain text
+            const departmentId = $('#departmentSelect').val();
+            const employeeId = $('#employeeSelect').val();
+            if (!templateName || !templateContent || !departmentId || !employeeId) {
+                Swal.fire('Error', 'Please fill in All the fields', 'error');
                 return;
             }
 
             $.ajax({
-                url: '/api/save_template/',
+                url: '/api/application/',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    name: templateName,
-                    content: templateContent
+                    application_name: templateName,
+                    short_name: templateName,
+                    application_desc: templateContent,
+                    responsible_dept: departmentId,
+                    status: 1,
+                    default_responsible_employee: employeeId,
                 }),
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
+                    console.log(response);
                     if (response.success) {
                         Swal.fire('Success', response.success, 'success');
                         $('#templateForm')[0].reset();
@@ -324,7 +405,7 @@
                         Swal.fire('Error', response.error || 'Failed to save application', 'error');
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to save application: ' + error, 'error');
                     console.error('Save application error:', xhr.responseText);
                 }
@@ -344,7 +425,7 @@
                 method: 'POST',
                 data: { name: templateName, content: templateContent },
                 xhrFields: { responseType: 'blob' },
-                success: function(blob) {
+                success: function (blob) {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -355,7 +436,7 @@
                     window.URL.revokeObjectURL(url);
                     Swal.fire('Success', 'PDF generated successfully', 'success');
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to generate PDF: ' + error, 'error');
                 }
             });
