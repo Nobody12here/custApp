@@ -1,6 +1,7 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from .models import Users, Department, Applications, Request, TemplateAttributes
+from ApplicationTemplate.models import Applications,Request
+from .models import Users, Department, TemplateAttributes
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:

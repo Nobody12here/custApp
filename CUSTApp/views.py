@@ -9,7 +9,8 @@ from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Users, Department, Applications, Request, TemplateAttributes
+from ApplicationTemplate.models import Applications,Request
+from .models import Users, Department, TemplateAttributes
 from .serializers import (
     UsersSerializer, DepartmentSerializer, ApplicationsSerializer,
     RequestSerializer, TemplateAttributesSerializer, OTPSendSerializer, OTPVerifySerializer
@@ -24,6 +25,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 import logging
 import random
 from django.core.mail import send_mail
@@ -44,7 +47,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Applications, Users
+from ApplicationTemplate.models import Applications
+from .models import Users
 from .serializers import RequestSerializer
 
 logger = logging.getLogger(__name__)
@@ -65,8 +69,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from .models import Applications, Users, Request
-from .serializers import RequestSerializer
+from ApplicationTemplate.models import Applications,Users
+from .models import  Users
+from ApplicationTemplate.serializers import RequestSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import logging
