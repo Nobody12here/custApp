@@ -10,7 +10,8 @@
     <title>Students Dashboard</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Load Fonts and Icons -->
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- Load CSS -->
     <link href="{% static 'assets/css/material-dashboard.css' %}?v=2.2.2" rel="stylesheet" />
@@ -22,7 +23,7 @@
     <div class="wrapper">
         <!-- Sidebar Placeholder -->
         <div id="sidebar-placeholder"></div>
-        
+
         <div class="main-panel">
             <!-- Navbar Placeholder -->
             <div id="navbar-placeholder"></div>
@@ -38,11 +39,15 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <button class="btn btn-info" onclick="downloadStudentTemplate()">Download CSV Template</button>
-                                        <input type="file" id="studentCsvUpload" accept=".csv" style="display: inline-block;" />
-                                        <button class="btn btn-primary" onclick="uploadStudentCsv()">Upload Students CSV</button>
+                                        <button class="btn btn-info" onclick="downloadStudentTemplate()">Download CSV
+                                            Template</button>
+                                        <input type="file" id="studentCsvUpload" accept=".csv"
+                                            style="display: inline-block;" />
+                                        <button class="btn btn-primary" onclick="uploadStudentCsv()">Upload Students
+                                            CSV</button>
                                     </div>
-                                    <table id="studentsTable" class="table table-striped table-bordered" style="width:100%">
+                                    <table id="studentsTable" class="table table-striped table-bordered"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -66,33 +71,32 @@
     </div>
 
     <!-- Load Scripts -->
-    <script src="../assets/js/core/jquery.min.js"></script>
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/moment.min.js"></script>
-    <script src="../assets/js/plugins/sweetalert2.js"></script>
-    <script src="../assets/js/plugins/jquery.validate.min.js"></script>
-    <script src="../assets/js/plugins/jquery.bootstrap-wizard.js"></script>
-    <script src="../assets/js/plugins/bootstrap-selectpicker.js"></script>
-    <script src="../assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
-    <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-tagsinput.js"></script>
-    <script src="../assets/js/plugins/jasny-bootstrap.min.js"></script>
-    <script src="../assets/js/plugins/fullcalendar.min.js"></script>
-    <script src="../assets/js/plugins/jquery-jvectormap.js"></script>
-    <script src="../assets/js/plugins/nouislider.min.js"></script>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-tagsinput.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jasny-bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/fullcalendar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/nouislider.min.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
-    <script src="../assets/js/plugins/arrive.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
-    <script src="../assets/js/plugins/chartist.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-notify.js"></script>
-    <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+    <script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+    <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Load Sidebar and Navbar
-            $("#sidebar-placeholder").load("./sidebar.html", function() {
+            $("#sidebar-placeholder").load("./sidebar.html", function () {
                 // Highlight the active page
                 $('.nav-link[href="students.html"]').parent().addClass('active');
                 // Reinitialize sidebar styles
@@ -101,7 +105,7 @@
                 }
             });
 
-            $("#navbar-placeholder").load(".AdminDashboard/navbar.html", function() {
+            $("#navbar-placeholder").load(".AdminDashboard/navbar.html", function () {
                 // Set navbar title
                 $("#navbarTitle").text("Students Dashboard");
                 // Reinitialize Material Dashboard components and Bootstrap dropdowns
@@ -120,14 +124,14 @@
             $('#studentsTable').DataTable({
                 ajax: {
                     url: 'api/get_users.php?user_type=Student',
-                    dataSrc: function(json) {
+                    dataSrc: function (json) {
                         if (json.error) {
                             Swal.fire('Error', json.error, 'error');
                             return [];
                         }
                         return json;
                     },
-                    error: function(xhr, error, thrown) {
+                    error: function (xhr, error, thrown) {
                         Swal.fire('Error', 'Failed to load students: ' + error, 'error');
                     }
                 },
@@ -170,7 +174,7 @@
             }
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const text = e.target.result;
                 const rows = text.split('\n').map(row => row.trim()).filter(row => row);
 
@@ -200,14 +204,14 @@
                         designation: 'N/A' // Not applicable for students
                     };
                 });
-
+                console.log('Data = ', data)
                 $.ajax({
                     url: 'api/upload_users.php',
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ users: data }),
                     dataType: 'json',
-                    success: function(response) {
+                    success: function (response) {
                         if (response.success) {
                             Swal.fire('Success', response.success, 'success');
                             $('#studentsTable').DataTable().ajax.reload();
@@ -216,7 +220,7 @@
                             Swal.fire('Error', response.error || 'Failed to upload students', 'error');
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         Swal.fire('Error', 'Failed to upload students: ' + error, 'error');
                         console.error('Upload error:', xhr.responseText);
                     }

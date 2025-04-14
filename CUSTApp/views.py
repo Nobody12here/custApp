@@ -215,7 +215,7 @@ class UserRetrieveUpdateDestroyAPI(generics.RetrieveUpdateDestroyAPIView):
 
 
 class DepartmentList(generics.ListCreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
@@ -492,7 +492,7 @@ class GeneratePDFAPIView(APIView):
 
         # Generate PDF
         pdf_file = BytesIO()
-        pdfkit.from_string(rendered_content, pdf_file)
+        pdfkit.from_string(rendered_content, False)
         pdf_file.seek(0)
 
         response = HttpResponse(pdf_file, content_type="application/pdf")

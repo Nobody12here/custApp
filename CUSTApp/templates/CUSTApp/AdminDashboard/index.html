@@ -152,18 +152,19 @@
                                                             <option value="">Select Attribute</option>
                                                         </select>
                                                     </div>
-                                                    
+
                                                     <div class="col-md-4">
                                                         <label for="departmentSelect">Select Department</label>
-                                                        <select class="form-control" id="departmentSelect" onchange="populateDepartmentHead()"">
+                                                        <select class="form-control" id="departmentSelect"
+                                                            onchange="populateDepartmentHead()"">
                                                             <option value="">Loading departments...</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <label for="employeeSelect">Select Employee</label>
-                                                        <select class="form-control" id="employeeSelect">
-                                                            <option value="">Loading Employees...</option>
-                                                        </select>
+                                                    <div class=" col-md-4">
+                                                            <label for="employeeSelect">Select Employee</label>
+                                                            <select class="form-control" id="employeeSelect">
+                                                                <option value="">Loading Employees...</option>
+                                                            </select>
                                                     </div>
                                                 </div>
                                                 <button type="button" class="btn btn-sm btn-info mt-2"
@@ -205,53 +206,8 @@
     <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
     <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
     <script>
-         document.addEventListener("DOMContentLoaded", function () {
-        fetchDepartments();
-    });
-    let departmentData = []
-    function fetchDepartments() {
-        fetch("/departments/")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then(data => {
-                const departmentSelect = document.getElementById("departmentSelect");
-                const employeeSelect = document.getElementById("employeeSelect");
-                employeeSelect.innerHTML = `<option value="">Select Employee</option>`; // reset options
-                departmentSelect.innerHTML = `<option value="">Select Department</option>`; // reset options
-                data.forEach(department => {
-                    // Assuming department object has id and name keys
-                    departmentData.push(department)
-                    departmentSelect.innerHTML += `<option value="${department.dept_id}">${department.dept_name}</option>`;
-                });
-            })
-            .catch(error => {
-                console.error("Error fetching departments:", error);
-                const departmentSelect = document.getElementById("departmentSelect");
-                departmentSelect.innerHTML = `<option value="">Failed to load departments</option>`;
-            });
-    }
-    function populateDepartmentHead() {
-    const departmentId = document.getElementById("departmentSelect").value;
-    const selectedDept = departmentData.find(dept => dept.dept_id == departmentId);
-    console.log(selectedDept.dept_head_name)
-    const headSelect = document.getElementById("employeeSelect");
+        let departmentData = [];
 
-    if (selectedDept && selectedDept.dept_head) {
-        headSelect.innerHTML = `
-            <option value="${selectedDept.dept_head}">${selectedDept.dept_head_name}</option>
-        `;
-    } else {
-        headSelect.innerHTML = `<option value="">No Head Assigned</option>`;
-    }
-}
-    </script>
-    <script>
-        let editorInstance;
-        // Check for token and redirect if not found
         $(document).ready(function () {
             const token = localStorage.getItem('access_token');
             if (!token) {
@@ -264,7 +220,60 @@
                     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                 }
             });
+            fetchDepartments();
         });
+
+        function fetchDepartments() {
+            $.ajax({
+                url: "/departments/",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    const $departmentSelect = $("#departmentSelect");
+                    const $employeeSelect = $("#employeeSelect");
+
+                    // Reset options
+                    $departmentSelect.html(`<option value="">Select Department</option>`);
+                    $employeeSelect.html(`<option value="">Select Employee</option>`);
+
+                    departmentData = data;
+
+                    data.forEach(department => {
+                        $departmentSelect.append(
+                            `<option value="${department.dept_id}">${department.dept_name}</option>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 401) {
+                        // Handle unauthorized access
+                        Swal.fire('Error', 'Session expired. Please log in again.', 'error').then(() => {
+                            window.location.href = '/login/';
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to fetch departments: ' + error, 'error');
+                    }
+                    console.error("Error fetching departments:", error);
+                    $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+                }
+            });
+        }
+
+        function populateDepartmentHead() {
+            const departmentId = $("#departmentSelect").val();
+            const selectedDept = departmentData.find(dept => dept.dept_id == departmentId);
+            const $headSelect = $("#employeeSelect");
+
+            if (selectedDept && selectedDept.dept_head) {
+                $headSelect.html(`
+            <option value="${selectedDept.dept_head}">${selectedDept.dept_head_name}</option>
+        `);
+            } else {
+                $headSelect.html(`<option value="">No Head Assigned</option>`);
+            }
+        }
+
+        let editorInstance;
         $(document).ready(function () {
             md.initDashboardPageCharts();
             md.initVectorMap();
@@ -379,7 +388,7 @@
                     short_name: templateName,
                     application_desc: templateContent,
                     responsible_dept: departmentId,
-                    status:1,
+                    status: 1,
                     default_responsible_employee: employeeId,
                 }),
                 dataType: 'json',
