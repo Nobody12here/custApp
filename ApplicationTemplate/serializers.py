@@ -2,9 +2,12 @@ from rest_framework import serializers
 from .models import Applications,Request
 
 class ApplicationsSerializer(serializers.ModelSerializer):
+    default_responsible_employee_name = serializers.CharField(source='default_responsible_employee.name', read_only=True)
+    dept_name = serializers.CharField(source='responsible_dept.dept_name', read_only=True)
     class Meta:
         model = Applications
         fields = '__all__'
+        extra_fields = ['default_responsible_employee_name', 'dept_name']
 
     def validate(self, data):
         if not data.get('application_name'):

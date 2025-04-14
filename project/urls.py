@@ -52,7 +52,7 @@ urlpatterns = [
     path('', include('CUSTApp.urls')),
     path('api/application/',include('ApplicationTemplate.urls')),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Add refresh endpoint
-    path('api/docs',schema_view.with_ui('swagger'),name='swagger-docs')
+    path('api/docs/',schema_view.with_ui('swagger'),name='swagger-docs')
 ]
 # Serve static files in development
 if settings.DEBUG:
