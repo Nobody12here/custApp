@@ -2,7 +2,8 @@
 from django.urls import path
 from . import views
 from .views import (
-    DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GetAttributesAPIView, 
+    ApplicationsList, DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GetAttributesAPIView, 
+    TemplateListCreateAPIView, TemplateRetrieveUpdateAPIView, TemplateDisableAPIView,
     GenerateLetterAPIView, UserRetrieveUpdateDestroyAPI, UsersList, DepartmentList, RequestList,
     TemplateAttributesList, RequestCreate, index_page, test_api_view, OTPSendView, OTPVerifyView, 
     verify_otp_page, admin_dashboard, user_dashboard, ApplicationRequestAPIView  # Added new view
@@ -17,12 +18,17 @@ urlpatterns = [
     path('test/', test_api_view, name='test_api'),
     path('users/', UsersList.as_view(), name='users_list'),
     path('departments/', DepartmentList.as_view(), name='departments_list'),
+    path('templatesCreate/', TemplateListCreateAPIView.as_view(), name='template_list_create'),
+    path('templates/<int:id>/', TemplateRetrieveUpdateAPIView.as_view(), name='template_retrieve_update'),
+    path('templates/<int:id>/disable/', TemplateDisableAPIView.as_view(), name='template_disable'),
     path('requests/', RequestList.as_view(), name='requests_list'),
     path('template-attributes/', TemplateAttributesList.as_view(), name='template_attributes_list'),
     path('requests/create/', RequestCreate.as_view(), name='request_create'),
     path('generate-letter/<int:request_id>/', GenerateLetterAPIView.as_view(), name='generate_letter'),
-    path('api/request-otp/', OTPSendView.as_view(), name='otp_send'),
-    path('api/verify-otp/', OTPVerifyView.as_view(), name='otp_verify'),
+    path('request-otp/', OTPSendView.as_view(), name='otp_send'),
+    path('otp/verify/', OTPVerifyView.as_view(), name='otp_verify'),
+    path('otp/verifyAPI/', OTPVerifyView.as_view(), name='otp_verify'),
+    path('applications/', ApplicationsList.as_view(), name='applications_list'),
     path('verify_otp/', verify_otp_page, name='verify_otp_page'),
     path('index/', index_page, name='index_page'),
     path('users/<int:user_id>/', UserRetrieveUpdateDestroyAPI.as_view(), name='user_detail'),
@@ -35,7 +41,6 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     path('new-application/', views.new_application, name='new_application'),
     path('reports/', views.reports, name='reports'),
-    # New endpoint for ApplicationRequestAPIView
-    # path('api/application-template/',ApplicationTemplateViewset.as_view({'get':'list'}),name='applicationTemplate_api'),
+    path('api/applications/', views.ApplicationListView.as_view(), name='application-list'),
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
 ]
