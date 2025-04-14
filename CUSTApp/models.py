@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,PermissionsMixin
+
+from django.core.validators import MinLengthValidator
 
 # otp = models.CharField(
 #     max_length=6, 
@@ -8,26 +9,8 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,Permissi
 #     validators=[MinLengthValidator(6)]  # Ensure 6-digit OTP
 # )
 
-class UserManager(BaseUserManager):
-    def create_user(self,email,name,**extra_fields):
-        if not email:
-            raise ValueError("Email Not provided")
-        email = self.normalize_email(email)
-        user= self.model(email=email,name=name,**extra_fields)
-        user.set_unusable_password()
-        user.save(using=self.db)
-        return user
-    def create_superuser(self,email,name,password=None,**extra_fields):
-        if password==None:
-            raise ValueError("Password is required to create superuser")
-        extra_fields.setdefault('is_staff',True)
-        extra_fields.setdefault('is_superuser',True)
-        user = self.model(email=email, name=name, **extra_fields)
-        user.set_password(password)  # Set actual password for superuser
-        user.save(using=self._db)
-        return user
 
-class Users(AbstractBaseUser,PermissionsMixin):
+class Users(models.Model):
     user_id = models.AutoField(primary_key=True)
     uu_id = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=255)
@@ -52,15 +35,6 @@ class Users(AbstractBaseUser,PermissionsMixin):
     CNIC = models.CharField(max_length=15, null=True, blank=True)
     otp = models.CharField(max_length=10, null=True, blank=True)
 
-    # Required for AbstractBaseUser
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-
-    objects = UserManager()
-    
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name']
-    
     class Meta:
         db_table = 'users'
 
@@ -79,6 +53,34 @@ class Department(models.Model):
     def __str__(self):
         return self.dept_name
 
+class Applications(models.Model):
+    STATUS_CHOICES = [
+        (1, 'Enabled'),
+        (0, 'Disabled'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    application_name = models.CharField(max_length=255)  # Template name
+    short_name = models.CharField(max_length=100)  # Short name for application
+    application_desc = models.TextField()  # Template content with placeholders
+    status = models.IntegerField(choices=STATUS_CHOICES, default=1)  # Enabled/Disabled
+    responsible_dept = models.ForeignKey(Department, on_delete=models.CASCADE, db_column='responsible_dept_id')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    default_responsible_employee = models.ForeignKey(
+        Users, 
+        on_delete=models.CASCADE, 
+        db_column='default_responsible_employee_id',
+        default=1
+    )
+
+    class Meta:
+        db_table = 'applications'
+
+    def __str__(self):
+        return self.application_name
+
 
 
 class TemplateAttributes(models.Model):
@@ -95,3 +97,33 @@ class TemplateAttributes(models.Model):
     def __str__(self):
         return self.attribute_name
     
+class Request(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Paid', 'Paid'),
+        ('Failed', 'Failed'),
+    ]
+
+    request_id = models.AutoField(primary_key=True)
+    application = models.ForeignKey(Applications, on_delete=models.CASCADE, db_column='application_id')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    applicant = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='applicant_id')
+    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
+    updated_at = models.DateTimeField(auto_now=True)      # Auto-set on update
+    comments = models.TextField(null=True, blank=True)
+    payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='Pending')
+    payment_date = models.DateTimeField(null=True, blank=True)
+    EmployeeID = models.IntegerField(null=True, blank=True)  # Added to match DB
+    StudentID = models.IntegerField(null=True, blank=True)   # Added to match DB
+    renderedtemplate = models.CharField(max_length=10000, null=True, blank=True)  # Added to match DB
+    request_file = models.FileField(upload_to='uploads/', blank=True, null=True)
+    class Meta:
+        db_table = 'request'
+
+    def __str__(self):
+        return f"Request {self.request_id} - {self.application}"

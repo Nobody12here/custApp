@@ -9,8 +9,28 @@
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
+  <style>
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .file-input {
+      position: absolute;
+      top: 0;
+      right: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .file-name {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      display: inline-block;
+      margin-top: 10px;
+      color: #555;
+    }
+  </style>
 </head>
-<body class="">
+<body>
   <div class="wrapper">
     <div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
       <div class="logo">
@@ -24,13 +44,6 @@
             <a data-toggle="collapse" href="#collapseExample" class="username">
               <span>Tania Andrew <b class="caret"></b></span>
             </a>
-            <div class="collapse" id="collapseExample">
-              <ul class="nav">
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> MP </span><span class="sidebar-normal"> My Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> EP </span><span class="sidebar-normal"> Edit Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> S </span><span class="sidebar-normal"> Settings </span></a></li>
-              </ul>
-            </div>
           </div>
         </div>
         <ul class="nav">
@@ -47,21 +60,6 @@
       <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
         <div class="container-fluid">
           <div class="navbar-wrapper"><a class="navbar-brand" href="#">New Application</a></div>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span>
-          </button>
-          <div class="collapse navbar-collapse justify-content-end">
-            <ul class="navbar-nav">
-              <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="material-icons">person</i><p class="d-lg-none d-md-block">Account</p>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
-                  <a class="dropdown-item" href="#">Profile</a><a class="dropdown-item" href="#">Settings</a><div class="dropdown-divider"></div><a class="dropdown-item" href="#">Log out</a>
-                </div>
-              </li>
-            </ul>
-          </div>
         </div>
       </nav>
       <div class="content">
@@ -74,15 +72,13 @@
                   <p class="card-category">Complete the form below</p>
                 </div>
                 <div class="card-body">
-                  <form>
+                  <form id="applicationForm">
                     <div class="row">
                       <div class="col-md-12">
                         <div class="form-group">
                           <label class="bmd-label-floating">Request Type</label>
-                          <select class="form-control">
-                            <option>Bonafide Letter</option>
-                            <option>English Proficiency</option>
-                            <option>Student Verification</option>
+                          <select class="form-control" id="applicationType" name="applicationType">
+                            <option value="">Select Application Type</option>
                           </select>
                         </div>
                       </div>
@@ -91,21 +87,33 @@
                       <div class="col-md-6">
                         <div class="form-group">
                           <label class="bmd-label-floating">Student Name</label>
-                          <input type="text" class="form-control">
+                          <input type="text" class="form-control" id="studentName" disabled value="Tania Andrew">
                         </div>
                       </div>
                       <div class="col-md-6">
                         <div class="form-group">
                           <label class="bmd-label-floating">Student ID</label>
-                          <input type="text" class="form-control">
+                          <input type="text" class="form-control" id="studentId" name="studentId" required>
                         </div>
                       </div>
                     </div>
                     <div class="row">
                       <div class="col-md-12">
                         <div class="form-group">
-                          <label class="bmd-label-floating">Additional Details</label>
-                          <textarea class="form-control" rows="3"></textarea>
+                          <label class="bmd-label-floating">Comments</label>
+                          <textarea class="form-control" rows="3" id="comments" name="comments"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- File Upload Button -->
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label for="fileUpload">Upload File</label>
+                          <div class="file-input-wrapper">
+                            <input type="file" class="file-input" id="fileUpload" name="file" />
+                            <div class="file-name" id="fileName">No file selected</div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -120,10 +128,78 @@
       </div>
     </div>
   </div>
-  <script src="../assets/js/core/jquery.min.js"></script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+
+  <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+  <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+
+  <script>
+    $(document).ready(function() {
+      function loadApplicationTypes() {
+        $.ajax({
+          url: `/api/applications/`,
+          method: 'GET',
+          success: function(response) {
+            const select = $('#applicationType');
+            response.forEach(app => {
+              select.append(`<option value="${app.id}">${app.name}</option>`);
+            });
+          },
+          error: function(xhr, status, error) {
+            console.error('Error fetching application types:', error);
+            alert('Failed to load application types. Please try again later.');
+          }
+        });
+      }
+
+      $('#applicationForm').submit(function(e) {
+        e.preventDefault();
+
+        const applicationId = $('#applicationType').val();
+        const studentId = $('#studentId').val();
+        const comments = $('#comments').val();
+        const file = $('#fileUpload')[0].files[0];
+
+        if (!applicationId || !studentId) {
+          alert('Please select an application type and enter your student ID.');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('applicationID', applicationId);
+        formData.append('studentID', studentId);
+        formData.append('comments', comments);
+        if (file) formData.append('file', file);
+
+        $.ajax({
+          url: `/api/application-request/`,
+          method: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            alert(response.message);
+            $('#applicationForm')[0].reset();
+            $('#applicationType').html('<option value="">Select Application Type</option>');
+            loadApplicationTypes();
+            $('#fileName').text('No file selected');
+          },
+          error: function(xhr, status, error) {
+            console.error('Error submitting application:', error);
+            alert('Failed to submit application. Please try again.');
+          }
+        });
+      });
+
+      $('#fileUpload').change(function() {
+        const fileName = this.files.length > 0 ? this.files[0].name : 'No file selected';
+        $('#fileName').text(fileName);
+      });
+
+      loadApplicationTypes();
+    });
+  </script>
 </body>
 </html>

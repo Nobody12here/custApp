@@ -1,0 +1,17 @@
+{
+    "name": "zohai/cust-app1",
+    "autoload": {
+        "psr-4": {
+            "Zohai\\CustApp1\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "zohaibkhan04",
+            "email": "mzk2352613@gmail.com"
+        }
+    ],
+    "require": {
+        "mpdf/mpdf": "^6.1"
+    }
+}
