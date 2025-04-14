@@ -257,43 +257,27 @@
         }
 
         function insertPlaceholder() {
-            const table = $('#tableSelect').val();
-            const userType = $('#userTypeSelect').val();
-            const attribute = $('#attributeSelect').val();
+        const table = $('#tableSelect').val();
+        const userType = $('#userTypeSelect').val();
+        const attribute = $('#attributeSelect').val();
 
-            if (!table || !attribute) {
-                Swal.fire('Error', 'Please select a table and an attribute.', 'error');
-                return;
-            }
-            if (table === 'users' && !userType) {
-                Swal.fire('Error', 'Please select a user type for the users table.', 'error');
-                return;
-            }
-
-            // Use string concatenation to avoid template literal conflict
-            function insertPlaceholder() {
-                const table = $('#tableSelect').val();
-                const userType = $('#userTypeSelect').val();
-                const attribute = $('#attributeSelect').val();
-            
-                if (!table || !attribute) {
-                    Swal.fire('Error', 'Please select a table and an attribute.', 'error');
-                    return;
-                }
-                if (table === 'users' && !userType) {
-                    Swal.fire('Error', 'Please select a user type for the users table.', 'error');
-                    return;
-                }
-            
-                // Use a different placeholder format to avoid conflict with Django templates
-                const placeholder = table === 'users' ? `[${table}.${userType}.${attribute}]` : `[${table}.${attribute}]`;
-                editorInstance.model.change(writer => {
-                    const insertPosition = editorInstance.model.document.selection.getFirstPosition();
-                    writer.insertText(placeholder, insertPosition);
-                });
-            }
+        if (!table || !attribute) {
+            alert('Please select both a table and an attribute.');
+            return;
         }
 
+        let placeholder = `{{${table}`;
+        if (table === 'users' && userType) {
+            placeholder += `.${userType}`;
+        }
+        placeholder += `.${attribute}}}`;
+
+        if (editorInstance) {
+            const viewFragment = editorInstance.data.processor.toView(placeholder);
+            const modelFragment = editorInstance.data.toModel(viewFragment);
+            editorInstance.model.insertContent(modelFragment, editorInstance.model.document.selection);
+        }
+        }
         function saveTemplate() {
             const templateName = $('#templateName').val();
             const templateContent = editorInstance.getData();

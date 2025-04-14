@@ -501,6 +501,7 @@ class GeneratePDFAPIView(APIView):
 
 
 class GetAttributesAPIView(APIView):
+    permission_classes= [AllowAny]
     def get(self, request, *args, **kwargs):
         table = request.GET.get("table")
         user_type = request.GET.get("user_type", "")
