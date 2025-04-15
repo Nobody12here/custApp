@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from ApplicationTemplate.models import Applications,Request
 from .models import Users, Department, TemplateAttributes
-
+import json
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
@@ -82,6 +82,46 @@ class RequestSerializer(serializers.ModelSerializer):
             'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID', 'renderedtemplate', 'request_file'
         ]
         read_only_fields = ['request_id', 'created_at', 'updated_at']  # Prevent manual override
+
+    def to_representation(self, instance):
+        """
+        Convert comments to a JSON array when serializing.
+        If comments is a string, parse it; if null, return an empty list.
+        """
+        representation = super().to_representation(instance)
+        if instance.comments:
+            try:
+                # If comments is stored as a JSON string, parse it
+                representation['comments'] = json.loads(instance.comments) if isinstance(instance.comments, str) else instance.comments
+            except json.JSONDecodeError:
+                representation['comments'] = []
+        else:
+            representation['comments'] = []
+        return representation
+
+    def to_internal_value(self, data):
+        """
+        Ensure comments is stored as a JSON string when deserializing.
+        Validate that comments is a list of valid comment objects.
+        """
+        data = super().to_internal_value(data)
+        comments = data.get('comments', [])
+        
+        if comments:
+            if not isinstance(comments, list):
+                raise serializers.ValidationError({"comments": "Comments must be a list."})
+            for comment in comments:
+                if not isinstance(comment, dict):
+                    raise serializers.ValidationError({"comments": "Each comment must be an object."})
+                required_fields = {'name', 'text', 'type', 'timestamp'}
+                if not all(field in comment for field in required_fields):
+                    raise serializers.ValidationError({"comments": f"Each comment must contain {required_fields}."})
+                if comment['type'] not in ['student', 'employee']:
+                    raise serializers.ValidationError({"comments": "Comment type must be 'student' or 'employee'."})
+        
+        # Convert comments list to JSON string for storage
+        data['comments'] = json.dumps(comments) if comments else '[]'
+        return data
 
     def validate(self, data):
         # Ensure required fields
