@@ -1,11 +1,12 @@
 # CUSTApp/views.py
+from datetime import datetime
 from io import BytesIO
 import re
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.apps import apps
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -50,10 +51,64 @@ from rest_framework import status
 from ApplicationTemplate.models import Applications
 from .models import Users
 from .serializers import RequestSerializer
-
+import json
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
+def add_comment(request, id):
+    if request.method == 'POST':
+        text = request.POST.get('text')
+        if not text:
+            return JsonResponse({'error': 'Comment text is required'}, status=400)
+        try:
+            req = Request.objects.get(pk=id)
+            # Determine user info
+            name = request.user.get_full_name() or request.user.username
+            user_type = 'employee' if request.user.groups.filter(name='Employees').exists() else 'student'
+            # Initialize comments
+            comments = json.loads(req.comments) if req.comments else []
+            # Add new comment
+            new_comment = {
+                'name': name,
+                'text': text,
+                'type': user_type,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+            comments.append(new_comment)
+            req.comments = json.dumps(comments)
+            req.save()
+            return JsonResponse({'success': True})
+        except Request.DoesNotExist:
+            return JsonResponse({'error': 'Request not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid comment format'}, status=400)
+        except AttributeError:
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+def update_request_status(request, id):
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status not in ['Approved', 'Rejected']:
+            return JsonResponse({'error': 'Invalid status'}, status=400)
+        try:
+            req = Request.objects.get(pk=id)
+            req.status = status
+            req.save()
+            return JsonResponse({'success': True})
+        except Request.DoesNotExist:
+            return JsonResponse({'error': 'Request not found'}, status=404)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+def update_rendered_template(request, id):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        try:
+            req = Request.objects.get(pk=id)
+            req.renderedtemplate = content
+            req.save()
+            return JsonResponse({'success': True})
+        except Request.DoesNotExist:
+            return JsonResponse({'error': 'Request not found'}, status=404)
 class ApplicationListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
