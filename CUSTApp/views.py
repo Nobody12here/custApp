@@ -522,9 +522,51 @@ class GetAttributesAPIView(APIView):
     )
     def get(self, request, *args, **kwargs):
         table = request.GET.get("table")
+        attributes = []
+        user_type = request.GET.get("user_type","")
         if(not table):
            return Response([])
-        attributes =self.get_model_fields(table)
+        if table == 'users':
+                attributes = [
+                 "student_name",
+                 "email",
+                 "father_name",
+                 "registration_no",
+                 "address",
+                 "program",
+                 "department",
+                 "gender",
+                 "status",
+                 "user_type",
+                 "role",
+                 "designation",
+                 "remark",
+                 "phone_number",
+                 "cgpa",
+                 "term",
+                 "DoB",
+                 "cnic",
+                ]
+                if user_type == 'staff':
+                    attributes [0]= "name"
+                else:
+                    attributes[0] = "student_name"
+        elif table == 'users' and user_type == 'student':
+            attributes[0] = "student_name"
+        elif table == 'Department':
+            attributes = ["dept_id", "dept_name", "dept_head", "short_name"]
+        elif table == 'Applications':
+            attributes = [
+                "id",
+                "application_name",
+                "short_name",
+                "application_desc",
+                "status",
+                "responsible_dept",
+                "amount",
+                "default_responsible_employee"
+            ]
+       
         return Response(attributes)
 
 # OTP APIs with jwt token

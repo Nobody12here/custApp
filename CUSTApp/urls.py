@@ -28,7 +28,6 @@ urlpatterns = [
     path('request-otp/', OTPSendView.as_view(), name='otp_send'),
     path('otp/verify/', OTPVerifyView.as_view(), name='otp_verify'),
     path('otp/verifyAPI/', OTPVerifyView.as_view(), name='otp_verify'),
-    path('applications/', ApplicationsList.as_view(), name='applications_list'),
     path('verify_otp/', verify_otp_page, name='verify_otp_page'),
     path('index/', index_page, name='index_page'),
     path('users/<int:user_id>/', UserRetrieveUpdateDestroyAPI.as_view(), name='user_detail'),
