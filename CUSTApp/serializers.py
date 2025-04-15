@@ -1,6 +1,5 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from ApplicationTemplate.models import Applications,Request
 from .models import Users, Department, TemplateAttributes
 import json
 class UsersSerializer(serializers.ModelSerializer):
@@ -34,25 +33,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
 #             raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
 #         return data
 
-class ApplicationsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Applications
-        fields = '__all__'
-
-    def validate(self, data):
-        if not data.get('application_name'):
-            raise serializers.ValidationError({"application_name": "This field cannot be empty."})
-        if not data.get('short_name'):
-            raise serializers.ValidationError({"short_name": "This field is required."})
-        if not data.get('application_desc'):
-            raise serializers.ValidationError({"application_desc": "This field is required."})
-        if data.get('status') not in [0, 1]:
-            raise serializers.ValidationError({"status": "Status must be 0 (Disabled) or 1 (Enabled)."})
-        if data.get('responsible_dept') is None:
-            raise serializers.ValidationError({"responsible_dept": "This field is required."})
-        if data.get('default_responsible_employee') is None:
-            raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
-        return data
 
 class TemplateAttributesSerializer(serializers.ModelSerializer):
     class Meta:
