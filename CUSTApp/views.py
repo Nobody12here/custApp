@@ -19,7 +19,10 @@ from .serializers import (
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.parsers import MultiPartParser
 
+import csv
+import io
 from django.http import FileResponse
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -38,23 +41,10 @@ from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 import pdfkit
-
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-import logging
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from ApplicationTemplate.models import Applications
-from .models import Users
-from ApplicationTemplate.serializers import RequestSerializer
-
-logger = logging.getLogger(__name__)
-
-from django.utils import timezone
 class ApplicationListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
@@ -66,18 +56,6 @@ class ApplicationListView(generics.ListAPIView):
         # Return only id and application_name for the dropdown
         data = [{"id": app.id, "name": app.application_name} for app in queryset]
         return Response(data)
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-from ApplicationTemplate.models import Applications,Users
-from .models import  Users
-from ApplicationTemplate.serializers import RequestSerializer
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
-import logging
-
-logger = logging.getLogger(__name__)
 
 class ApplicationRequestAPIView(APIView):
     permission_classes = [AllowAny]
@@ -271,6 +249,34 @@ class UserRetrieveUpdateDestroyAPI(generics.RetrieveUpdateDestroyAPIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]  # Only admins can modify users
     lookup_field = 'user_id'
+class UserCSVUploadAPIView(APIView):
+    parser_classes = [MultiPartParser]
+    permission_classes = [AllowAny] 
+
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES.get('file')
+        if not csv_file or not csv_file.name.endswith('.csv'):
+            return Response({"error": "Please upload a valid CSV file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.DictReader(io_string)
+
+            created_users = []
+            for row in reader:
+                serializer = UsersSerializer(data=row)
+                if serializer.is_valid():
+                    serializer.save()
+                    created_users.append(serializer.data)
+                else:
+                    return Response({"error": f"Invalid data in row: {row}", "details": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"message": "Users uploaded successfully.", "data": created_users}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class DepartmentList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -565,6 +571,15 @@ class GetAttributesAPIView(APIView):
                 "responsible_dept",
                 "amount",
                 "default_responsible_employee"
+            ]
+        elif table == "Program":
+            attributes = [
+                "program_id",
+                "program_name",
+                "short_name",
+                "program_desc",
+                "status",
+                "dept_name"
             ]
        
         return Response(attributes)

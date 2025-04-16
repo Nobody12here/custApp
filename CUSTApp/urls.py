@@ -40,6 +40,7 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     path('new-application/', views.new_application, name='new_application'),
     path('reports/', views.reports, name='reports'),
+    path('api/upload-users/', views.UserCSVUploadAPIView.as_view(), name='upload_users'),
     path('api/applications/', views.ApplicationListView.as_view(), name='application-list'),
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
 ]
