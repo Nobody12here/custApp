@@ -10,10 +10,10 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ApplicationTemplate.models import Applications,Request
-from .models import Users, Department, TemplateAttributes
+from .models import Program, Users, Department, TemplateAttributes
 from ApplicationTemplate.serializers import ApplicationsSerializer,RequestSerializer
 from .serializers import (
-    UsersSerializer, DepartmentSerializer,
+    ProgramSerializer, UsersSerializer, DepartmentSerializer,
      TemplateAttributesSerializer, OTPSendSerializer, OTPVerifySerializer
 )
 
@@ -41,6 +41,7 @@ from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
 import pdfkit
+from rest_framework.viewsets import ModelViewSet
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -659,10 +660,26 @@ class OTPVerifyView(APIView):
         except Users.DoesNotExist:
             return Response({"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND)
 
+class ProgramView(ModelViewSet):
+    queryset = Program.objects.all()
+    serializer_class = ProgramSerializer
+    permission_classes = [AllowAny]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        program_name = self.request.query_params.get('program_name')
+        if program_name:
+            queryset = queryset.filter(program_name=program_name)
+        return queryset
 
 def admin_dashboard(request):
     return render(request, 'CUSTApp/AdminDashboard/index.html')
+def admin_faculty(request):
+    return render(request, 'CUSTApp/AdminDashboard/faculty.html')
+def admin_department(request):
+    return render(request, 'CUSTApp/AdminDashboard/departments.html')
+def admin_templates(request):
+    return render(request, 'CUSTApp/AdminDashboard/templates.html')
 
 def user_dashboard(request):
     return render(request, 'CUSTApp/UserDashboard/index.html')
