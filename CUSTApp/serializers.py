@@ -3,9 +3,11 @@ from rest_framework import serializers
 from .models import Users, Department, TemplateAttributes
 
 class UsersSerializer(serializers.ModelSerializer):
+    DoB = serializers.DateField(input_formats=["%d/%m/%Y", "%Y-%m-%d", "%m-%d-%Y"])
     class Meta:
         model = Users
-        fields = '__all__'
+        exclude = ['password']  # Exclude password field from serialization
+        
 
 class DepartmentSerializer(serializers.ModelSerializer):
     dept_head_name = serializers.CharField(source='dept_head.name', read_only=True)

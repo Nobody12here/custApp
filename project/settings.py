@@ -117,8 +117,6 @@ DATABASES = {
         'PORT': '3306',                        # Default MariaDB port
     }
 }
-
-
 # myproject/settings.py (add at the bottom)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -165,8 +163,6 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

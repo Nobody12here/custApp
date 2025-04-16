@@ -167,66 +167,34 @@
         function uploadStudentCsv() {
             const fileInput = document.getElementById('studentCsvUpload');
             const file = fileInput.files[0];
-
+            const formData = new FormData();
             if (!file) {
                 Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
                 return;
             }
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const text = e.target.result;
-                const rows = text.split('\n').map(row => row.trim()).filter(row => row);
-
-                // Skip the header row
-                const data = rows.slice(1).map(row => {
-                    const cols = row.split(',');
-                    return {
-                        uu_id: cols[0],
-                        name: cols[1],
-                        father_name: cols[2],
-                        address: cols[3],
-                        program_name: cols[4],
-                        dept_name: cols[5],
-                        gender: cols[6],
-                        status: cols[7],
-                        email: cols[8],
-                        otp: cols[9],
-                        remark: cols[10],
-                        phone_number: cols[11],
-                        picture: cols[12],
-                        cgpa: cols[13],
-                        term: cols[14],
-                        DoB: cols[15],
-                        CNIC: cols[16],
-                        user_type: 'Student', // Set user_type to Student
-                        role: 'Undergraduate', // Default role for students
-                        designation: 'N/A' // Not applicable for students
-                    };
-                });
-                console.log('Data = ', data)
-                $.ajax({
-                    url: 'api/upload_users.php',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ users: data }),
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            Swal.fire('Success', response.success, 'success');
-                            $('#studentsTable').DataTable().ajax.reload();
-                            fileInput.value = ''; // Reset file input
-                        } else {
-                            Swal.fire('Error', response.error || 'Failed to upload students', 'error');
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        Swal.fire('Error', 'Failed to upload students: ' + error, 'error');
-                        console.error('Upload error:', xhr.responseText);
+            formData.append('file', file);
+            formData.append('user_type', 'Student');
+            $.ajax({
+                url: '/api/upload-users/',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.message) {
+                        Swal.fire('Success', 'Students uploaded successfully.', 'success');
+                        
+                    } else {
+                        Swal.fire('Error', response.error, 'error');
+                        console.error(response.error)
                     }
-                });
-            };
-            reader.readAsText(file);
+                },
+
+                error: function (xhr, status, error) {
+                    Swal.fire('Error', 'Failed to upload students: ' + xhr.responseJSON.error, 'error');
+                    console.log(xhr.responseJSON)
+                }
+            })
         }
     </script>
 </body>
