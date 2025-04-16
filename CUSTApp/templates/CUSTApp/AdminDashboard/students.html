@@ -122,19 +122,7 @@
             }
 
             $('#studentsTable').DataTable({
-                ajax: {
-                    url: 'api/get_users.php?user_type=Student',
-                    dataSrc: function (json) {
-                        if (json.error) {
-                            Swal.fire('Error', json.error, 'error');
-                            return [];
-                        }
-                        return json;
-                    },
-                    error: function (xhr, error, thrown) {
-                        Swal.fire('Error', 'Failed to load students: ' + error, 'error');
-                    }
-                },
+                
                 columns: [
                     { data: 'user_id' },
                     { data: 'name' },
@@ -146,6 +134,42 @@
                 ]
             });
         });
+        document.getElementById('studentCsvUpload').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Automatically load the data when a file is selected
+                    loadStudentDataFromCsv();
+                }
+            });
+        function loadStudentDataFromCsv() {
+            const fileInput = document.getElementById('studentCsvUpload');
+            const file = fileInput.files[0];
+            if (!file) {
+                Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const csvData = e.target.result;
+                const rows = csvData.split('\n').slice(1); // Skip header row
+                console.log(rows)
+                const students = rows.map(row => {
+
+                    const columns = row.split(',');
+                    return {
+                        user_id: columns[0],
+                        name: columns[1],
+                        program_name: columns[4],
+                        dept_name: columns[5],
+                        cgpa: columns[13],
+                        term: columns[14],
+                        email: columns[8]
+                    };
+                });
+                $('#studentsTable').DataTable().clear().rows.add(students).draw();
+            };
+            reader.readAsText(file);
+        }
 
         function downloadStudentTemplate() {
             const csvContent = [

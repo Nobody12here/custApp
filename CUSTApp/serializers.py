@@ -1,6 +1,6 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from .models import Users, Department, TemplateAttributes
+from .models import Users, Department, TemplateAttributes,Program
 
 class UsersSerializer(serializers.ModelSerializer):
     DoB = serializers.DateField(input_formats=["%d/%m/%Y", "%Y-%m-%d", "%m-%d-%Y"])
@@ -11,9 +11,13 @@ class UsersSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     dept_head_name = serializers.CharField(source='dept_head.name', read_only=True)
+    programs = serializers.SerializerMethodField()
     class Meta:
         model = Department
         fields = '__all__'
+    def get_programs(self,obj):
+        programs = obj.program_set.all()
+        return ProgramSerializer(programs, many=True).data
 
 # class ApplicationsSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -35,7 +39,12 @@ class DepartmentSerializer(serializers.ModelSerializer):
 #             raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
 #         return data
 
+class ProgramSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Program
+        fields = '__all__'
 
+    
 class TemplateAttributesSerializer(serializers.ModelSerializer):
     class Meta:
         model = TemplateAttributes

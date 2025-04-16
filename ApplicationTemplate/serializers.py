@@ -10,18 +10,20 @@ class ApplicationsSerializer(serializers.ModelSerializer):
         extra_fields = ['default_responsible_employee_name', 'dept_name']
 
     def validate(self, data):
-        if not data.get('application_name'):
-            raise serializers.ValidationError({"application_name": "This field cannot be empty."})
-        if not data.get('short_name'):
-            raise serializers.ValidationError({"short_name": "This field is required."})
-        if not data.get('application_desc'):
-            raise serializers.ValidationError({"application_desc": "This field is required."})
-        if data.get('status') not in [0, 1]:
-            raise serializers.ValidationError({"status": "Status must be 0 (Disabled) or 1 (Enabled)."})
-        if data.get('responsible_dept') is None:
-            raise serializers.ValidationError({"responsible_dept": "This field is required."})
-        if data.get('default_responsible_employee') is None:
-            raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
+        request_method = self.context.get('request').method if self.context.get('request') else None
+        if request_method != 'PATCH':
+            if not data.get('application_name'):
+                raise serializers.ValidationError({"application_name": "This field cannot be empty."})
+            if not data.get('short_name'):
+                raise serializers.ValidationError({"short_name": "This field is required."})
+            if not data.get('application_desc'):
+                raise serializers.ValidationError({"application_desc": "This field is required."})
+            if data.get('status') not in [0, 1]:
+                raise serializers.ValidationError({"status": "Status must be 0 (Disabled) or 1 (Enabled)."})
+            if data.get('responsible_dept') is None:
+                raise serializers.ValidationError({"responsible_dept": "This field is required."})
+            if data.get('default_responsible_employee') is None:
+                raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
         return data
 
 class RequestSerializer(serializers.ModelSerializer):

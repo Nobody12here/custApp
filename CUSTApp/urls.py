@@ -1,14 +1,17 @@
 # CUSTApp/urls.py
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
+
 from .views import (
     ApplicationsList, DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GetAttributesAPIView, 
     TemplateListCreateAPIView, TemplateRetrieveUpdateAPIView, TemplateDisableAPIView,
     GenerateLetterAPIView, UserRetrieveUpdateDestroyAPI, UsersList, DepartmentList, RequestList,
     TemplateAttributesList, RequestCreate, index_page, test_api_view, OTPSendView, OTPVerifyView, 
-    verify_otp_page, admin_dashboard, user_dashboard, ApplicationRequestAPIView  # Added new view
+    verify_otp_page, admin_dashboard, user_dashboard, ApplicationRequestAPIView,ProgramView  # Added new view
 )
-
+router = DefaultRouter()
+router.register(r'program', ProgramView)
 urlpatterns = [
     path('', views.login, name='login'),
     path('login/', views.login, name='login'),
@@ -17,6 +20,8 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('test/', test_api_view, name='test_api'),
     path('users/', UsersList.as_view(), name='users_list'),
+    path('admin-departments/', views.admin_department, name='admin_departments'),
+    path('admin-templates/', views.admin_templates, name='admin_templates'),
     path('departments/', DepartmentList.as_view(), name='departments_list'),
     path('templatesCreate/', TemplateListCreateAPIView.as_view(), name='template_list_create'),
     path('templates/<int:id>/', TemplateRetrieveUpdateAPIView.as_view(), name='template_retrieve_update'),
@@ -44,3 +49,4 @@ urlpatterns = [
     path('api/applications/', views.ApplicationListView.as_view(), name='application-list'),
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
 ]
+urlpatterns.extend(router.urls)

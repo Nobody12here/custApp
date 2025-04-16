@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,8 +14,8 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- Load CSS -->
-    <link href="../assets/css/material-dashboard.css?v=2.2.2" rel="stylesheet" />
-    <link href="../assets/demo/demo.css" rel="stylesheet" />
+    <link href="{% static '/assets/css/material-dashboard.css' %}" rel="stylesheet" />
+    <link href="{% static '/assets/demo/demo.css' %}" rel="stylesheet" />
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <!-- CKEditor 5 CDN -->
@@ -98,34 +100,46 @@
         </div>
     </div>
 
-    <!-- Load Scripts -->
-    <script src="../assets/js/core/jquery.min.js"></script>
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/moment.min.js"></script>
-    <script src="../assets/js/plugins/sweetalert2.js"></script>
-    <script src="../assets/js/plugins/jquery.validate.min.js"></script>
-    <script src="../assets/js/plugins/jquery.bootstrap-wizard.js"></script>
-    <script src="../assets/js/plugins/bootstrap-selectpicker.js"></script>
-    <script src="../assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
-    <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-tagsinput.js"></script>
-    <script src="../assets/js/plugins/jasny-bootstrap.min.js"></script>
-    <script src="../assets/js/plugins/fullcalendar.min.js"></script>
-    <script src="../assets/js/plugins/jquery-jvectormap.js"></script>
-    <script src="../assets/js/plugins/nouislider.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
-    <script src="../assets/js/plugins/arrive.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
-    <script src="../assets/js/plugins/chartist.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-notify.js"></script>
-    <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+<script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
+<script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
+<script src="{% static 'assets/js/plugins/bootstrap-datetimepicker.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script src="{% static 'assets/js/plugins/bootstrap-tagsinput.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jasny-bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/fullcalendar.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
+<script src="{% static 'assets/js/plugins/nouislider.min.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+<script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+<script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+<script src="{% static 'assets/js/material-dashboard.js?v=2.2.2' %}" type="text/javascript"></script>
+
     <script>
         let updateEditor = null;
+        $(document).ready(function () {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login/';
+            }
 
-        $(document).ready(function() {
+            // Add token to all AJAX requests
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                }
+            });
+           
+        
             // Load Sidebar and Navbar
             $("#sidebar-placeholder").load("./sidebar.html", function() {
                 // Highlight the active page
@@ -154,7 +168,7 @@
 
             const table = $('#templatesTable').DataTable({
                 ajax: {
-                    url: 'api/templates.php',
+                    url: '/api/application/',
                     dataSrc: function(json) {
                         console.log('Applications data received:', json);
                         if (json.error) {
@@ -170,9 +184,9 @@
                 },
                 columns: [
                     { data: 'id' },
-                    { data: 'name' },
+                    { data: 'application_name' },
                     { 
-                        data: 'content',
+                        data: 'application_desc',
                         render: function(data) {
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = data;
@@ -184,8 +198,8 @@
                     {
                         data: null,
                         render: function(data, type, row) {
-                            const safeContent = row.content.replace(/`/g, '\\`').replace(/'/g, "\\'");
-                            const safeName = row.name.replace(/'/g, "\\'");
+                            const safeContent = row.application_desc.replace(/`/g, '\\`').replace(/'/g, "\\'");
+                            const safeName = row.application_name.replace(/'/g, "\\'");
                             return `
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-primary" onclick="showUpdateModal(${row.id}, '${safeName}', \`${safeContent}\`)">Update</button>
@@ -252,14 +266,14 @@
             }
 
             $.ajax({
-                url: 'api/update_template.php',
-                method: 'POST',
+                url: '/api/application/' + id + '/',
+                method: 'PATCH',
                 contentType: 'application/json',
-                data: JSON.stringify({ id: id, name: name, content: content }),
+                data: JSON.stringify({ id: id, application_name: name, application_desc: content }),
                 dataType: 'json',
                 success: function(response) {
-                    if (response.success) {
-                        Swal.fire('Success', response.success, 'success');
+                    if (response.id) {
+                        Swal.fire('Success', response.application_name , ' updated successfully!');
                         $('#updateModal').modal('hide');
                         $('#templatesTable').DataTable().ajax.reload();
                     } else {
@@ -316,18 +330,18 @@
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
-                icon: 'warning',
+                
                 showCancelButton: true,
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
-                if (result.isConfirmed) {
+                console.log(result.value)
+                if (result.value) {
                     console.log('Sending delete request for ID:', id);
                     $.ajax({
-                        url: 'api/delete_template.php',
-                        method: 'POST',
+                        url: `/api/application/${id}`,
+                        method: 'DELETE',
                         contentType: 'application/json',
-                        data: JSON.stringify({ id: id }),
-                        dataType: 'json',
+                        
                         success: function(response) {
                             console.log('Delete response:', response);
                             if (response.success) {
