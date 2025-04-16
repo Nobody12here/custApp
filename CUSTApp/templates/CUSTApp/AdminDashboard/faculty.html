@@ -10,10 +10,12 @@
     <title>Faculty Dashboard</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Load Fonts and Icons -->
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- Load CSS -->
-    <link href="../assets/css/material-dashboard.css?v=2.2.2" rel="stylesheet" />
+    <link href="{% static '/assets/css/material-dashboard.css' %}" rel="stylesheet" />
+
     <link href="../assets/demo/demo.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
 </head>
@@ -22,7 +24,7 @@
     <div class="wrapper">
         <!-- Sidebar Placeholder -->
         <div id="sidebar-placeholder"></div>
-        
+
         <div class="main-panel">
             <!-- Navbar Placeholder -->
             <div id="navbar-placeholder"></div>
@@ -38,11 +40,15 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <button class="btn btn-info" onclick="downloadFacultyTemplate()">Download CSV Template</button>
-                                        <input type="file" id="facultyCsvUpload" accept=".csv" style="display: inline-block;" />
-                                        <button class="btn btn-primary" onclick="uploadFacultyCsv()">Upload Faculty CSV</button>
+                                        <button class="btn btn-info" onclick="downloadFacultyTemplate()">Download CSV
+                                            Template</button>
+                                        <input type="file" id="facultyCsvUpload" accept=".csv"
+                                            style="display: inline-block;" />
+                                        <button class="btn btn-primary" onclick="uploadFacultyCsv()">Upload Faculty
+                                            CSV</button>
                                     </div>
-                                    <table id="facultyTable" class="table table-striped table-bordered" style="width:100%">
+                                    <table id="facultyTable" class="table table-striped table-bordered"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -64,33 +70,32 @@
     </div>
 
     <!-- Load Scripts -->
-    <script src="../assets/js/core/jquery.min.js"></script>
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/moment.min.js"></script>
-    <script src="../assets/js/plugins/sweetalert2.js"></script>
-    <script src="../assets/js/plugins/jquery.validate.min.js"></script>
-    <script src="../assets/js/plugins/jquery.bootstrap-wizard.js"></script>
-    <script src="../assets/js/plugins/bootstrap-selectpicker.js"></script>
-    <script src="../assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
-    <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-tagsinput.js"></script>
-    <script src="../assets/js/plugins/jasny-bootstrap.min.js"></script>
-    <script src="../assets/js/plugins/fullcalendar.min.js"></script>
-    <script src="../assets/js/plugins/jquery-jvectormap.js"></script>
-    <script src="../assets/js/plugins/nouislider.min.js"></script>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-tagsinput.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jasny-bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/fullcalendar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/nouislider.min.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
-    <script src="../assets/js/plugins/arrive.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
-    <script src="../assets/js/plugins/chartist.min.js"></script>
-    <script src="../assets/js/plugins/bootstrap-notify.js"></script>
-    <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+    <script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+    <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Load Sidebar and Navbar
-            $("#sidebar-placeholder").load("./sidebar.html", function() {
+            $("#sidebar-placeholder").load("./sidebar.html", function () {
                 // Highlight the active page
                 $('.nav-link[href="faculty.html"]').parent().addClass('active');
                 // Reinitialize sidebar styles
@@ -99,7 +104,7 @@
                 }
             });
 
-            $("#navbar-placeholder").load("./navbar.html", function() {
+            $("#navbar-placeholder").load("./navbar.html", function () {
                 // Set navbar title
                 $("#navbarTitle").text("Faculty Dashboard");
                 // Reinitialize Material Dashboard components and Bootstrap dropdowns
@@ -116,19 +121,7 @@
             }
 
             $('#facultyTable').DataTable({
-                ajax: {
-                    url: 'api/get_users.php?user_type=Staff',
-                    dataSrc: function(json) {
-                        if (json.error) {
-                            Swal.fire('Error', json.error, 'error');
-                            return [];
-                        }
-                        return json;
-                    },
-                    error: function(xhr, error, thrown) {
-                        Swal.fire('Error', 'Failed to load faculty: ' + error, 'error');
-                    }
-                },
+
                 columns: [
                     { data: 'user_id' },
                     { data: 'name' },
@@ -138,6 +131,40 @@
                 ]
             });
         });
+        document.getElementById('facultyCsvUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Automatically load the data when a file is selected
+                loadFacultyDataFromCsv();
+            }
+        });
+        function loadFacultyDataFromCsv() {
+            const fileInput = document.getElementById('facultyCsvUpload');
+            const file = fileInput.files[0];
+            if (!file) {
+                Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const csvData = e.target.result;
+                const rows = csvData.split('\n').slice(1); // Skip header row
+                console.log(rows)
+                const students = rows.map(row => {
+
+                    const columns = row.split(',');
+                    return {
+                        user_id: columns[0],
+                        name: columns[1],
+                        designation: columns[11],
+                        role: columns[10],
+                        email: columns[6]
+                    };
+                });
+                $('#facultyTable').DataTable().clear().rows.add(students).draw();
+            };
+            reader.readAsText(file);
+        }
 
         function downloadFacultyTemplate() {
             const csvContent = [
@@ -159,66 +186,34 @@
         function uploadFacultyCsv() {
             const fileInput = document.getElementById('facultyCsvUpload');
             const file = fileInput.files[0];
-
+            const formData = new FormData();
             if (!file) {
                 Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
                 return;
             }
+            formData.append('file', file);
+            formData.append('user_type', 'staff');
+            $.ajax({
+                url: '/api/upload-users/',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.message) {
+                        Swal.fire('Success', 'Faculty data uploaded successfully.', 'success');
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const rows = text.split('\n').map(row => row.trim()).filter(row => row);
-
-                // Skip the header row
-                const data = rows.slice(1).map(row => {
-                    const cols = row.split(',');
-                    return {
-                        uu_id: cols[0],
-                        name: cols[1],
-                        father_name: cols[2],
-                        address: cols[3],
-                        gender: cols[4],
-                        status: cols[5],
-                        email: cols[6],
-                        remark: cols[7],
-                        phone_number: cols[8],
-                        picture: cols[9],
-                        role: cols[10],
-                        designation: cols[11],
-                        DoB: cols[12],
-                        user_type: 'Staff', // Set user_type to Staff
-                        program_name: 'N/A', // Not applicable for staff
-                        dept_name: 'N/A', // Not applicable for staff
-                        cgpa: null, // Not applicable for staff
-                        term: null, // Not applicable for staff
-                        CNIC: null, // Not applicable for staff
-                        otp: null // Not applicable for staff
-                    };
-                });
-
-                $.ajax({
-                    url: 'api/upload_users.php',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ users: data }),
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire('Success', response.success, 'success');
-                            $('#facultyTable').DataTable().ajax.reload();
-                            fileInput.value = ''; // Reset file input
-                        } else {
-                            Swal.fire('Error', response.error || 'Failed to upload faculty', 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        Swal.fire('Error', 'Failed to upload faculty: ' + error, 'error');
-                        console.error('Upload error:', xhr.responseText);
+                    } else {
+                        Swal.fire('Error', response.error, 'error');
+                        console.error(response.error)
                     }
-                });
-            };
-            reader.readAsText(file);
+                },
+
+                error: function (xhr, status, error) {
+                    Swal.fire('Error', 'Failed to upload faculty data: ' + xhr.responseJSON.error, 'error');
+                    console.log(xhr.responseJSON)
+                }
+            })
         }
     </script>
 </body>

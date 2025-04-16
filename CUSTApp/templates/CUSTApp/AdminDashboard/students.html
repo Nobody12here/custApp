@@ -197,7 +197,7 @@
                 return;
             }
             formData.append('file', file);
-            formData.append('user_type', 'Student');
+            formData.append('user_type', 'student');
             $.ajax({
                 url: '/api/upload-users/',
                 type: 'POST',

@@ -256,6 +256,7 @@ class UserCSVUploadAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         csv_file = request.FILES.get('file')
+        user_type = request.data.get('user_type')
         if not csv_file or not csv_file.name.endswith('.csv'):
             return Response({"error": "Please upload a valid CSV file."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -268,6 +269,12 @@ class UserCSVUploadAPIView(APIView):
             for row in reader:
                 serializer = UsersSerializer(data=row)
                 if serializer.is_valid():
+                    if user_type == 'student':
+                        serializer.validated_data['user_type'] = 'Student'
+                        serializer.validated_data['role'] = 'Undergraduate'
+                        serializer.validated_data['designation'] = 'N/A'
+                    elif user_type == 'staff':
+                        serializer.validated_data['user_type'] = 'Staff'
                     serializer.save()
                     created_users.append(serializer.data)
                 else:
