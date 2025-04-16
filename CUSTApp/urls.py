@@ -22,6 +22,7 @@ urlpatterns = [
     path('users/', UsersList.as_view(), name='users_list'),
     path('admin-departments/', views.admin_department, name='admin_departments'),
     path('admin-templates/', views.admin_templates, name='admin_templates'),
+    path('admin-faculty/', views.admin_faculty, name='admin_faculty'),
     path('departments/', DepartmentList.as_view(), name='departments_list'),
     path('templatesCreate/', TemplateListCreateAPIView.as_view(), name='template_list_create'),
     path('templates/<int:id>/', TemplateRetrieveUpdateAPIView.as_view(), name='template_retrieve_update'),
