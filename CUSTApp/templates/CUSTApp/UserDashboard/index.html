@@ -159,9 +159,9 @@
             <span class="navbar-toggler-icon icon-bar"></span>
           </button>
           <div class="collapse navbar-collapse justify-content-end">
-            <form class="navbar-form">
+            <form class="navbar-form" id="search-form">
               <div class="input-group no-border">
-                <input type="text" value="" class="form-control" placeholder="Search...">
+                <input type="text" id="search-input" class="form-control" placeholder="Search...">
                 <button type="submit" class="btn btn-white btn-round btn-just-icon">
                   <i class="material-icons">search</i>
                 </button>
@@ -291,6 +291,7 @@
       const BASE_URL = 'http://127.0.0.1:8000';
       // Fetch user info from a dedicated endpoint
       let currentUser = { name: 'Unknown', type: 'student' };
+      let allPendingRequests = [];
       $.ajax({
         url: '/get-user-info/',
         method: 'GET',
@@ -325,57 +326,14 @@
       }
 
       // Fetch and display requests
-      function loadRequests() {
+      function loadRequests(searchTerm = '') {
         $.ajax({
           url: `/requests/`,
           method: 'GET',
           success: function(requests) {
-            const tbody = $('#requestTableBody');
-            tbody.empty();
-
-            requests.forEach(request => {
-              const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
-              const requestType = applicationMap[request.application] || `Application ${request.application}`;
-              const date = new Date(request.created_at).toLocaleDateString();
-              const renderedTemplate = (request.renderedtemplate || '').replace(/"/g, '&quot;');
-              const comments = encodeURIComponent(JSON.stringify(request.comments || []));
-
-              const row = `
-                <tr data-request-id="${request.request_id}">
-                  <td>${requestType}</td>
-                  <td>${studentName}</td>
-                  <td>${date}</td>
-                  <td>${request.status}</td>
-                  <td>
-                    <button class="btn btn-info btn-sm view-template-btn" 
-                            data-toggle="modal" data-target="#templateModal"
-                            data-request-id="${request.request_id}"
-                            onclick="openTemplateModal(${request.request_id}, '${renderedTemplate}')">
-                      View
-                    </button>
-                    <button class="btn btn-success btn-sm accept-btn" 
-                            data-request-id="${request.request_id}"
-                            onclick="acceptRequest(${request.request_id})">
-                      Accept
-                    </button>
-                    <button class="btn btn-danger btn-sm reject-btn" 
-                            data-request-id="${request.request_id}"
-                            onclick="rejectRequest(${request.request_id})">
-                      Reject
-                    </button>
-                  </td>
-                  <td>
-                    <button class="btn btn-secondary btn-sm comment-btn" 
-                            data-toggle="modal" data-target="#commentModal"
-                            data-request-id="${request.request_id}"
-                            data-comments="${comments}">
-                      <i class="material-icons">comment</i>
-                    </button>
-                  </td>
-                </tr>
-              `;
-              tbody.append(row);
-            });
+            // Filter for pending requests only
+            allPendingRequests = requests.filter(request => request.status === 'Pending');
+            renderRequests(allPendingRequests, searchTerm);
           },
           error: function(xhr, status, error) {
             console.error('Error fetching requests:', error);
@@ -383,6 +341,89 @@
           }
         });
       }
+
+      // Render requests with optional search filter
+      function renderRequests(requests, searchTerm = '') {
+        const tbody = $('#requestTableBody');
+        tbody.empty();
+
+        const filteredRequests = searchTerm
+          ? requests.filter(request => {
+              const requestType = (applicationMap[request.application] || `Application ${request.application}`).toLowerCase();
+              const studentName = (request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`).toLowerCase();
+              const status = request.status.toLowerCase();
+              const comments = (request.comments || []).map(c => c.text).join(' ').toLowerCase();
+              return (
+                requestType.includes(searchTerm) ||
+                studentName.includes(searchTerm) ||
+                status.includes(searchTerm) ||
+                comments.includes(searchTerm)
+              );
+            })
+          : requests;
+
+        if (filteredRequests.length === 0) {
+          tbody.html('<tr><td colspan="6">No pending requests found.</td></tr>');
+          return;
+        }
+
+        filteredRequests.forEach(request => {
+          const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
+          const requestType = applicationMap[request.application] || `Application ${request.application}`;
+          const date = new Date(request.created_at).toLocaleDateString();
+          const renderedTemplate = (request.renderedtemplate || '').replace(/"/g, '"');
+          const comments = encodeURIComponent(JSON.stringify(request.comments || []));
+
+          const row = `
+            <tr data-request-id="${request.request_id}">
+              <td>${requestType}</td>
+              <td>${studentName}</td>
+              <td>${date}</td>
+              <td>${request.status}</td>
+              <td>
+                <button class="btn btn-info btn-sm view-template-btn" 
+                        data-toggle="modal" data-target="#templateModal"
+                        data-request-id="${request.request_id}"
+                        onclick="openTemplateModal(${request.request_id}, '${encodeURIComponent(renderedTemplate)}')">
+                  View
+                </button>
+                <button class="btn btn-success btn-sm accept-btn" 
+                        data-request-id="${request.request_id}"
+                        onclick="acceptRequest(${request.request_id})">
+                  Accept
+                </button>
+                <button class="btn btn-danger btn-sm reject-btn" 
+                        data-request-id="${request.request_id}"
+                        onclick="rejectRequest(${request.request_id})">
+                  Reject
+                </button>
+              </td>
+              <td>
+                <button class="btn btn-secondary btn-sm comment-btn" 
+                        data-toggle="modal" data-target="#commentModal"
+                        data-request-id="${request.request_id}"
+                        data-comments="${comments}">
+                  <i class="material-icons">comment</i>
+                </button>
+              </td>
+            </tr>
+          `;
+          tbody.append(row);
+        });
+      }
+
+      // Search functionality
+      $('#search-form').on('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = $('#search-input').val().toLowerCase();
+        renderRequests(allPendingRequests, searchTerm);
+      });
+
+      // Real-time search on input
+      $('#search-input').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        renderRequests(allPendingRequests, searchTerm);
+      });
 
       // Function to get CSRF token
       function getCookie(name) {
@@ -412,7 +453,7 @@
           success: function(data) {
             if (data.success) {
               alert('Request approved successfully');
-              loadRequests();
+              loadRequests($('#search-input').val().toLowerCase());
             } else {
               alert(data.error || 'Failed to approve request');
             }
@@ -436,7 +477,7 @@
           success: function(data) {
             if (data.success) {
               alert('Request rejected successfully');
-              loadRequests();
+              loadRequests($('#search-input').val().toLowerCase());
             } else {
               alert(data.error || 'Failed to reject request');
             }
@@ -450,7 +491,7 @@
 
       // Open template modal
       window.openTemplateModal = function(requestId, renderedTemplate) {
-        $('#templateModalTextarea').val(renderedTemplate);
+        $('#templateModalTextarea').val(decodeURIComponent(renderedTemplate));
         $('#templateModal').data('requestId', requestId);
       };
 
@@ -469,7 +510,7 @@
           success: function(data) {
             if (data.success) {
               $('#templateModal').modal('hide');
-              loadRequests();
+              loadRequests($('#search-input').val().toLowerCase());
             } else {
               alert(data.error || 'Failed to update template');
             }
@@ -579,7 +620,7 @@
         <div class="modal-header">
           <h5 class="modal-title" id="commentModalLabel">Comments</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true">×</span>
           </button>
         </div>
         <div class="modal-body" id="chatBody">
@@ -602,7 +643,7 @@
         <div class="modal-header">
           <h5 class="modal-title" id="templateModalLabel">Edit Rendered Template</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true">×</span>
           </button>
         </div>
         <div class="modal-body">
