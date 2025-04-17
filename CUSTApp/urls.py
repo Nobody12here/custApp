@@ -1,14 +1,17 @@
 # CUSTApp/urls.py
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
+
 from .views import (
     ApplicationsList, DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GetAttributesAPIView, 
     TemplateListCreateAPIView, TemplateRetrieveUpdateAPIView, TemplateDisableAPIView,
     GenerateLetterAPIView, UserRetrieveUpdateDestroyAPI, UsersList, DepartmentList, RequestList,
     TemplateAttributesList, RequestCreate, index_page, test_api_view, OTPSendView, OTPVerifyView, 
-    verify_otp_page, admin_dashboard, user_dashboard, ApplicationRequestAPIView  # Added new view
+    verify_otp_page, admin_dashboard, user_dashboard, ApplicationRequestAPIView,ProgramView  # Added new view
 )
-
+router = DefaultRouter()
+router.register(r'program', ProgramView)
 urlpatterns = [
     path('', views.login, name='login'),
     path('login/', views.login, name='login'),
@@ -17,10 +20,14 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('test/', test_api_view, name='test_api'),
     path('users/', UsersList.as_view(), name='users_list'),
+    path('admin-departments/', views.admin_department, name='admin_departments'),
+    path('admin-templates/', views.admin_templates, name='admin_templates'),
+    path('admin-faculty/', views.admin_faculty, name='admin_faculty'),
     path('departments/', DepartmentList.as_view(), name='departments_list'),
     path('templatesCreate/', TemplateListCreateAPIView.as_view(), name='template_list_create'),
     path('templates/<int:id>/', TemplateRetrieveUpdateAPIView.as_view(), name='template_retrieve_update'),
     path('templates/<int:id>/disable/', TemplateDisableAPIView.as_view(), name='template_disable'),
+    path('applications/', ApplicationsList.as_view(), name='applications_list'),
     path('requests/', RequestList.as_view(), name='requests_list'),
     path('template-attributes/', TemplateAttributesList.as_view(), name='template_attributes_list'),
     path('requests/create/', RequestCreate.as_view(), name='request_create'),
@@ -40,6 +47,7 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     path('new-application/', views.new_application, name='new_application'),
     path('reports/', views.reports, name='reports'),
+    path('api/upload-users/', views.UserCSVUploadAPIView.as_view(), name='upload_users'),
     path('api/applications/', views.ApplicationListView.as_view(), name='application-list'),
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
     path('update-rendered-template/<int:id>/', views.update_rendered_template, name='update_rendered_template'),
@@ -47,3 +55,4 @@ urlpatterns = [
      path('add-comment/<int:id>/', views.add_comment, name='add_comment'),
 
 ]
+urlpatterns.extend(router.urls)
