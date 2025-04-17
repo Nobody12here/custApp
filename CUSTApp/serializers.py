@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from ApplicationTemplate.models import Request
-from .models import Users, Department, TemplateAttributes
+from .models import Users, Department, TemplateAttributes,Program
 import json
 class UsersSerializer(serializers.ModelSerializer):
     DoB = serializers.DateField(input_formats=["%d/%m/%Y", "%Y-%m-%d", "%m-%d-%Y"])
@@ -72,7 +72,7 @@ class RequestSerializer(serializers.ModelSerializer):
         model = Request
         fields = [
             'request_id', 'application', 'status', 'applicant', 'created_at', 'updated_at',
-            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID', 'renderedtemplate', 'request_file'
+            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID', 'renderedtemplate', 
         ]
         read_only_fields = ['request_id', 'created_at', 'updated_at']  # Prevent manual override
 
@@ -98,7 +98,7 @@ class RequestSerializer(serializers.ModelSerializer):
         Validate that comments is a list of valid comment objects.
         """
         data = super().to_internal_value(data)
-        comments = data.get('comments', [])
+        comments = data.get('comment', [])
         
         if comments:
             if not isinstance(comments, list):
