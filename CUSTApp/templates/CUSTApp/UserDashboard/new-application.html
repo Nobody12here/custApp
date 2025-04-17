@@ -155,43 +155,47 @@
       }
 
       $('#applicationForm').submit(function(e) {
-        e.preventDefault();
+  e.preventDefault();
 
-        const applicationId = $('#applicationType').val();
-        const studentId = $('#studentId').val();
-        const comments = $('#comments').val();
-        const file = $('#fileUpload')[0].files[0];
+  const applicationId = $('#applicationType').val();
+  const studentId = $('#studentId').val();
+  const comments = $('#comments').val(); // String from textarea
+  const file = $('#fileUpload')[0].files[0];
 
-        if (!applicationId || !studentId) {
-          alert('Please select an application type and enter your student ID.');
-          return;
-        }
+  if (!applicationId || !studentId) {
+    alert('Please select an application type and enter your student ID.');
+    return;
+  }
 
-        const formData = new FormData();
-        formData.append('applicationID', applicationId);
-        formData.append('studentID', studentId);
-        formData.append('comments', comments);
-        if (file) formData.append('file', file);
+  const formData = new FormData();
+  formData.append('applicationID', applicationId);
+  formData.append('studentID', studentId);
+  // Convert comments to a list
+  formData.append('comments', JSON.stringify(comments ? [comments] : []));
+  if (file) formData.append('file', file);
 
-        $.ajax({
-          url: `/api/application-request/`,
-          method: 'POST',
-          data: formData,
-          processData: false,
-          contentType: false,
-          success: function(response) {
-            alert(response.message);
-            $('#applicationForm')[0].reset();
-            $('#applicationType').html('<option value="">Select Application Type</option>');
-            loadApplicationTypes();
-            $('#fileName').text('No file selected');
-          },
-          error: function(xhr, status, error) {
-            console.error('Error submitting application:', error);
-            alert('Failed to submit application. Please try again.');
-          }
-        });
-      });
+  $.ajax({
+    url: `/api/application-request/`,
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    headers: {
+      'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() // Ensure CSRF token is included
+    },
+    success: function(response) {
+      alert(response.message);
+      $('#applicationForm')[0].reset();
+      $('#applicationType').html('<option value="">Select Application Type</option>');
+      loadApplicationTypes();
+      $('#fileName').text('No file selected');
+    },
+    error: function(xhr, status, error) {
+      console.error('Error submitting application:', error);
+      alert('Failed to submit application: ' + (xhr.responseJSON?.message || 'Unknown error'));
+    }
+  });
+});
 
       $('#fileUpload').change(function() {
         const fileName = this.files.length > 0 ? this.files[0].name : 'No file selected';

@@ -82,6 +82,7 @@ def add_comment(request, id):
             }
             comments.append(new_comment)
             req.comments = json.dumps(comments)
+            print(comments)
             req.save()
             return JsonResponse({'success': True})
         except Request.DoesNotExist:
@@ -133,12 +134,12 @@ class ApplicationRequestAPIView(APIView):
 
     def post(self, request):
         try:
-            # Extract data from request
+            # Extract data fprirom request
             application_id = request.data.get("applicationID")
             student_id = request.data.get("studentID")
             comment = request.data.get("comments", None)  # Optional comment
             request_file = request.FILES.get("request_file", None)  # Handle file upload
-
+            print(comment)
             # Validate required fields
             if not all([application_id, student_id]):
                 return Response(
