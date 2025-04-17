@@ -122,7 +122,7 @@
             }
 
             $('#studentsTable').DataTable({
-                
+
                 columns: [
                     { data: 'user_id' },
                     { data: 'name' },
@@ -134,13 +134,13 @@
                 ]
             });
         });
-        document.getElementById('studentCsvUpload').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    // Automatically load the data when a file is selected
-                    loadStudentDataFromCsv();
-                }
-            });
+        document.getElementById('studentCsvUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Automatically load the data when a file is selected
+                loadStudentDataFromCsv();
+            }
+        });
         function loadStudentDataFromCsv() {
             const fileInput = document.getElementById('studentCsvUpload');
             const file = fileInput.files[0];
@@ -152,8 +152,7 @@
             reader.onload = function (e) {
                 const csvData = e.target.result;
                 const rows = csvData.split('\n').slice(1); // Skip header row
-                console.log(rows)
-                const students = rows.map(row => {
+                const students = rows.filter(row => row.trim() !== '').map(row => {
 
                     const columns = row.split(',');
                     return {
@@ -165,6 +164,7 @@
                         term: columns[14],
                         email: columns[8]
                     };
+
                 });
                 $('#studentsTable').DataTable().clear().rows.add(students).draw();
             };
@@ -207,7 +207,7 @@
                 success: function (response) {
                     if (response.message) {
                         Swal.fire('Success', 'Students uploaded successfully.', 'success');
-                        
+
                     } else {
                         Swal.fire('Error', response.error, 'error');
                         console.error(response.error)
