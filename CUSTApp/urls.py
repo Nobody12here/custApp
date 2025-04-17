@@ -27,6 +27,7 @@ urlpatterns = [
     path('templatesCreate/', TemplateListCreateAPIView.as_view(), name='template_list_create'),
     path('templates/<int:id>/', TemplateRetrieveUpdateAPIView.as_view(), name='template_retrieve_update'),
     path('templates/<int:id>/disable/', TemplateDisableAPIView.as_view(), name='template_disable'),
+    path('applications/', ApplicationsList.as_view(), name='applications_list'),
     path('requests/', RequestList.as_view(), name='requests_list'),
     path('template-attributes/', TemplateAttributesList.as_view(), name='template_attributes_list'),
     path('requests/create/', RequestCreate.as_view(), name='request_create'),
