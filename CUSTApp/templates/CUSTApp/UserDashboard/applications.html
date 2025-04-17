@@ -52,9 +52,9 @@
             <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span>
           </button>
           <div class="collapse navbar-collapse justify-content-end">
-            <form class="navbar-form">
+            <form class="navbar-form" id="search-form">
               <div class="input-group no-border">
-                <input type="text" value="" class="form-control" placeholder="Search applications...">
+                <input type="text" id="search-input" class="form-control" placeholder="Search applications...">
                 <button type="submit" class="btn btn-white btn-round btn-just-icon"><i class="material-icons">search</i></button>
               </div>
             </form>
@@ -84,17 +84,17 @@
                   <div class="table-responsive">
                     <table class="table">
                       <thead class="text-primary">
-                        <tr><th>ID</th><th>Request Type</th><th>Student Name</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+                        <tr>
+                          <th>ID</th>
+                          <th>Request Type</th>
+                          <th>Date</th>
+                          <th>Status</th>
+                          <th>Comments</th>
+                          <th>Details</th>
+                          <th>Actions</th>
+                        </tr>
                       </thead>
-                      <tbody>
-                        <tr>
-                          <td>001</td><td>Bonafide Letter</td><td>John Doe</td><td>2023-10-01</td><td>Pending</td>
-                          <td><button class="btn btn-info btn-sm">View</button></td>
-                        </tr>
-                        <tr>
-                          <td>002</td><td>Student Verification</td><td>Jane Smith</td><td>2023-10-02</td><td>Approved</td>
-                          <td><button class="btn btn-info btn-sm">View</button></td>
-                        </tr>
+                      <tbody id="applications-table">
                       </tbody>
                     </table>
                   </div>
@@ -104,12 +104,222 @@
           </div>
         </div>
       </div>
+      <!-- Modal for Viewing Application Details -->
+      <div class="modal fade" id="viewApplicationModal" tabindex="-1" role="dialog" aria-labelledby="viewApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="viewApplicationModalLabel">Application Details</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div id="application-details"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <script src="../assets/js/core/jquery.min.js"></script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+  <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+  <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      let applicationNames = {};
+      let allApplications = [];
+
+      // Fetch application names from /api/applications
+      function fetchApplicationNames() {
+        return $.ajax({
+          url: '/api/applications',
+          method: 'GET',
+          success: function(data) {
+            applicationNames = {};
+            data.forEach(app => {
+              applicationNames[app.id] = app.name;
+            });
+          },
+          error: function(error) {
+            console.error('Error fetching application names:', error);
+            applicationNames = {};
+          }
+        });
+      }
+
+      // Fetch and render applications
+      function fetchApplications() {
+        return $.ajax({
+          url: '/requests/',
+          method: 'GET',
+          success: function(data) {
+            allApplications = data;
+            renderApplications(data);
+          },
+          error: function(error) {
+            console.error('Error fetching applications:', error);
+            $('#applications-table').html('<tr><td colspan="7">Error loading applications</td></tr>');
+          }
+        });
+      }
+
+      // Render applications to table
+      function renderApplications(data) {
+        const tbody = $('#applications-table');
+        tbody.empty();
+        
+        data.forEach(function(app) {
+          const statusClass = {
+            'Approved': 'text-success',
+            'Rejected': 'text-danger',
+            'Pending': 'text-warning'
+          }[app.status] || '';
+          
+          const appName = applicationNames[app.application] || `Application #${app.application}`;
+          
+          const row = `
+            <tr>
+              <td>${app.request_id}</td>
+              <td>${appName}</td>
+              <td>${new Date(app.created_at).toLocaleDateString()}</td>
+              <td><span class="${statusClass}">${app.status}</span></td>
+              <td>${app.comments || '-'}</td>
+              <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
+              <td>
+                <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
+                <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
+              </td>
+            </tr>`;
+          tbody.append(row);
+        });
+
+        // Attach event listeners for view and download buttons
+        $('.view-btn').off('click').on('click', function() {
+          const requestId = parseInt($(this).data('request-id'));
+          viewApplication(requestId);
+        });
+
+        $('.download-btn').off('click').on('click', function() {
+          const requestId = parseInt($(this).data('request-id'));
+          downloadApplication(requestId);
+        });
+      }
+
+      // View application details in modal
+      function viewApplication(requestId) {
+        const app = allApplications.find(a => a.request_id === requestId);
+        if (!app) {
+          alert('Application not found');
+          return;
+        }
+
+        const detailsHtml = `
+          <p><strong>Request ID:</strong> ${app.request_id}</p>
+          <p><strong>Application Type:</strong> ${applicationNames[app.application] || `Application #${app.application}`}</p>
+          <p><strong>Status:</strong> ${app.status}</p>
+          <p><strong>Applicant ID:</strong> ${app.applicant}</p>
+          <p><strong>Created At:</strong> ${new Date(app.created_at).toLocaleString()}</p>
+          <p><strong>Updated At:</strong> ${new Date(app.updated_at).toLocaleString()}</p>
+          <p><strong>Comments:</strong> ${app.comments || '-'}</p>
+          <p><strong>Payment Status:</strong> ${app.payment_status}</p>
+          <p><strong>Payment Date:</strong> ${app.payment_date || '-'}</p>
+          <p><strong>Employee ID:</strong> ${app.EmployeeID || '-'}</p>
+          <p><strong>Student ID:</strong> ${app.StudentID || '-'}</p>
+          <p><strong>Rendered Template:</strong> ${app.renderedtemplate || '-'}</p>
+        `;
+        $('#application-details').html(detailsHtml);
+        $('#viewApplicationModal').modal('show');
+      }
+
+      // Download application as PDF
+      function downloadApplication(requestId) {
+        const app = allApplications.find(a => a.request_id === requestId);
+        if (!app || !app.renderedtemplate) {
+          alert('No template available for download');
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("Capital University of Science and Technology", 105, 20, { align: "center" });
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text("Islamabad", 105, 30, { align: "center" });
+        doc.text("Islamabad Expressway Zone V, Kahuta Road, Sihala Bagh, Islamabad", 105, 40, { align: "center" });
+        doc.text("Ph: 051-111-555-666 Fax: 4486705", 105, 50, { align: "center" });
+        doc.text("Website: www.cust.edu.pk", 105, 60, { align: "center" });
+
+        // Title
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("TO WHOM IT MAY CONCERN", 105, 80, { align: "center" });
+
+        // Body (rendered template)
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        const bodyLines = doc.splitTextToSize(app.renderedtemplate, 180);
+        doc.text(bodyLines, 15, 100);
+
+        // Issued Date
+        const issuedDate = new Date(app.created_at).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        doc.text(`Issued on ${issuedDate}`, 15, 160);
+
+        // Footer
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text("Ahsan Razzaq Tahir", 15, 200);
+        doc.text("Deputy Registrar", 15, 210);
+        doc.text("Office Seal / Stamp", 15, 220);
+
+        // Save PDF
+        doc.save(`application_${app.request_id}.pdf`);
+      }
+
+      // Search functionality
+      $('#search-form').on('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = $('#search-input').val().toLowerCase();
+        const filteredApplications = allApplications.filter(app => {
+          const appName = (applicationNames[app.application] || `Application #${app.application}`).toLowerCase();
+          return (
+            app.request_id.toString().includes(searchTerm) ||
+            appName.includes(searchTerm) ||
+            app.status.toLowerCase().includes(searchTerm) ||
+            (app.comments && app.comments.toLowerCase().includes(searchTerm))
+          );
+        });
+        renderApplications(filteredApplications);
+      });
+
+      // Clear search on input change
+      $('#search-input').on('input', function() {
+        if ($(this).val() === '') {
+          renderApplications(allApplications);
+        }
+      });
+
+      // Fetch application names first, then applications
+      fetchApplicationNames().then(() => {
+        fetchApplications();
+        // Refresh every 30 seconds
+        setInterval(fetchApplications, 30000);
+      });
+    });
+  </script>
 </body>
 </html>
