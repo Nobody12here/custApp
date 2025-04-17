@@ -150,7 +150,7 @@
                 const csvData = e.target.result;
                 const rows = csvData.split('\n').slice(1); // Skip header row
                 console.log(rows)
-                const students = rows.map(row => {
+                const students = rows.filter(row => row.trim() !== "").map(row => {
 
                     const columns = row.split(',');
                     return {
