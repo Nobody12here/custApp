@@ -353,7 +353,7 @@ class UserCSVUploadAPIView(APIView):
                         serializer.validated_data["role"] = "Undergraduate"
                         serializer.validated_data["designation"] = "N/A"
                     elif user_type == "staff":
-                        serializer.validated_data["user_type"] = "Staff"
+                        serializer.validated_data["user_type"] = "Faculty"
                     serializer.save()
                     created_users.append(serializer.data)
                 else:
