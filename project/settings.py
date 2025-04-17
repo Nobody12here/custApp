@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  #  engine for MariaDB
-        'NAME': 'custappp_custapp',                     #  database name
+        'NAME': 'test222',                     #  database name
         'USER': 'root',               # MariaDB username
         'PASSWORD': '',           # MariaDB password
         'HOST': 'localhost',                   #  local development
