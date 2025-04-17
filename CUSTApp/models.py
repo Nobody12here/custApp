@@ -90,7 +90,17 @@ class Department(models.Model):
 
     def __str__(self):
         return self.dept_name
+class Program(models.Model):
+    program_id = models.AutoField(primary_key=True)
+    program_name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=100)  # Added to match schema
+    dept_id = models.ForeignKey(Department, on_delete=models.CASCADE, db_column='dept_id')
 
+    class Meta:
+        db_table = 'program'
+
+    def __str__(self):
+        return self.program_name
 
 class TemplateAttributes(models.Model):
     id = models.AutoField(primary_key=True)

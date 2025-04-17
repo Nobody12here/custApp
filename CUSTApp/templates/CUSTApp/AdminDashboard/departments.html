@@ -1,20 +1,22 @@
+<!-- CUSTApp/templates/CUSTApp/departments.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static '/assets/img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Departments & Programs Dashboard</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Load Fonts and Icons -->
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,700&display=swap" />
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- Load CSS -->
-    <link href="../assets/css/material-dashboard.css" rel="stylesheet" />
+    <link href="{% static '/assets/css/material-dashboard.css' %}" rel="stylesheet" />
     <link href="../assets/demo/demo.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <!-- <style>
@@ -60,10 +62,13 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <button class="btn btn-success" data-toggle="modal" data-target="#addDepartmentModal">Add Department</button>
-                                        <button class="btn btn-info" data-toggle="modal" data-target="#addProgramModal">Add Program</button>
+                                        <button class="btn btn-success" data-toggle="modal"
+                                            data-target="#addDepartmentModal">Add Department</button>
+                                        <button class="btn btn-info" data-toggle="modal"
+                                            data-target="#addProgramModal">Add Program</button>
                                     </div>
-                                    <table id="departmentsTable" class="table table-striped table-bordered" style="width:100%">
+                                    <table id="departmentsTable" class="table table-striped table-bordered"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>Department ID</th>
@@ -83,7 +88,8 @@
     </div>
 
     <!-- Add Department Modal -->
-    <div class="modal fade" id="addDepartmentModal" tabindex="-1" role="dialog" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addDepartmentModal" tabindex="-1" role="dialog"
+        aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -98,6 +104,14 @@
                             <label for="deptName">Department Name</label>
                             <input type="text" class="form-control" id="deptName" required>
                         </div>
+                        <div class="form-group">
+                            <label for="deptShortName">Department Short Name</label>
+                            <input type="text" class="form-control" id="deptShortName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="headSelect">Department Head</label>
+                            <select class="form-control" id="headSelect" required></select>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -109,7 +123,8 @@
     </div>
 
     <!-- Add Program Modal -->
-    <div class="modal fade" id="addProgramModal" tabindex="-1" role="dialog" aria-labelledby="addProgramModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addProgramModal" tabindex="-1" role="dialog" aria-labelledby="addProgramModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -128,6 +143,10 @@
                             <label for="progName">Program Name</label>
                             <input type="text" class="form-control" id="progName" required>
                         </div>
+                        <div class="form-group">
+                            <label for="programShortName">program Short Name</label>
+                            <input type="text" class="form-control" id="programShortName" required>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -139,18 +158,33 @@
     </div>
 
     <!-- Load Scripts -->
-    <script src="../assets/js/core/jquery.min.js"></script>
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-    <script src="../assets/js/plugins/sweetalert2.js"></script>
-    <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+    <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
     <script>
-        $(document).ready(function() {
+        let departmentData = [];
+        $(document).ready(function () {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login/';
+            }
+
+            // Add token to all AJAX requests
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                }
+            });
+            fetchDepartments();
+            fetchUsers();
+
             // Load Sidebar and Navbar
-            $("#sidebar-placeholder").load("./sidebar.html", function() {
+            $("#sidebar-placeholder").load("./sidebar.html", function () {
                 // Highlight active page
                 $('.nav-link[href="departments.html"]').parent().addClass('active');
                 // Reinitialize sidebar styles if needed
@@ -159,7 +193,7 @@
                 }
             });
 
-            $("#navbar-placeholder").load("./navbar.html", function() {
+            $("#navbar-placeholder").load("./navbar.html", function () {
                 // Set navbar title
                 $("#navbarTitle").text("Departments & Programs Dashboard");
                 // Reinitialize Material Dashboard components
@@ -167,83 +201,109 @@
                     md.initDashboardPageCharts();
                 }
             });
-
+            console.log(departmentData)
             // Initialize DataTable
-            const table = $('#departmentsTable').DataTable({
-                ajax: {
-                    url: 'api/get_departments_programs.php',
-                    dataSrc: function(json) {
-                        if (json.error) {
-                            Swal.fire('Error', json.error, 'error');
-                            return [];
-                        }
-                        return json;
-                    },
-                    error: function(xhr, error) {
-                        Swal.fire('Error', 'Failed to load data: ' + error, 'error');
-                    }
-                },
-                columns: [
-                    { data: 'dept_id' },
-                    { data: 'dept_name' },
-                    { 
-                        data: 'programs',
-                        render: function(data) {
-                            return data.join(', ');
-                        }
-                    }
-                ]
-            });
+
 
             // Populate department dropdown
-            $.ajax({
-                url: 'api/get_departments.php',
-                dataType: 'json',
-                success: function(data) {
-                    const deptSelect = $('#deptSelect');
-                    deptSelect.empty();
-                    deptSelect.append('<option value="">Select Department</option>');
-                    data.forEach(dept => {
-                        deptSelect.append(`<option value="${dept.dept_id}">${dept.dept_name}</option>`);
-                    });
-                }
-            });
-        });
+            function fetchDepartments() {
+                $.ajax({
+                    url: '/departments/',
+                    dataType: 'json',
+                    success: function (data) {
+                        const deptSelect = $('#deptSelect');
+                        console.log("data ", data)
+                        const table = $('#departmentsTable').DataTable({
+                            data: data,
+                            columns: [
+                                { data: 'dept_id' },
+                                { data: 'dept_name' },
+                                {
+                                    data: 'programs',
+                                    render: function (data, type, row) {
+                                        // Convert array of program names to a string
+                                        if (Array.isArray(data) && data.length > 0) {
+                                            return data.map(p => p.program_name).join(', ');
+                                        }
+                                        return 'No Programs';
+                                    }
+                                }
 
+                            ]
+                        })
+                        deptSelect.empty();
+                        deptSelect.append('<option value="">Select Department</option>');
+                        data.forEach(dept => {
+                            deptSelect.append(`<option value="${dept.dept_id}">${dept.dept_name}</option>`);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        if (xhr.status === 401) {
+                            // Handle unauthorized access
+                            Swal.fire('Error', 'Session expired. Please log in again.', 'error').then(() => {
+                                window.location.href = '/login/';
+                            });
+                        } else {
+                            Swal.fire('Error', 'Failed to fetch departments: ' + error, 'error');
+                        }
+                        console.error("Error fetching departments:", error);
+                        $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+                    }
+                });
+            }
+            function fetchUsers(){
+                $.ajax({
+                    url: '/users/',
+                    dataType: 'json',
+                    success: function (data) {
+                        const headSelect = $('#headSelect');
+                        headSelect.empty();
+                        headSelect.append('<option value="">Select Department Head</option>');
+                        data.forEach(user => {
+                            headSelect.append(`<option value="${user.user_id}">${user.name}</option>`);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching users:", error);
+                        Swal.fire('Error', 'Failed to fetch users: ' + error, 'error');
+                    }
+                });
+            }
+        });
         function addDepartment() {
             const deptName = $('#deptName').val();
             if (!deptName) {
                 Swal.fire('Error', 'Department name is required', 'error');
                 return;
             }
+            const deptShortName = $('#deptShortName').val();
+            const headSelect = $('#headSelect').val();
+            if (!deptShortName) {
+                Swal.fire('Error', 'Department short name is required', 'error');
+                return;
+            }
+            if (!headSelect) {
+                Swal.fire('Error', 'Department head is required', 'error');
+                return;
+            }
 
             $.ajax({
-                url: 'api/add_department.php',
+                url: '/departments/',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ dept_name: deptName }),
-                success: function(response) {
-                    if (response.success) {
+                data: JSON.stringify({ dept_name: deptName,short_name:deptShortName,dept_head:headSelect }),
+                success: function (response) {
+                    if (response.dept_id) {
                         Swal.fire('Success', 'Department added successfully', 'success');
                         $('#addDepartmentModal').modal('hide');
                         $('#addDepartmentForm')[0].reset();
                         $('#departmentsTable').DataTable().ajax.reload();
-                        $.ajax({
-                            url: 'api/get_departments.php',
-                            success: function(data) {
-                                const deptSelect = $('#deptSelect');
-                                deptSelect.empty();
-                                deptSelect.append('<option value="">Select Department</option>');
-                                data.forEach(dept => {
-                                    deptSelect.append(`<option value="${dept.dept_id}">${dept.dept_name}</option>`);
-                                });
-                            }
-                        });
+                        fetchDepartments();
                     } else {
                         Swal.fire('Error', response.error || 'Failed to add department', 'error');
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to add department: ' + error, 'error');
                 }
             });
@@ -252,18 +312,23 @@
         function addProgram() {
             const deptId = $('#deptSelect').val();
             const progName = $('#progName').val();
+            const programShortName = $('#programShortName').val();
+            if (!programShortName) {
+                Swal.fire('Error', 'Program short name is required', 'error');
+                return;
+            }
             if (!deptId || !progName) {
                 Swal.fire('Error', 'Both department and program name are required', 'error');
                 return;
             }
 
             $.ajax({
-                url: 'api/add_program.php',
+                url: '/program/ ',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ dept_id: deptId, program_name: progName }),
-                success: function(response) {
-                    if (response.success) {
+                data: JSON.stringify({ dept_id: deptId, program_name: progName,short_name:programShortName }),
+                success: function (response) {
+                    if (response.program_id) {
                         Swal.fire('Success', 'Program added successfully', 'success');
                         $('#addProgramModal').modal('hide');
                         $('#addProgramForm')[0].reset();
@@ -272,7 +337,7 @@
                         Swal.fire('Error', response.error || 'Failed to add program', 'error');
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to add program: ' + error, 'error');
                 }
             });
