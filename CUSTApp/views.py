@@ -204,7 +204,7 @@ class ApplicationRequestAPIView(APIView):
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
                 "department": applicant.dept_name,
-                "program_name": applicant.program_name,
+                "program": applicant.program_name,
                 "date": timezone.now().date(),
                 "issuer_name": application.default_responsible_employee,
                 "father_name": applicant.father_name,

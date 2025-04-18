@@ -72,7 +72,7 @@ class RequestSerializer(serializers.ModelSerializer):
         model = Request
         fields = [
             'request_id', 'application', 'status', 'applicant', 'created_at', 'updated_at',
-            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID', 'renderedtemplate', 
+            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID', 'renderedtemplate','request_file', 
         ]
         read_only_fields = ['request_id', 'created_at', 'updated_at']  # Prevent manual override
 
@@ -131,16 +131,6 @@ class RequestSerializer(serializers.ModelSerializer):
         
         if not data.get('StudentID'):
             raise serializers.ValidationError({"StudentID": "This field is required."})
-        
-        # Validate file if provided (optional)
-        request_file = data.get('request_file', None)
-        if request_file:
-            # Check the file type (optional, for example)
-            if not request_file.name.endswith('.pdf'):  # Example: Only allow PDF files
-                raise serializers.ValidationError({"request_file": "Only PDF files are allowed."})
-            # Check file size (optional, for example: limit to 5MB)
-            if request_file.size > 5 * 1024 * 1024:  # 5MB limit
-                raise serializers.ValidationError({"request_file": "File size must be less than 5MB."})
         
         return data
 # New serializers for OTP APIs

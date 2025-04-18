@@ -1,5 +1,6 @@
 from django.db import models
 from CUSTApp.models import Users,Department
+from django.core.validators import FileExtensionValidator
 # Create your models here.
 class Applications(models.Model):
     STATUS_CHOICES = [
@@ -51,6 +52,9 @@ class Request(models.Model):
     payment_date = models.DateTimeField(null=True, blank=True)
     EmployeeID = models.IntegerField(null=True, blank=True)  # Added to match DB
     StudentID = models.IntegerField(null=True, blank=True)   # Added to match DB
+    request_file = models.FileField(
+        upload_to="media/",null=True,blank=True,validators=[FileExtensionValidator(allowed_extensions=['pdf'])]
+    )
     renderedtemplate = models.CharField(max_length=10000, null=True, blank=True)  # Added to match DB
 
     class Meta:
