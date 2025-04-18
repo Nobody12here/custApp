@@ -79,7 +79,6 @@ class AddCommentView(APIView):
                 )
 
             req = Request.objects.get(pk=id)
-            print(request.user.user_type)
             # User info
             name = request.user.name
             user_type = request.user.user_type
@@ -95,7 +94,6 @@ class AddCommentView(APIView):
                 "type": user_type,
                 "timestamp": timezone.now().isoformat(),
             }
-            print(new_comment)
             comments.append(new_comment)
             req.comments = json.dumps(comments)
             req.save()
@@ -153,7 +151,7 @@ class ApplicationListView(generics.ListAPIView):
 
 
 class ApplicationRequestAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
@@ -161,8 +159,16 @@ class ApplicationRequestAPIView(APIView):
             application_id = request.data.get("applicationID")
             student_id = request.data.get("studentID")
             comment = request.data.get("comments", None)  # Optional comment
+            if comment:
+                comment_data = [
+                    {"name":request.user.name,
+                    "text":comment,
+                    "type":request.user.user_type,
+                    "timestamp":datetime.now().isoformat()}
+                ]
+            else:
+                comment_data = []
             request_file = request.FILES.get("request_file", None)  # Handle file upload
-            print(comment)
             # Validate required fields
             if not all([application_id, student_id]):
                 return Response(
@@ -238,7 +244,7 @@ class ApplicationRequestAPIView(APIView):
                 "StudentID": student_id,
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
-                "comments": comment if comment else "",
+                "comments": comment_data,
                 "request_file": request_file,  # Include the file in request data
             }
 

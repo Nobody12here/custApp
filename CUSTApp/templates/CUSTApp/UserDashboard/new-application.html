@@ -136,6 +136,20 @@
   <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
 
   <script>
+    $(document).ready(function () {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login/';
+            }
+
+            // Add token to all AJAX requests
+            $.ajaxSetup({
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                }
+            });
+            
+        });
     $(document).ready(function() {
       function loadApplicationTypes() {
         $.ajax({
@@ -171,8 +185,9 @@
   formData.append('applicationID', applicationId);
   formData.append('studentID', studentId);
   // Convert comments to a list
+  console.log(comments)
   formData.append('comments', JSON.stringify(comments ? [comments] : []));
-  if (file) formData.append('file', file);
+  if (file) formData.append('request_file', file);
 
   $.ajax({
     url: `/api/application-request/`,
