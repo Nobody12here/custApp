@@ -4,6 +4,7 @@ from io import BytesIO
 from django.core.mail import EmailMultiAlternatives
 import re
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.apps import apps
@@ -41,6 +42,7 @@ from drf_yasg import openapi
 import logging
 import random
 from django.core.mail import send_mail
+from rest_framework.decorators import api_view, permission_classes
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
@@ -58,64 +60,83 @@ from ApplicationTemplate.models import Applications
 from .models import Users
 from .serializers import RequestSerializer
 import json
+
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
-def add_comment(request, id):
-    if request.method == 'POST':
-        text = request.POST.get('text')
-        if not text:
-            return JsonResponse({'error': 'Comment text is required'}, status=400)
+
+
+class AddCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
         try:
+            text = request.data.get("text")
+            if not text:
+                return Response(
+                    {"error": "Comment text is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             req = Request.objects.get(pk=id)
-            # Determine user info
-            name = request.user.get_full_name() or request.user.username
-            user_type = 'employee' if request.user.groups.filter(name='Employees').exists() else 'student'
-            # Initialize comments
-            comments = json.loads(req.comments) if req.comments else []
-            # Add new comment
+            # User info
+            name = request.user.name
+            user_type = request.user.user_type
+
+            # Load and update comments
+            try:
+                comments = json.loads(req.comments) if req.comments else []
+            except Exception:
+                comments = []
             new_comment = {
-                'name': name,
-                'text': text,
-                'type': user_type,
-                'timestamp': datetime.utcnow().isoformat()
+                "name": name,
+                "text": text,
+                "type": user_type,
+                "timestamp": timezone.now().isoformat(),
             }
             comments.append(new_comment)
             req.comments = json.dumps(comments)
-            print(comments)
             req.save()
-            return JsonResponse({'success': True})
+
+            return Response({"success": True})
+
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
+            return Response(
+                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid comment format'}, status=400)
-        except AttributeError:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+            return Response(
+                {"error": "Invalid comment format"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 def update_request_status(request, id):
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        if status not in ['Approved', 'Rejected']:
-            return JsonResponse({'error': 'Invalid status'}, status=400)
+    if request.method == "POST":
+        status = request.POST.get("status")
+        if status not in ["Approved", "Rejected"]:
+            return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
             req.status = status
             req.save()
-            return JsonResponse({'success': True})
+            return JsonResponse({"success": True})
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+            return JsonResponse({"error": "Request not found"}, status=404)
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+
 def update_rendered_template(request, id):
-    if request.method == 'POST':
-        content = request.POST.get('content')
+    if request.method == "POST":
+        content = request.POST.get("content")
         try:
             req = Request.objects.get(pk=id)
             req.renderedtemplate = content
             req.save()
-            return JsonResponse({'success': True})
+            return JsonResponse({"success": True})
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
+            return JsonResponse({"error": "Request not found"}, status=404)
+
+
 class ApplicationListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
@@ -130,7 +151,7 @@ class ApplicationListView(generics.ListAPIView):
 
 
 class ApplicationRequestAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
@@ -138,8 +159,16 @@ class ApplicationRequestAPIView(APIView):
             application_id = request.data.get("applicationID")
             student_id = request.data.get("studentID")
             comment = request.data.get("comments", None)  # Optional comment
+            if comment:
+                comment_data = [
+                    {"name":request.user.name,
+                    "text":comment,
+                    "type":request.user.user_type,
+                    "timestamp":datetime.now().isoformat()}
+                ]
+            else:
+                comment_data = []
             request_file = request.FILES.get("request_file", None)  # Handle file upload
-            print(comment)
             # Validate required fields
             if not all([application_id, student_id]):
                 return Response(
@@ -215,7 +244,7 @@ class ApplicationRequestAPIView(APIView):
                 "StudentID": student_id,
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
-                "comments": comment if comment else "",
+                "comments": comment_data,
                 "request_file": request_file,  # Include the file in request data
             }
 
@@ -353,7 +382,7 @@ class UserCSVUploadAPIView(APIView):
                         serializer.validated_data["role"] = "Undergraduate"
                         serializer.validated_data["designation"] = "N/A"
                     elif user_type == "staff":
-                        serializer.validated_data["user_type"] = "Staff"
+                        serializer.validated_data["user_type"] = "Faculty"
                     serializer.save()
                     created_users.append(serializer.data)
                 else:
@@ -727,26 +756,15 @@ class GetAttributesAPIView(APIView):
         elif table == "users" and user_type == "student":
             attributes[0] = "student_name"
         elif table == "Department":
-            attributes = ["dept_id", "dept_name", "dept_head", "short_name"]
-        elif table == "Applications":
+            attributes = ["department"]
+        elif table == "Application":
             attributes = [
-                "id",
-                "application_name",
-                "short_name",
-                "application_desc",
-                "status",
-                "responsible_dept",
-                "amount",
-                "default_responsible_employee",
+                "date",
+                "issuer_name"
             ]
         elif table == "Program":
             attributes = [
-                "program_id",
-                "program_name",
-                "short_name",
-                "program_desc",
-                "status",
-                "dept_name",
+                "program"
             ]
 
         return Response(attributes)
@@ -806,12 +824,9 @@ class OTPSendView(APIView):
             else "support@custapp.pk"
         )
         email_message = EmailMultiAlternatives(
-            subject=subject,
-            body=message,
-            from_email=from_email,
-            to=[email]
+            subject=subject, body=message, from_email=from_email, to=[email]
         )
-        email_message.attach_alternative(message,'text/html')
+        email_message.attach_alternative(message, "text/html")
         email_message.send()
 
         return Response(

@@ -19,7 +19,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -70,7 +71,7 @@ AUTH_USER_MODEL = "CUSTApp.Users"
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'USER_ID_FIELD': 'user_id',
@@ -110,7 +111,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  #  engine for MariaDB
-        'NAME': 'custappp_custapp',                     #  database name
+        'NAME': 'test222',                     #  database name
         'USER': 'root',               # MariaDB username
         'PASSWORD': '',           # MariaDB password
         'HOST': 'localhost',                   #  local development
