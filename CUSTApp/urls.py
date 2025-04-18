@@ -4,7 +4,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    ApplicationsList, DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GetAttributesAPIView, 
+    ApplicationsList, DepartmentRetrieveUpdateDestroyAPI, GeneratePDFAPIView, GeneratePDFWithLetterheadAPIView, GetAttributesAPIView, 
     TemplateListCreateAPIView, TemplateRetrieveUpdateAPIView, TemplateDisableAPIView,
     GenerateLetterAPIView, UserRetrieveUpdateDestroyAPI, UsersList, DepartmentList, RequestList,
     TemplateAttributesList, RequestCreate, index_page, test_api_view, OTPSendView, OTPVerifyView, 
@@ -52,7 +52,8 @@ urlpatterns = [
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
     path('update-rendered-template/<int:id>/', views.update_rendered_template, name='update_rendered_template'),
     path('update-request-status/<int:id>/', views.update_request_status, name='update_request_status'),
-     path('add-comment/<int:id>/', views.add_comment, name='add_comment'),
+    path('add-comment/<int:id>/', views.add_comment, name='add_comment'),
+    path('generate-pdf-with-letterhead/', GeneratePDFWithLetterheadAPIView.as_view(), name='generate_pdf_with_letterhead'),
 
 ]
 urlpatterns.extend(router.urls)

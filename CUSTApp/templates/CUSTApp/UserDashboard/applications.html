@@ -240,55 +240,51 @@
 
       // Download application as PDF
       function downloadApplication(requestId) {
-        const app = allApplications.find(a => a.request_id === requestId);
-        if (!app || !app.renderedtemplate) {
-          alert('No template available for download');
-          return;
+    console.log('Sending request with requestId:', requestId); // Log input
+    $.ajax({
+        url: '/generate-pdf-with-letterhead/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ request_id: requestId }),
+        xhrFields: {
+            responseType: 'blob' // For PDF response
+        },
+        success: function(data, textStatus, jqXHR) {
+            console.log('Response received:', { status: jqXHR.status, contentType: jqXHR.getResponseHeader('Content-Type') });
+            var contentType = jqXHR.getResponseHeader('Content-Type');
+            if (contentType && contentType.includes('application/pdf')) {
+                var blob = new Blob([data], { type: 'application/pdf' });
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = 'letter.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('Failed to download PDF: Invalid response from server');
+                console.error('Unexpected response:', data);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            // Log full response details
+            console.error('AJAX Error:', {
+                status: jqXHR.status,
+                statusText: jqXHR.statusText,
+                responseText: jqXHR.responseText,
+                responseJSON: jqXHR.responseJSON
+            });
+            var errorMessage = 'An error occurred while downloading the PDF';
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMessage = jqXHR.responseJSON.error; // e.g., "request_id is required"
+            } else if (jqXHR.statusText) {
+                errorMessage = `Failed to download PDF: ${jqXHR.statusText}`;
+            }
+            alert(errorMessage);
         }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        // Header
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("Capital University of Science and Technology", 105, 20, { align: "center" });
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text("Islamabad", 105, 30, { align: "center" });
-        doc.text("Islamabad Expressway Zone V, Kahuta Road, Sihala Bagh, Islamabad", 105, 40, { align: "center" });
-        doc.text("Ph: 051-111-555-666 Fax: 4486705", 105, 50, { align: "center" });
-        doc.text("Website: www.cust.edu.pk", 105, 60, { align: "center" });
-
-        // Title
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text("TO WHOM IT MAY CONCERN", 105, 80, { align: "center" });
-
-        // Body (rendered template)
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        const bodyLines = doc.splitTextToSize(app.renderedtemplate, 180);
-        doc.text(bodyLines, 15, 100);
-
-        // Issued Date
-        const issuedDate = new Date(app.created_at).toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric'
-        });
-        doc.text(`Issued on ${issuedDate}`, 15, 160);
-
-        // Footer
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text("Ahsan Razzaq Tahir", 15, 200);
-        doc.text("Deputy Registrar", 15, 210);
-        doc.text("Office Seal / Stamp", 15, 220);
-
-        // Save PDF
-        doc.save(`application_${app.request_id}.pdf`);
-      }
+    });
+}
 
       // Search functionality
       $('#search-form').on('submit', function(e) {
