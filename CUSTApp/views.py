@@ -4,6 +4,7 @@ from io import BytesIO
 from django.core.mail import EmailMultiAlternatives
 import re
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.apps import apps
@@ -41,6 +42,7 @@ from drf_yasg import openapi
 import logging
 import random
 from django.core.mail import send_mail
+from rest_framework.decorators import api_view, permission_classes
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
@@ -58,64 +60,85 @@ from ApplicationTemplate.models import Applications
 from .models import Users
 from .serializers import RequestSerializer
 import json
+
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
-def add_comment(request, id):
-    if request.method == 'POST':
-        text = request.POST.get('text')
-        if not text:
-            return JsonResponse({'error': 'Comment text is required'}, status=400)
+
+
+class AddCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
         try:
+            text = request.data.get("text")
+            if not text:
+                return Response(
+                    {"error": "Comment text is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             req = Request.objects.get(pk=id)
-            # Determine user info
-            name = request.user.get_full_name() or request.user.username
-            user_type = 'employee' if request.user.groups.filter(name='Employees').exists() else 'student'
-            # Initialize comments
-            comments = json.loads(req.comments) if req.comments else []
-            # Add new comment
+            print(request.user.user_type)
+            # User info
+            name = request.user.name
+            user_type = request.user.user_type
+
+            # Load and update comments
+            try:
+                comments = json.loads(req.comments) if req.comments else []
+            except Exception:
+                comments = []
             new_comment = {
-                'name': name,
-                'text': text,
-                'type': user_type,
-                'timestamp': datetime.utcnow().isoformat()
+                "name": name,
+                "text": text,
+                "type": user_type,
+                "timestamp": timezone.now().isoformat(),
             }
+            print(new_comment)
             comments.append(new_comment)
             req.comments = json.dumps(comments)
-            print(comments)
             req.save()
-            return JsonResponse({'success': True})
+
+            return Response({"success": True})
+
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
+            return Response(
+                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid comment format'}, status=400)
-        except AttributeError:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+            return Response(
+                {"error": "Invalid comment format"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 def update_request_status(request, id):
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        if status not in ['Approved', 'Rejected']:
-            return JsonResponse({'error': 'Invalid status'}, status=400)
+    if request.method == "POST":
+        status = request.POST.get("status")
+        if status not in ["Approved", "Rejected"]:
+            return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
             req.status = status
             req.save()
-            return JsonResponse({'success': True})
+            return JsonResponse({"success": True})
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+            return JsonResponse({"error": "Request not found"}, status=404)
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+
 def update_rendered_template(request, id):
-    if request.method == 'POST':
-        content = request.POST.get('content')
+    if request.method == "POST":
+        content = request.POST.get("content")
         try:
             req = Request.objects.get(pk=id)
             req.renderedtemplate = content
             req.save()
-            return JsonResponse({'success': True})
+            return JsonResponse({"success": True})
         except Request.DoesNotExist:
-            return JsonResponse({'error': 'Request not found'}, status=404)
+            return JsonResponse({"error": "Request not found"}, status=404)
+
+
 class ApplicationListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
@@ -181,7 +204,7 @@ class ApplicationRequestAPIView(APIView):
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
                 "department": applicant.dept_name,
-                "program": applicant.program_name,
+                "program_name": applicant.program_name,
                 "date": timezone.now().date(),
                 "issuer_name": application.default_responsible_employee,
                 "father_name": applicant.father_name,
@@ -806,12 +829,9 @@ class OTPSendView(APIView):
             else "support@custapp.pk"
         )
         email_message = EmailMultiAlternatives(
-            subject=subject,
-            body=message,
-            from_email=from_email,
-            to=[email]
+            subject=subject, body=message, from_email=from_email, to=[email]
         )
-        email_message.attach_alternative(message,'text/html')
+        email_message.attach_alternative(message, "text/html")
         email_message.send()
 
         return Response(
