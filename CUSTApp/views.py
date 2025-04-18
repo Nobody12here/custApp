@@ -756,26 +756,15 @@ class GetAttributesAPIView(APIView):
         elif table == "users" and user_type == "student":
             attributes[0] = "student_name"
         elif table == "Department":
-            attributes = ["dept_id", "dept_name", "dept_head", "short_name"]
-        elif table == "Applications":
+            attributes = ["department"]
+        elif table == "Application":
             attributes = [
-                "id",
-                "application_name",
-                "short_name",
-                "application_desc",
-                "status",
-                "responsible_dept",
-                "amount",
-                "default_responsible_employee",
+                "date",
+                "issuer_name"
             ]
         elif table == "Program":
             attributes = [
-                "program_id",
-                "program_name",
-                "short_name",
-                "program_desc",
-                "status",
-                "dept_name",
+                "program"
             ]
 
         return Response(attributes)
