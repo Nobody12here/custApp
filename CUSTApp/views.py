@@ -872,7 +872,150 @@ class OTPVerifyView(APIView):
                 {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
+import os
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+# Path to the predefined letterhead PDF
+LETTERHEAD_PATH = os.path.join(os.path.dirname(__file__), '..', 'static', 'LetterHead', 'LetterHead.pdf')
 
+class GeneratePDFWithLetterheadAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        # Extract request_id from JSON
+        request_id = request.data.get('request_id')
+        if not request_id:
+            return Response({"error": "request_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch request data
+        try:
+            request_obj = Request.objects.get(request_id=request_id)
+        except Request.DoesNotExist:
+            return Response({"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check status
+        if request_obj.status != "Approved":
+            return Response({"error": "Request is not approved"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract renderedtemplate
+        content = request_obj.renderedtemplate or "No content available"
+
+        # Verify letterhead exists
+        if not os.path.exists(LETTERHEAD_PATH):
+            return Response({"error": "Letterhead PDF not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        content_buffer = BytesIO()
+        doc = SimpleDocTemplate(content_buffer, pagesize=letter, leftMargin=0, rightMargin=0, topMargin=0, bottomMargin=0)
+        elements = []
+
+       # Define styles for text
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+
+# Register Times New Roman font (specify the correct path to the .ttf file)
+        pdfmetrics.registerFont(TTFont('Times-Roman', 'times.ttf'))  # Windows default path
+        pdfmetrics.registerFont(TTFont('Times-Bold', 'timesbd.ttf'))
+
+# Define custom styles
+        styles = getSampleStyleSheet()
+
+# Main body text style (left-aligned, no forced indent)
+        body_style = ParagraphStyle(
+         name='BodyText',
+         parent=styles['Normal'],
+         fontName='Times-Roman',
+         fontSize=12,
+         leading=14,
+         alignment=0,  # Left align
+         leftIndent=90,  # No left indent
+         rightIndent=72,  # No right indent
+         spaceBefore=0,
+         spaceAfter=12
+       )
+
+# Date style (right-aligned)
+        date_style = ParagraphStyle(
+         name='DateText',
+         parent=styles['Normal'],
+         fontName='Helvetica',
+         fontSize=12,
+         leading=14,
+         alignment=2,  # Right align
+         rightIndent=72,  # ~1 inch from right
+         leftIndent=0
+        )
+
+# Signature style (left-aligned, with indent matching letter format)
+        signature_style = ParagraphStyle(
+          name='SignatureText',
+          parent=styles['Normal'],
+          fontName='Helvetica',
+          fontSize=12,
+          leading=14,
+          alignment=0,  # Left align
+          leftIndent=90,  # ~1.5 inch indent
+          rightIndent=0
+        )
+
+# Build your elements
+        elements = []
+
+# 1. Add date (right-aligned)
+        current_date = timezone.now().strftime("%B %d, %Y")  # e.g., "November 12, 2024"
+        elements.append(Spacer(1, 70))  # Space from top
+        elements.append(Paragraph(current_date, date_style))
+        elements.append(Spacer(1, 70))  # Space after date
+
+# 2. Add main content (left-aligned, no indent)
+        for line in content.split('\n'):
+          elements.append(Paragraph(line, body_style))
+    
+# 3. Add signature (indented left)
+        elements.append(Spacer(1, 70))
+        elements.append(Paragraph("Issued on request", signature_style))
+        elements.append(Spacer(1, 70))
+        elements.append(Paragraph("Deputy Registrar", signature_style))
+
+# Build the PDF
+        doc.build(elements)
+        content_buffer.seek(0)
+
+        # p.drawText(text_object)
+
+        # p.showPage()
+        # p.save()
+        # content_buffer.seek(0)
+
+        # Merge letterhead and content
+        letterhead_pdf = PdfReader(LETTERHEAD_PATH)
+        content_pdf = PdfReader(content_buffer)
+        output = PdfWriter()
+
+        for page_num in range(len(letterhead_pdf.pages)):
+            page = letterhead_pdf.pages[page_num]
+            if page_num < len(content_pdf.pages):
+                content_page = content_pdf.pages[page_num]
+                page.merge_page(content_page)
+            output.add_page(page)
+
+        # Create output buffer
+        output_buffer = BytesIO()
+        output.write(output_buffer)
+        output_buffer.seek(0)
+        pdf = output_buffer.getvalue()
+
+        # Clean up
+        content_buffer.close()
+        output_buffer.close()
+
+        # Return PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="letter.pdf"'
+        response.write(pdf)
+        return response
 class ProgramView(ModelViewSet):
     queryset = Program.objects.all()
     serializer_class = ProgramSerializer
