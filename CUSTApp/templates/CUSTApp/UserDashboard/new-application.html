@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>CUST App - New Application</title>
   <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+  <link rel="stylesheet" type="text/css"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
   <style>
@@ -14,6 +16,7 @@
       position: relative;
       display: inline-block
     }
+
     .file-input {
       position: absolute;
       top: 0;
@@ -21,6 +24,7 @@
       opacity: 0;
       cursor: pointer;
     }
+
     .file-name {
       padding: 5px 10px;
       border: 1px solid #ccc;
@@ -30,6 +34,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="wrapper">
     <div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
@@ -47,12 +52,25 @@
           </div>
         </div>
         <ul class="nav">
-          <li class="nav-item"><a class="nav-link" href="/user/dashboard/"><i class="material-icons">dashboard</i><p>Dashboard</p></a></li>
-          <li class="nav-item active"><a class="nav-link" href="/myapplications/"><i class="material-icons">view_list</i><p>View Existing Applications</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/categories/"><i class="material-icons">category</i><p>Categories</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/new-application/"><i class="material-icons">note_add</i><p>New Application</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/reports/"><i class="material-icons">bar_chart</i><p>Reports</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/support/"><i class="material-icons">help</i><p>Support</p></a></li>
+          <li class="nav-item"><a class="nav-link" href="/user/dashboard/"><i class="material-icons">dashboard</i>
+              <p>Dashboard</p>
+            </a></li>
+          <li class="nav-item active"><a class="nav-link" href="/myapplications/"><i
+                class="material-icons">view_list</i>
+              <p>View Existing Applications</p>
+            </a></li>
+          <li class="nav-item"><a class="nav-link" href="/categories/"><i class="material-icons">category</i>
+              <p>Categories</p>
+            </a></li>
+          <li class="nav-item"><a class="nav-link" href="/new-application/"><i class="material-icons">note_add</i>
+              <p>New Application</p>
+            </a></li>
+          <li class="nav-item"><a class="nav-link" href="/reports/"><i class="material-icons">bar_chart</i>
+              <p>Reports</p>
+            </a></li>
+          <li class="nav-item"><a class="nav-link" href="/support/"><i class="material-icons">help</i>
+              <p>Support</p>
+            </a></li>
         </ul>
       </div>
     </div>
@@ -134,85 +152,71 @@
   <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
   <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
   <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+  <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+  <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
 
   <script>
     $(document).ready(function () {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                window.location.href = '/login/';
-            }
-
-            // Add token to all AJAX requests
-            $.ajaxSetup({
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-                }
-            });
-            
-        });
-    $(document).ready(function() {
+      if (!checkAuth()) return;
       function loadApplicationTypes() {
         $.ajax({
           url: `/api/applications/`,
           method: 'GET',
-          success: function(response) {
+          success: function (response) {
             const select = $('#applicationType');
             response.forEach(app => {
               select.append(`<option value="${app.id}">${app.name}</option>`);
             });
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error fetching application types:', error);
             alert('Failed to load application types. Please try again later.');
           }
         });
       }
 
-      $('#applicationForm').submit(function(e) {
-  e.preventDefault();
+      $('#applicationForm').submit(function (e) {
+        e.preventDefault();
 
-  const applicationId = $('#applicationType').val();
-  const studentId = $('#studentId').val();
-  const comments = $('#comments').val(); // String from textarea
-  const file = $('#fileUpload')[0].files[0];
+        const applicationId = $('#applicationType').val();
+        const studentId = $('#studentId').val();
+        const comments = $('#comments').val(); // String from textarea
+        const file = $('#fileUpload')[0].files[0];
 
-  if (!applicationId || !studentId) {
-    alert('Please select an application type and enter your student ID.');
-    return;
-  }
+        if (!applicationId || !studentId) {
+          alert('Please select an application type and enter your student ID.');
+          return;
+        }
 
-  const formData = new FormData();
-  formData.append('applicationID', applicationId);
-  formData.append('studentID', studentId);
-  // Convert comments to a list
-  console.log(comments)
-  formData.append('comments', JSON.stringify(comments ? [comments] : []));
-  if (file) formData.append('request_file', file);
+        const formData = new FormData();
+        formData.append('applicationID', applicationId);
+        formData.append('studentID', studentId);
+        // Convert comments to a list
+        console.log(comments)
+        formData.append('comments', JSON.stringify(comments ? [comments] : []));
+        if (file) formData.append('request_file', file);
 
-  $.ajax({
-    url: `/api/application-request/`,
-    method: 'POST',
-    data: formData,
-    processData: false,
-    contentType: false,
-    headers: {
-      'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val() // Ensure CSRF token is included
-    },
-    success: function(response) {
-      alert(response.message);
-      $('#applicationForm')[0].reset();
-      $('#applicationType').html('<option value="">Select Application Type</option>');
-      loadApplicationTypes();
-      $('#fileName').text('No file selected');
-    },
-    error: function(xhr, status, error) {
-      console.error('Error submitting application:', error);
-      alert('Failed to submit application: ' + (xhr.responseJSON?.message || 'Unknown error'));
-    }
-  });
-});
+        $.ajax({
+          url: `/api/application-request/`,
+          method: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            alert(response.message);
+            $('#applicationForm')[0].reset();
+            $('#applicationType').html('<option value="">Select Application Type</option>');
+            loadApplicationTypes();
+            $('#fileName').text('No file selected');
+          },
+          error: function (xhr, status, error) {
+            console.error('Error submitting application:', error);
+            alert('Failed to submit application: ' + (xhr.responseJSON?.message || 'Unknown error'));
+          }
+        });
+      });
 
-      $('#fileUpload').change(function() {
+      $('#fileUpload').change(function () {
         const fileName = this.files.length > 0 ? this.files[0].name : 'No file selected';
         $('#fileName').text(fileName);
       });
@@ -221,4 +225,5 @@
     });
   </script>
 </body>
+
 </html>

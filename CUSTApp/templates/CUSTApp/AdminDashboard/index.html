@@ -238,22 +238,15 @@
     <script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
     <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
     <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+    <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
+
     <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
     <script>
+        
         let departmentData = [];
 
         $(document).ready(function () {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                window.location.href = '/login/';
-            }
-
-            // Add token to all AJAX requests
-            $.ajaxSetup({
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-                }
-            });
+            if(!checkAuth(requiredUserType='admin')) return;
             fetchDepartments();
         });
 

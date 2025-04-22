@@ -138,10 +138,11 @@ def update_rendered_template(request, id):
 
 
 class ApplicationListView(generics.ListAPIView):
-    permission_classes = [AllowAny]
-
-    queryset = Applications.objects.filter(status=1)  # Only enabled applications
+    permission_classes = [IsAuthenticated]
     serializer_class = ApplicationsSerializer
+    def get_queryset(self):
+        user = self.request.user
+        return Applications.objects.filter(status=1, default_responsible_employee_id=user)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -424,15 +425,14 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
-
     def get_queryset(self):
         queryset = super().get_queryset()
-        applicant_id = self.request.query_params.get("applicant_id")
-        dept_id = self.request.query_params.get("dept_id")
-        if applicant_id:
-            queryset = queryset.filter(applicant_id=applicant_id)
-        if dept_id:
-            queryset = queryset.filter(application__responsible_dept_id=dept_id)
+        user = self.request.user
+        user_type = user.user_type
+        if(user_type == 'Student'):
+            queryset = queryset.filter(applicant_id=user.user_id)
+        if(user_type == 'Staff'):
+            queryset = queryset.filter(application__default_responsible_employee_id=user)
         return queryset
 
 
@@ -906,6 +906,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         # Fetch request data
         try:
             request_obj = Request.objects.get(request_id=request_id)
+            serializer = RequestSerializer(request_obj)
         except Request.DoesNotExist:
             return Response({"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -926,13 +927,6 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
        # Define styles for text
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-
-# Register Times New Roman font (specify the correct path to the .ttf file)
-        pdfmetrics.registerFont(TTFont('Times-Roman', 'times.ttf'))  # Windows default path
-        pdfmetrics.registerFont(TTFont('Times-Bold', 'timesbd.ttf'))
 
 # Define custom styles
         styles = getSampleStyleSheet()
@@ -941,7 +935,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         body_style = ParagraphStyle(
          name='BodyText',
          parent=styles['Normal'],
-         fontName='Times-Roman',
+         fontName='Helvetica',
          fontSize=12,
          leading=14,
          alignment=0,  # Left align
@@ -992,7 +986,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements.append(Spacer(1, 70))
         elements.append(Paragraph("Issued on request", signature_style))
         elements.append(Spacer(1, 70))
-        elements.append(Paragraph("Deputy Registrar", signature_style))
+        elements.append(Paragraph(serializer.data.get('responsible_employee_name'), signature_style))
 
 # Build the PDF
         doc.build(elements)
