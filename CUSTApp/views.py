@@ -142,8 +142,7 @@ class ApplicationListView(generics.ListAPIView):
     serializer_class = ApplicationsSerializer
     def get_queryset(self):
         user = self.request.user
-        # Assuming Applications has a ManyToManyField to User called `users`
-        return Applications.objects.filter(status=1, responsible_dept__dept_head=user)
+        return Applications.objects.filter(status=1, default_responsible_employee_id=user)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -433,7 +432,7 @@ class RequestList(generics.ListCreateAPIView):
         if(user_type == 'Student'):
             queryset = queryset.filter(applicant_id=user.user_id)
         if(user_type == 'Staff'):
-            queryset = queryset.filter(application__responsible_dept__dept_head=user)
+            queryset = queryset.filter(application__default_responsible_employee_id=user)
         return queryset
 
 
