@@ -29,12 +29,13 @@ class ApplicationsSerializer(serializers.ModelSerializer):
 class RequestSerializer(serializers.ModelSerializer):
     responsible_dept_id = serializers.IntegerField(source='application.responsible_dept.dept_id', read_only=True)
     responsible_dept_name = serializers.StringRelatedField(source='application.responsible_dept.dept_name', read_only=True)
+    responsible_employee_name = serializers.StringRelatedField(source='application.default_responsible_employee.name')
 
     class Meta:
         model = Request
         fields = [
             'request_id', 'application', 'status', 'applicant', 'created_at', 'updated_at',
-            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID','responsible_dept_id','responsible_dept_name', 'renderedtemplate'
+            'comments', 'payment_status', 'payment_date', 'EmployeeID', 'StudentID','responsible_dept_id','responsible_dept_name','responsible_employee_name', 'renderedtemplate'
         ]
         read_only_fields = ['request_id', 'created_at', 'updated_at']  # Prevent manual override
 

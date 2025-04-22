@@ -8,7 +8,8 @@
   <title>CUST App Dashboard</title>
   <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
   <!-- Fonts and Icons -->
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+  <link rel="stylesheet" type="text/css"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
@@ -17,11 +18,13 @@
       width: 100%;
       min-height: 150px;
     }
+
     .chat-modal .modal-body {
       max-height: 400px;
       overflow-y: auto;
       padding-bottom: 10px;
     }
+
     .chat-message {
       margin: 10px 15px;
       padding: 10px;
@@ -29,35 +32,42 @@
       max-width: 70%;
       word-wrap: break-word;
     }
+
     .chat-message.student {
       background-color: #e1ffc7;
       margin-left: auto;
       text-align: right;
     }
+
     .chat-message.employee {
       background-color: #f0f0f0;
       margin-right: auto;
     }
+
     .chat-message .name {
       font-weight: bold;
       font-size: 0.9em;
     }
+
     .chat-message .timestamp {
       font-size: 0.7em;
       color: #666;
       margin-top: 5px;
     }
+
     .chat-input-container {
       display: flex;
       padding: 10px;
       border-top: 1px solid #ddd;
     }
+
     .chat-input {
       flex-grow: 1;
       border-radius: 20px;
       padding: 10px;
       margin-right: 10px;
     }
+
     .chat-send-btn {
       border-radius: 50%;
       padding: 10px;
@@ -67,7 +77,8 @@
 
 <body class="">
   <div class="wrapper">
-    <div class="sidebar" data-color="rose" data-background-color="black" data-image="{% static 'assets/img/sidebar-1.jpg' %}">
+    <div class="sidebar" data-color="rose" data-background-color="black"
+      data-image="{% static 'assets/img/sidebar-1.jpg' %}">
       <div class="logo">
         <a href="#" class="simple-text logo-mini">CT</a>
         <a href="#" class="simple-text logo-normal">CUST App</a>
@@ -152,7 +163,8 @@
           <div class="navbar-wrapper">
             <a class="navbar-brand" href="#">Dashboard</a>
           </div>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index"
+            aria-expanded="false" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
             <span class="navbar-toggler-icon icon-bar"></span>
             <span class="navbar-toggler-icon icon-bar"></span>
@@ -169,7 +181,8 @@
             </form>
             <ul class="navbar-nav">
               <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link" href="#" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">
                   <i class="material-icons">person</i>
                   <p class="d-lg-none d-md-block">Account</p>
                 </a>
@@ -281,61 +294,27 @@
   <!-- Core JS Files -->
   <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
   <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
   <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
   <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
   <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+  <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
 
   <!-- JavaScript to Fetch and Display Requests -->
   <script>
-    $(document).ready(function() {
-      const BASE_URL = 'http://127.0.0.1:8000';
-      // Fetch user info from a dedicated endpoint
-      let currentUser = { name: 'Unknown', type: 'student' };
-      let allPendingRequests = [];
-      $.ajax({
-        url: '/get-user-info/',
-        method: 'GET',
-        success: function(data) {
-          currentUser = {
-            name: data.name || 'Unknown',
-            type: data.type || 'student'
-          };
-        },
-        error: function() {
-          console.warn('Failed to fetch user info; using defaults');
-        }
-      });
-
-      // Store application names for mapping
-      let applicationMap = {};
-
-      // Fetch application names from /api/applications/
-      function loadApplicationNames() {
-        return $.ajax({
-          url: `/api/applications/`,
-          method: 'GET',
-          success: function(response) {
-            response.forEach(app => {
-              applicationMap[app.id] = app.name;
-            });
-          },
-          error: function(xhr, status, error) {
-            console.error('Error fetching applications:', error);
-          }
-        });
-      }
-
+    $(document).ready(function () {
+      if (!checkAuth()) return;
       // Fetch and display requests
       function loadRequests(searchTerm = '') {
         $.ajax({
           url: `/requests/`,
           method: 'GET',
-          success: function(requests) {
+          success: function (requests) {
             // Filter for pending requests only
             allPendingRequests = requests.filter(request => request.status === 'Pending');
             renderRequests(allPendingRequests, searchTerm);
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error fetching requests:', error);
             $('#requestTableBody').html('<tr><td colspan="6">Failed to load requests.</td></tr>');
           }
@@ -349,17 +328,17 @@
 
         const filteredRequests = searchTerm
           ? requests.filter(request => {
-              const requestType = (applicationMap[request.application] || `Application ${request.application}`).toLowerCase();
-              const studentName = (request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`).toLowerCase();
-              const status = request.status.toLowerCase();
-              const comments = (request.comments || []).map(c => c.text).join(' ').toLowerCase();
-              return (
-                requestType.includes(searchTerm) ||
-                studentName.includes(searchTerm) ||
-                status.includes(searchTerm) ||
-                comments.includes(searchTerm)
-              );
-            })
+            const requestType = (request.application_name || `Application ${request.application_name}`).toLowerCase();
+            const studentName = (request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`).toLowerCase();
+            const status = request.status.toLowerCase();
+            const comments = (request.comments || []).map(c => c.text).join(' ').toLowerCase();
+            return (
+              requestType.includes(searchTerm) ||
+              studentName.includes(searchTerm) ||
+              status.includes(searchTerm) ||
+              comments.includes(searchTerm)
+            );
+          })
           : requests;
 
         if (filteredRequests.length === 0) {
@@ -369,7 +348,7 @@
 
         filteredRequests.forEach(request => {
           const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
-          const requestType = applicationMap[request.application] || `Application ${request.application}`;
+          const requestType = request.application_name || `Application ${request.application_name}`;
           const date = new Date(request.created_at).toLocaleDateString();
           const renderedTemplate = (request.renderedtemplate || '').replace(/"/g, '"');
           const comments = encodeURIComponent(JSON.stringify(request.comments || []));
@@ -413,14 +392,14 @@
       }
 
       // Search functionality
-      $('#search-form').on('submit', function(e) {
+      $('#search-form').on('submit', function (e) {
         e.preventDefault();
         const searchTerm = $('#search-input').val().toLowerCase();
         renderRequests(allPendingRequests, searchTerm);
       });
 
       // Real-time search on input
-      $('#search-input').on('input', function() {
+      $('#search-input').on('input', function () {
         const searchTerm = $(this).val().toLowerCase();
         renderRequests(allPendingRequests, searchTerm);
       });
@@ -442,7 +421,7 @@
       }
 
       // Accept request
-      window.acceptRequest = function(requestId) {
+      window.acceptRequest = function (requestId) {
         $.ajax({
           url: `/update-request-status/${requestId}/`,
           method: 'POST',
@@ -450,7 +429,7 @@
             'X-CSRFToken': getCookie('csrftoken')
           },
           data: { status: 'Approved' },
-          success: function(data) {
+          success: function (data) {
             if (data.success) {
               alert('Request approved successfully');
               loadRequests($('#search-input').val().toLowerCase());
@@ -458,7 +437,7 @@
               alert(data.error || 'Failed to approve request');
             }
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error:', error);
             alert('An error occurred while approving the request');
           }
@@ -466,7 +445,7 @@
       };
 
       // Reject request
-      window.rejectRequest = function(requestId) {
+      window.rejectRequest = function (requestId) {
         $.ajax({
           url: `/update-request-status/${requestId}/`,
           method: 'POST',
@@ -474,7 +453,7 @@
             'X-CSRFToken': getCookie('csrftoken')
           },
           data: { status: 'Rejected' },
-          success: function(data) {
+          success: function (data) {
             if (data.success) {
               alert('Request rejected successfully');
               loadRequests($('#search-input').val().toLowerCase());
@@ -482,7 +461,7 @@
               alert(data.error || 'Failed to reject request');
             }
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error:', error);
             alert('An error occurred while rejecting the request');
           }
@@ -490,13 +469,13 @@
       };
 
       // Open template modal
-      window.openTemplateModal = function(requestId, renderedTemplate) {
+      window.openTemplateModal = function (requestId, renderedTemplate) {
         $('#templateModalTextarea').val(decodeURIComponent(renderedTemplate));
         $('#templateModal').data('requestId', requestId);
       };
 
       // Update template
-      window.updateTemplate = function() {
+      window.updateTemplate = function () {
         const requestId = $('#templateModal').data('requestId');
         const content = $('#templateModalTextarea').val();
 
@@ -507,7 +486,7 @@
             'X-CSRFToken': getCookie('csrftoken')
           },
           data: { content: content },
-          success: function(data) {
+          success: function (data) {
             if (data.success) {
               $('#templateModal').modal('hide');
               loadRequests($('#search-input').val().toLowerCase());
@@ -515,7 +494,7 @@
               alert(data.error || 'Failed to update template');
             }
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error:', error);
             alert('An error occurred while updating the template');
           }
@@ -523,7 +502,7 @@
       };
 
       // Set comment modal
-      window.setCommentModal = function(button) {
+      window.setCommentModal = function (button) {
         const requestId = $(button).data('request-id');
         const comments = JSON.parse(decodeURIComponent($(button).data('comments')));
         $('#commentModal').data('requestId', requestId);
@@ -549,7 +528,7 @@
       };
 
       // Save comment
-      window.saveComment = function() {
+      window.saveComment = function () {
         const requestId = $('#commentModal').data('requestId');
         const commentText = $('#chatInput').val().trim();
         if (!commentText) {
@@ -566,19 +545,19 @@
           data: {
             text: commentText
           },
-          success: function(data) {
+          success: function (data) {
             if (data.success) {
               $('#chatInput').val('');
               // Refresh comments
               $.ajax({
                 url: `/requests/${requestId}/`,
                 method: 'GET',
-                success: function(request) {
+                success: function (request) {
                   const comments = encodeURIComponent(JSON.stringify(request.comments || []));
                   $('.comment-btn[data-request-id="' + requestId + '"]').data('comments', comments);
                   setCommentModal($('.comment-btn[data-request-id="' + requestId + '"]')[0]);
                 },
-                error: function() {
+                error: function () {
                   alert('Failed to refresh comments');
                 }
               });
@@ -586,7 +565,7 @@
               alert(data.error || 'Failed to add comment');
             }
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error('Error:', error);
             alert('An error occurred while adding the comment: ' + (xhr.responseJSON?.error || error));
           }
@@ -594,17 +573,17 @@
       };
 
       // Load application names first, then requests
-      loadApplicationNames().then(() => {
-        loadRequests();
-      });
+
+      loadRequests();
+
 
       // Handle comment button click
-      $(document).on('click', '.comment-btn', function() {
+      $(document).on('click', '.comment-btn', function () {
         setCommentModal(this);
       });
 
       // Handle Enter key for sending comment
-      $('#chatInput').on('keypress', function(e) {
+      $('#chatInput').on('keypress', function (e) {
         if (e.which === 13 && !e.shiftKey) {
           e.preventDefault();
           saveComment();
@@ -614,7 +593,8 @@
   </script>
 
   <!-- Comment Modal -->
-  <div class="modal fade chat-modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
+  <div class="modal fade chat-modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -637,7 +617,8 @@
   </div>
 
   <!-- Template Modal -->
-  <div class="modal fade" id="templateModal" tabindex="-1" role="dialog" aria-labelledby="templateModalLabel" aria-hidden="true">
+  <div class="modal fade" id="templateModal" tabindex="-1" role="dialog" aria-labelledby="templateModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -647,7 +628,8 @@
           </button>
         </div>
         <div class="modal-body">
-          <textarea class="form-control modal-textarea" id="templateModalTextarea" rows="6" placeholder="Enter template content here..."></textarea>
+          <textarea class="form-control modal-textarea" id="templateModalTextarea" rows="6"
+            placeholder="Enter template content here..."></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
