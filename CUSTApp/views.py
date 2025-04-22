@@ -1052,8 +1052,6 @@ def admin_department(request):
 
 def admin_templates(request):
     return render(request, "CUSTApp/AdminDashboard/templates.html")
-
-
 def user_dashboard(request):
     return render(request, "CUSTApp/UserDashboard/index.html",)
 
