@@ -47,12 +47,13 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     path('new-application/', views.new_application, name='new_application'),
     path('reports/', views.reports, name='reports'),
+    path('support/', views.support, name='support'),
     path('api/upload-users/', views.UserCSVUploadAPIView.as_view(), name='upload_users'),
     path('api/applications/', views.ApplicationListView.as_view(), name='application-list'),
     path('api/application-request/', ApplicationRequestAPIView.as_view(), name='application_request'),
     path('update-rendered-template/<int:id>/', views.update_rendered_template, name='update_rendered_template'),
     path('update-request-status/<int:id>/', views.update_request_status, name='update_request_status'),
-    path('add-comment/<int:id>/', views.add_comment, name='add_comment'),
+    path('add-comment/<int:id>/', views.AddCommentView.as_view(), name='add_comment'),
     path('generate-pdf-with-letterhead/', GeneratePDFWithLetterheadAPIView.as_view(), name='generate_pdf_with_letterhead'),
 
 ]

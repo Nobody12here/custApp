@@ -421,7 +421,7 @@ class DepartmentRetrieveUpdateDestroyAPI(generics.RetrieveUpdateDestroyAPIView):
 
 
 class RequestList(generics.ListCreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
 
@@ -1082,3 +1082,7 @@ def new_application(request):
 def reports(request):
 
     return render(request, "CUSTApp/UserDashboard/reports.html")
+
+def support(request):
+
+    return render(request, "CUSTApp/UserDashboard/support.html")
