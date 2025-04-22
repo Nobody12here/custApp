@@ -432,7 +432,7 @@ class RequestList(generics.ListCreateAPIView):
         if(user_type == 'Student'):
             queryset = queryset.filter(StudentID=user.user_id)
         if(user_type == 'Staff'):
-            queryset = queryset.filter(application__default_responsible_employee_id=user)
+            queryset = queryset.filter(EmployeeID=user.user_id)
         return queryset
 
 
@@ -1055,7 +1055,7 @@ def admin_templates(request):
 
 
 def user_dashboard(request):
-    return render(request, "CUSTApp/UserDashboard/index.html")
+    return render(request, "CUSTApp/UserDashboard/index.html",)
 
 
 def view_applications(request):
