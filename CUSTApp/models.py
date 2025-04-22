@@ -1,23 +1,6 @@
 from django.db import models
-
 from django.core.validators import MinLengthValidator
-
-# otp = models.CharField(
-#     max_length=6, 
-#     null=True, 
-#     blank=True,
-#     validators=[MinLengthValidator(6)]  # Ensure 6-digit OTP
-# )
-
-
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,PermissionsMixin
-
-# otp = models.CharField(
-#     max_length=6, 
-#     null=True, 
-#     blank=True,
-#     validators=[MinLengthValidator(6)]  # Ensure 6-digit OTP
-# )
 
 class UserManager(BaseUserManager):
     def create_user(self,email,name,**extra_fields):

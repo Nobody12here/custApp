@@ -21,7 +21,7 @@ class ApplicationTemplateViewset(ModelViewSet):
 
     def get_queryset(self):
         if self.action == "list":
-            return Applications.objects.filter(status=1)
+            return Applications.objects.filter(status=1,)
         return super().get_queryset()
     
     def create(self, request, *args, **kwargs):
