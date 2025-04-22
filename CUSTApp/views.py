@@ -140,9 +140,12 @@ def update_rendered_template(request, id):
 class ApplicationListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ApplicationsSerializer
+
     def get_queryset(self):
         user = self.request.user
-        return Applications.objects.filter(status=1, default_responsible_employee_id=user)
+        return Applications.objects.filter(
+            status=1, default_responsible_employee_id=user
+        )
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -162,10 +165,12 @@ class ApplicationRequestAPIView(APIView):
             comment = request.data.get("comments", None)  # Optional comment
             if comment:
                 comment_data = [
-                    {"name":request.user.name,
-                    "text":comment,
-                    "type":request.user.user_type,
-                    "timestamp":datetime.now().isoformat()}
+                    {
+                        "name": request.user.name,
+                        "text": comment,
+                        "type": request.user.user_type,
+                        "timestamp": datetime.now().isoformat(),
+                    }
                 ]
             else:
                 comment_data = []
@@ -425,270 +430,16 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
         user_type = user.user_type
-        if(user_type == 'Student'):
+        if user_type == "Student":
             queryset = queryset.filter(StudentID=user.user_id)
-        if(user_type == 'Staff'):
+        if user_type == "Staff":
             queryset = queryset.filter(EmployeeID=user.user_id)
         return queryset
-
-
-class TemplateAttributesList(generics.ListCreateAPIView):
-    queryset = TemplateAttributes.objects.all()
-    serializer_class = TemplateAttributesSerializer
-
-
-class ApplicationsList(generics.ListCreateAPIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAuthenticated]  # ROLE based permission_classes = [IsAuthenticated, IsAdminUser]
-    permission_classes = [AllowAny]
-    queryset = Applications.objects.all()
-    serializer_class = ApplicationsSerializer
-
-
-# Template API via Applications
-
-
-class TemplateListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [AllowAny]
-    queryset = Applications.objects.all()
-    serializer_class = ApplicationsSerializer
-
-    def get_queryset(self):
-        return Applications.objects.filter(status=1)
-
-
-class TemplateRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    permission_classes = [AllowAny]
-    queryset = Applications.objects.all()
-    serializer_class = ApplicationsSerializer
-    lookup_field = "id"
-
-
-class TemplateDisableAPIView(generics.DestroyAPIView):
-    permission_classes = [AllowAny]
-    queryset = Applications.objects.all()
-    serializer_class = ApplicationsSerializer
-    lookup_field = "id"
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.status = 0
-        instance.save()
-        return Response(
-            {"message": "Application disabled successfully"}, status=status.HTTP_200_OK
-        )
-
-
-class RequestCreate(APIView):
-    permission_classes = [AllowAny]
-
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self, request, *args, **kwargs):
-        logger.info(f"Received data: {request.data}")
-        request_serializer = RequestSerializer(
-            data={
-                "application": request.data.get("application_id"),
-                "applicant": request.data.get("applicant_id"),
-                "status": "Pending",
-                "comments": request.data.get("comments", ""),
-            }
-        )
-        if request_serializer.is_valid():
-            request_instance = request_serializer.save()
-            attributes_data = request.data.get("attributes", {})
-            for key, value in attributes_data.items():
-                TemplateAttributes.objects.create(
-                    attribute_name=f"request_{request_instance.request_id}_{key}",
-                    attribute_value=str(value),
-                )
-            return Response(request_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GenerateLetterAPIView(APIView):
-    def get(self, request, request_id):
-        try:
-            request_obj = Request.objects.get(request_id=request_id)
-            application = request_obj.application
-            student = request_obj.applicant
-            issuer = application.default_responsible_employee
-
-            if application.status != 1:
-                return Response(
-                    {"error": "Application is disabled"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            template = application.application_desc
-            if not template:
-                return Response(
-                    {"error": "Template not found for this application"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            attributes = {
-                attr.attribute_name.split("_", 2)[-1]: attr.attribute_value
-                for attr in TemplateAttributes.objects.filter(
-                    attribute_name__startswith=f"request_{request_id}_"
-                )
-            }
-            attributes.update(
-                {
-                    "student_name": student.name,
-                    "father_name": student.father_name or "",
-                    "registration_no": student.uu_id,
-                    "program": student.program_name or "",
-                    "department": student.dept_name or "",
-                    "date": timezone.now().strftime("%B %d, %Y"),
-                    "issuer_name": issuer.name,
-                    "amount": str(application.amount),
-                }
-            )
-
-            pdf_buffer = BytesIO()
-            doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
-            elements = []
-            styles = getSampleStyleSheet()
-
-            elements.append(
-                Paragraph(
-                    "Capital University of Science and Technology", styles["Heading1"]
-                )
-            )
-            elements.append(Paragraph("Islamabad", styles["Normal"]))
-            elements.append(Spacer(1, 12))
-            elements.append(Paragraph(f"Date: {attributes['date']}", styles["Normal"]))
-            elements.append(Spacer(1, 12))
-
-            formatted_content = template.format(**attributes)
-            elements.append(Paragraph(formatted_content, styles["Normal"]))
-
-            elements.append(Spacer(1, 12))
-            elements.append(Paragraph("Issued on request", styles["Normal"]))
-            elements.append(Spacer(1, 12))
-            elements.append(
-                Paragraph(
-                    f"{attributes['issuer_name']}\nDeputy Registrar", styles["Normal"]
-                )
-            )
-
-            doc.build(elements)
-            pdf_buffer.seek(0)
-
-            return FileResponse(
-                pdf_buffer,
-                as_attachment=True,
-                filename=f'{application.short_name.replace("_", " ")}_{student.uu_id}.pdf',
-            )
-        except Request.DoesNotExist:
-            return Response(
-                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-        except Users.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-class GeneratePDFAPIView(APIView):
-    @method_decorator(login_required)
-    def post(self, request, *args, **kwargs):
-        template_name = request.data.get("name")
-        template_content = request.data.get("content")
-
-        # Fetch user data (assuming the user is logged in)
-        user = request.user  # This assumes you're using Django's authentication system
-        user_data = {
-            "users": {
-                "student": {
-                    "name": user.name if user.user_type == "student" else "",
-                    "email": user.email if user.user_type == "student" else "",
-                    "father_name": (
-                        user.father_name if user.user_type == "student" else ""
-                    ),
-                    "address": user.address if user.user_type == "student" else "",
-                    "program_name": (
-                        user.program_name if user.user_type == "student" else ""
-                    ),
-                    "dept_name": user.dept_name if user.user_type == "student" else "",
-                    "gender": user.gender if user.user_type == "student" else "",
-                    "status": user.status if user.user_type == "student" else "",
-                    "role": user.role if user.user_type == "student" else "",
-                    "designation": (
-                        user.designation if user.user_type == "student" else ""
-                    ),
-                    "remark": user.remark if user.user_type == "student" else "",
-                    "phone_number": (
-                        user.phone_number if user.user_type == "student" else ""
-                    ),
-                    "cgpa": str(user.cgpa) if user.cgpa else "",
-                    "term": user.term if user.user_type == "student" else "",
-                    "DoB": str(user.DoB) if user.DoB else "",
-                    "CNIC": user.CNIC if user.user_type == "student" else "",
-                },
-                "staff": {
-                    "name": user.name if user.user_type == "staff" else "",
-                    "email": user.email if user.user_type == "staff" else "",
-                    "father_name": (
-                        user.father_name if user.user_type == "staff" else ""
-                    ),
-                    "address": user.address if user.user_type == "staff" else "",
-                    "program_name": (
-                        user.program_name if user.user_type == "staff" else ""
-                    ),
-                    "dept_name": user.dept_name if user.user_type == "staff" else "",
-                    "gender": user.gender if user.user_type == "staff" else "",
-                    "status": user.status if user.user_type == "staff" else "",
-                    "role": user.role if user.user_type == "staff" else "",
-                    "designation": (
-                        user.designation if user.user_type == "staff" else ""
-                    ),
-                    "remark": user.remark if user.user_type == "staff" else "",
-                    "phone_number": (
-                        user.phone_number if user.user_type == "staff" else ""
-                    ),
-                    "cgpa": str(user.cgpa) if user.cgpa else "",
-                    "term": user.term if user.user_type == "staff" else "",
-                    "DoB": str(user.DoB) if user.DoB else "",
-                    "CNIC": user.CNIC if user.user_type == "staff" else "",
-                },
-            }
-        }
-
-        # Replace the new placeholder format [users.student.name] with actual values
-        def replace_placeholders(match):
-            placeholder = match.group(1)  # e.g., "users.student.name"
-            keys = placeholder.split(".")
-            data = user_data
-            try:
-                for key in keys:
-                    data = data[key]
-                return str(data) if data else ""
-            except (KeyError, TypeError):
-                return ""
-
-        # Use regex to find and replace placeholders
-        rendered_content = re.sub(
-            r"\[([^\]]+)\]", replace_placeholders, template_content
-        )
-
-        # Generate PDF
-        pdf_file = BytesIO()
-        pdfkit.from_string(rendered_content, False)
-        pdf_file.seek(0)
-
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{template_name}.pdf"'
-        return response
 
 
 class GetAttributesAPIView(APIView):
@@ -758,14 +509,9 @@ class GetAttributesAPIView(APIView):
         elif table == "Department":
             attributes = ["department"]
         elif table == "Application":
-            attributes = [
-                "date",
-                "issuer_name"
-            ]
+            attributes = ["date", "issuer_name"]
         elif table == "Program":
-            attributes = [
-                "program"
-            ]
+            attributes = ["program"]
 
         return Response(attributes)
 
@@ -887,11 +633,16 @@ class OTPVerifyView(APIView):
                 {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
+
 import os
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
+
 # Path to the predefined letterhead PDF
-LETTERHEAD_PATH = os.path.join(os.path.dirname(__file__), '..', 'static', 'LetterHead', 'LetterHead.pdf')
+LETTERHEAD_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "static", "LetterHead", "LetterHead.pdf"
+)
+
 
 class GeneratePDFWithLetterheadAPIView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -899,96 +650,114 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         # Extract request_id from JSON
-        request_id = request.data.get('request_id')
+        request_id = request.data.get("request_id")
         if not request_id:
-            return Response({"error": "request_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "request_id is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Fetch request data
         try:
             request_obj = Request.objects.get(request_id=request_id)
             serializer = RequestSerializer(request_obj)
         except Request.DoesNotExist:
-            return Response({"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Check status
         if request_obj.status != "Approved":
-            return Response({"error": "Request is not approved"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Request is not approved"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Extract renderedtemplate
         content = request_obj.renderedtemplate or "No content available"
 
         # Verify letterhead exists
         if not os.path.exists(LETTERHEAD_PATH):
-            return Response({"error": "Letterhead PDF not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Letterhead PDF not found"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         content_buffer = BytesIO()
-        doc = SimpleDocTemplate(content_buffer, pagesize=letter, leftMargin=0, rightMargin=0, topMargin=0, bottomMargin=0)
+        doc = SimpleDocTemplate(
+            content_buffer,
+            pagesize=letter,
+            leftMargin=0,
+            rightMargin=0,
+            topMargin=0,
+            bottomMargin=0,
+        )
         elements = []
 
-       # Define styles for text
+        # Define styles for text
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-# Define custom styles
+        # Define custom styles
         styles = getSampleStyleSheet()
 
-# Main body text style (left-aligned, no forced indent)
+        # Main body text style (left-aligned, no forced indent)
         body_style = ParagraphStyle(
-         name='BodyText',
-         parent=styles['Normal'],
-         fontName='Helvetica',
-         fontSize=12,
-         leading=14,
-         alignment=0,  # Left align
-         leftIndent=90,  # No left indent
-         rightIndent=72,  # No right indent
-         spaceBefore=0,
-         spaceAfter=12
-       )
+            name="BodyText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=12,
+            leading=14,
+            alignment=0,  # Left align
+            leftIndent=90,  # No left indent
+            rightIndent=72,  # No right indent
+            spaceBefore=0,
+            spaceAfter=12,
+        )
 
-# Date style (right-aligned)
+        # Date style (right-aligned)
         date_style = ParagraphStyle(
-         name='DateText',
-         parent=styles['Normal'],
-         fontName='Helvetica',
-         fontSize=12,
-         leading=14,
-         alignment=2,  # Right align
-         rightIndent=72,  # ~1 inch from right
-         leftIndent=0
+            name="DateText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=12,
+            leading=14,
+            alignment=2,  # Right align
+            rightIndent=72,  # ~1 inch from right
+            leftIndent=0,
         )
 
-# Signature style (left-aligned, with indent matching letter format)
+        # Signature style (left-aligned, with indent matching letter format)
         signature_style = ParagraphStyle(
-          name='SignatureText',
-          parent=styles['Normal'],
-          fontName='Helvetica',
-          fontSize=12,
-          leading=14,
-          alignment=0,  # Left align
-          leftIndent=90,  # ~1.5 inch indent
-          rightIndent=0
+            name="SignatureText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=12,
+            leading=14,
+            alignment=0,  # Left align
+            leftIndent=90,  # ~1.5 inch indent
+            rightIndent=0,
         )
 
-# Build your elements
+        # Build your elements
         elements = []
 
-# 1. Add date (right-aligned)
+        # 1. Add date (right-aligned)
         current_date = timezone.now().strftime("%B %d, %Y")  # e.g., "November 12, 2024"
         elements.append(Spacer(1, 70))  # Space from top
         elements.append(Paragraph(current_date, date_style))
         elements.append(Spacer(1, 70))  # Space after date
 
-# 2. Add main content (left-aligned, no indent)
-        for line in content.split('\n'):
-          elements.append(Paragraph(line, body_style))
-    
-# 3. Add signature (indented left)
+        # 2. Add main content (left-aligned, no indent)
+        for line in content.split("\n"):
+            elements.append(Paragraph(line, body_style))
+
+        # 3. Add signature (indented left)
         elements.append(Spacer(1, 70))
         elements.append(Paragraph("Issued on request", signature_style))
         elements.append(Spacer(1, 70))
-        elements.append(Paragraph(serializer.data.get('responsible_employee_name'), signature_style))
+        elements.append(
+            Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
+        )
 
-# Build the PDF
+        # Build the PDF
         doc.build(elements)
         content_buffer.seek(0)
 
@@ -1021,10 +790,12 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         output_buffer.close()
 
         # Return PDF response
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="letter.pdf"'
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="letter.pdf"'
         response.write(pdf)
         return response
+
+
 class ProgramView(ModelViewSet):
     queryset = Program.objects.all()
     serializer_class = ProgramSerializer
@@ -1052,8 +823,13 @@ def admin_department(request):
 
 def admin_templates(request):
     return render(request, "CUSTApp/AdminDashboard/templates.html")
+
+
 def user_dashboard(request):
-    return render(request, "CUSTApp/UserDashboard/index.html",)
+    return render(
+        request,
+        "CUSTApp/UserDashboard/index.html",
+    )
 
 
 def view_applications(request):

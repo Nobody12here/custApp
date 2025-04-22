@@ -239,7 +239,7 @@
 
         const detailsHtml = `
           <p><strong>Request ID:</strong> ${app.request_id}</p>
-          <p><strong>Application Type:</strong> ${applicationNames[app.application] || `Application #${app.application}`}</p>
+          <p><strong>Application Type:</strong> ${app.application_name || `Application #${app.application_name}`}</p>
           <p><strong>Status:</strong> ${app.status}</p>
           <p><strong>Applicant ID:</strong> ${app.applicant}</p>
           <p><strong>Created At:</strong> ${new Date(app.created_at).toLocaleString()}</p>
