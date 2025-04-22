@@ -430,7 +430,7 @@ class RequestList(generics.ListCreateAPIView):
         user = self.request.user
         user_type = user.user_type
         if(user_type == 'Student'):
-            queryset = queryset.filter(applicant_id=user.user_id)
+            queryset = queryset.filter(StudentID=user.user_id)
         if(user_type == 'Staff'):
             queryset = queryset.filter(application__default_responsible_employee_id=user)
         return queryset
