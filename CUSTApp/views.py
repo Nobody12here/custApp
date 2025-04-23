@@ -36,7 +36,7 @@ from drf_yasg import openapi
 import logging
 import random
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken,TokenError
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.permissions import BasePermission
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
@@ -133,9 +133,13 @@ class ApplicationListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Applications.objects.filter(
-            status=1, default_responsible_employee_id=user.user_id
-        )
+        user_type = user.user_type
+        if user_type == "Staff":
+            return Applications.objects.filter(
+                status=1, default_responsible_employee_id=user.user_id
+            )
+        elif user_type == "Student":
+            return Applications.objects.filter(status=1)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -545,7 +549,7 @@ class OTPSendView(APIView):
           <p style="font-size: 32px; font-weight: bold; color: #1a73e8; margin: 20px 0;">{otp}</p>
           <p style="font-size: 14px; color: #555;">This OTP is valid for <strong>10 minutes</strong>. Do not share this code with anyone.</p>
           <hr style="margin: 30px 0;">
-          <p style="font-size: 13px; color: #999;">If you did not request this code, please ignore this email or contact support at <a href="mailto:support@cust.edu.pk" style="color: #1a73e8;">support@cust.edu.pk</a>.</p>
+          <p style="font-size: 13px; color: #999;">If you did not request this code, please ignore this email or contact support at <a href="mailto:support@custapp.pk" style="color: #1a73e8;">support@cust.edu.pk</a>.</p>
           <p style="font-size: 13px; color: #999;">© {datetime.now().year} Capital University of Science & Technology. All rights reserved.</p>
         </td>
       </tr>
