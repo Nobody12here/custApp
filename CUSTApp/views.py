@@ -2,10 +2,8 @@
 from datetime import datetime
 from io import BytesIO
 from django.core.mail import EmailMultiAlternatives
-import re
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
-from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.apps import apps
 from django.http import HttpResponse, JsonResponse
@@ -14,13 +12,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from datetime import datetime
 from ApplicationTemplate.models import Applications, Request
-from .models import Program, Users, Department, TemplateAttributes
+from .models import Program, Users, Department
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
     ProgramSerializer,
     UsersSerializer,
     DepartmentSerializer,
-    TemplateAttributesSerializer,
     OTPSendSerializer,
     OTPVerifySerializer,
 )
@@ -31,25 +28,18 @@ from rest_framework.parsers import MultiPartParser
 
 import csv
 import io
-from django.http import FileResponse
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import logging
 import random
-from django.core.mail import send_mail
-from rest_framework.decorators import api_view, permission_classes
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import BasePermission
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.decorators import login_required
-import pdfkit
 from rest_framework.viewsets import ModelViewSet
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -144,7 +134,7 @@ class ApplicationListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Applications.objects.filter(
-            status=1, default_responsible_employee_id=user
+            status=1, default_responsible_employee_id=user.user_id
         )
 
     def list(self, request, *args, **kwargs):
