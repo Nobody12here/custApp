@@ -88,5 +88,6 @@ urlpatterns = [
         GeneratePDFWithLetterheadAPIView.as_view(),
         name="generate_pdf_with_letterhead",
     ),
+    path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view')
 ]
 urlpatterns.extend(router.urls)

@@ -36,7 +36,7 @@ from drf_yasg import openapi
 import logging
 import random
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework.permissions import BasePermission
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
@@ -621,6 +621,28 @@ class OTPVerifyView(APIView):
         except Users.DoesNotExist:
             return Response(
                 {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh_token")
+            print(refresh_token)
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"message": "Logout sucessfully"}, status=status.HTTP_205_RESET_CONTENT
+            )
+        except KeyError:
+            return Response(
+                {"error": "Token not provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except TokenError:
+            return Response(
+                {"error": "Invalide Refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
 
 
