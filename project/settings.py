@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'CUSTApp.apps.CustappConfig',
     'ApplicationTemplate',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist'
+
 ]
 
 MIDDLEWARE = [
@@ -71,8 +73,9 @@ AUTH_USER_MODEL = "CUSTApp.Users"
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'BLACKLIST_AFTER_ROTATION': True,
     'ROTATE_REFRESH_TOKENS': True,
     'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',

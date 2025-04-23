@@ -13,25 +13,26 @@ function checkAuth(requiredUserType = 'Staff') {
         return false;
     }
 
-    // Setup AJAX to include token and handle 401 errors
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('access_token'));
-        },
-        statusCode: {
-            401: function () {
-                // Try refreshing the token
-                if (refreshToken) {
-                    refreshAccessToken(refreshToken).then(success => {
-                        if (success) {
-                            location.reload(); // retry the last action if necessary
-                        } else {
-                            handleSessionExpiry();
-                        }
-                    });
-                } else {
-                    handleSessionExpiry();
-                }
+        }
+    });
+
+    $(document).ajaxError(function (event, jqxhr, settings, thrownError) {
+        if (jqxhr.status === 401) {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken) {
+                refreshAccessToken(refreshToken).then(success => {
+                    if (success) {
+                        // Re-run the original request
+                        $.ajax(settings);
+                    } else {
+                        handleSessionExpiry();
+                    }
+                });
+            } else {
+                handleSessionExpiry();
             }
         }
     });
@@ -47,6 +48,7 @@ function refreshAccessToken(refreshToken) {
         data: JSON.stringify({ refresh: refreshToken })
     })
         .then(response => {
+            console.log(response)
             localStorage.setItem('access_token', response.access);
             return true;
         })
