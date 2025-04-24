@@ -272,14 +272,6 @@
                     });
                 },
                 error: function (xhr, status, error) {
-                    if (xhr.status === 401) {
-                        // Handle unauthorized access
-                        Swal.fire('Error', 'Session expired. Please log in again.', 'error').then(() => {
-                            window.location.href = '/login/';
-                        });
-                    } else {
-                        Swal.fire('Error', 'Failed to fetch departments: ' + error, 'error');
-                    }
                     console.error("Error fetching departments:", error);
                     $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
                 }
