@@ -90,14 +90,7 @@
           </div>
           <div class="user-info">
             <a data-toggle="collapse" href="#collapseExample" class="username">
-              <span>
-                {% if request.user.is_authenticated %}
-                  {{ request.user.username }}
-                {% else %}
-                  Guest
-                {% endif %}
-                <b class="caret"></b>
-              </span>
+              <span class="username">Tania Andrew <b class="caret"></b></span>
             </a>
             <div class="collapse" id="collapseExample">
               <ul class="nav">
@@ -316,6 +309,7 @@
     $(document).ready(function () {
       if (!checkAuth()) return;
       // Fetch and display requests
+      $('.username').text(localStorage.getItem('user_name'))
       function loadRequests(searchTerm = '') {
         $.ajax({
           url: `/requests/`,

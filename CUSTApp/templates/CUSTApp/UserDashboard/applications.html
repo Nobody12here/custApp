@@ -173,14 +173,6 @@
             renderApplications(data);
           },
           error: function (xhr, status, error) {
-            if (xhr.status === 401) {
-              // Handle unauthorized access
-              Swal.fire('Error', 'Session expired. Please log in again.', 'error').then(() => {
-                window.location.href = '/login/';
-              });
-            } else {
-              Swal.fire('Error', 'Failed to fetch departments: ' + error, 'error');
-            }
             console.error("Error fetching departments:", error);
             $('#applications-table').html('<tr><td colspan="7">Error loading applications</td></tr>');
           }
@@ -239,7 +231,7 @@
 
         const detailsHtml = `
           <p><strong>Request ID:</strong> ${app.request_id}</p>
-          <p><strong>Application Type:</strong> ${applicationNames[app.application] || `Application #${app.application}`}</p>
+          <p><strong>Application Type:</strong> ${app.application_name || `Application #${app.application_name}`}</p>
           <p><strong>Status:</strong> ${app.status}</p>
           <p><strong>Applicant ID:</strong> ${app.applicant}</p>
           <p><strong>Created At:</strong> ${new Date(app.created_at).toLocaleString()}</p>
