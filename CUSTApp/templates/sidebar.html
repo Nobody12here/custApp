@@ -1,0 +1,84 @@
+{% load static %}
+<div class="sidebar" data-color="rose" data-background-color="black"
+  data-image="{% static 'assets/img/sidebar-1.jpg' %}">
+  <div class="logo">
+    <a href="#" class="simple-text logo-mini">CT</a>
+    <a href="#" class="simple-text logo-normal">CUST App</a>
+  </div>
+  <div class="sidebar-wrapper">
+    <div class="user">
+      <div class="photo">
+        <img src="{% static 'assets/img/faces/avatar.jpg' %}" />
+      </div>
+      <div class="user-info">
+        <a data-toggle="collapse" href="#collapseExample" class="username">
+          <span class="username">Tania Andrew <b class="caret"></b></span>
+        </a>
+        <div class="collapse" id="collapseExample">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="sidebar-mini"> MP </span>
+                <span class="sidebar-normal"> My Profile </span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="sidebar-mini"> EP </span>
+                <span class="sidebar-normal"> Edit Profile </span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span class="sidebar-mini"> S </span>
+                <span class="sidebar-normal"> Settings </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- Debug Output -->
+      <div style="color: red;">
+        <!-- Debug: Authenticated={{ request.user.is_authenticated }} Username={{ request.user.username }} -->
+      </div>
+    </div>
+    <ul class="nav">
+      <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+        <a class="nav-link" href="/user/dashboard/">
+          <i class="material-icons">dashboard</i>
+          <p>Dashboard</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'myapplications' %}active{% endif %}">
+        <a class="nav-link" href="/myapplications/">
+          <i class="material-icons">view_list</i>
+          <p>View Existing Applications</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'categories' %}active{% endif %}">
+        <a class="nav-link" href="/categories/">
+          <i class="material-icons">category</i>
+          <p>Categories</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'new-application' %}active{% endif %}">
+        <a class="nav-link" href="/new-application/">
+          <i class="material-icons">note_add</i>
+          <p>New Application</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+        <a class="nav-link" href="/reports/">
+          <i class="material-icons">bar_chart</i>
+          <p>Reports</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'support' %}active{% endif %}">
+        <a class="nav-link" href="/support/">
+          <i class="material-icons">help</i>
+          <p>Support</p>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
