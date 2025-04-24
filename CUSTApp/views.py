@@ -197,7 +197,7 @@ class ApplicationRequestAPIView(APIView):
                     ,status=status.HTTP_404_NOT_FOUND)
             # Verify applicant exists
             try:
-                applicant = Users.objects.get(user_id=student_id)
+                applicant = Users.objects.get(uu_id=student_id)
             except Users.DoesNotExist:
                 return Response(
                     {
@@ -243,10 +243,10 @@ class ApplicationRequestAPIView(APIView):
             # Prepare serializer data
             request_data = {
                 "application": application_id,
-                "applicant": student_id,
+                "applicant": applicant.user_id,
                 "status": "Pending",
                 "payment_status": "Pending",
-                "StudentID": student_id,
+                "StudentID": applicant.user_id,
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
                 "comments": comment_data,
