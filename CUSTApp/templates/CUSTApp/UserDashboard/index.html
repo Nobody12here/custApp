@@ -90,7 +90,14 @@
           </div>
           <div class="user-info">
             <a data-toggle="collapse" href="#collapseExample" class="username">
-              <span>Tania Andrew <b class="caret"></b></span>
+              <span>
+                {% if request.user.is_authenticated %}
+                  {{ request.user.username }}
+                {% else %}
+                  Guest
+                {% endif %}
+                <b class="caret"></b>
+              </span>
             </a>
             <div class="collapse" id="collapseExample">
               <ul class="nav">
@@ -114,6 +121,10 @@
                 </li>
               </ul>
             </div>
+          </div>
+          <!-- Debug Output -->
+          <div style="color: red;">
+            Debug: Authenticated={{ request.user.is_authenticated }} Username={{ request.user.username }}
           </div>
         </div>
         <ul class="nav">
