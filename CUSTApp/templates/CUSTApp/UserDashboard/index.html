@@ -425,9 +425,6 @@
       $.ajax({
         url: `/add-comment/${requestId}/`,
         method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        },
         data: {
           text: commentText
         },
@@ -435,25 +432,11 @@
           if (data.success) {
             $('#chatInput').val('');
             // Refresh comments
-            $.ajax({
-              url: `/requests/${requestId}/`,
-              method: 'GET',
-              success: function (request) {
-                const comments = encodeURIComponent(JSON.stringify(request.comments || []));
-                $('.comment-btn[data-request-id="' + requestId + '"]').data('comments', comments);
-                setCommentModal($('.comment-btn[data-request-id="' + requestId + '"]')[0]);
-              },
-              error: function () {
-                alert('Failed to refresh comments');
-              }
-            });
+            loadRequests();
+            
           } else {
             alert(data.error || 'Failed to add comment');
           }
-        },
-        error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while adding the comment: ' + (xhr.responseJSON?.error || error));
         }
       });
     };

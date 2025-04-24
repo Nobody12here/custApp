@@ -135,7 +135,7 @@
       const formData = new FormData();
       formData.append('applicationID', applicationId);
       formData.append('studentID', studentId);
-      formData.append('comments', JSON.stringify(comments ? [comments] : []));
+      formData.append('comments', comments);
       if (file) formData.append('request_file', file);
 
       $.ajax({
