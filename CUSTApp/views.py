@@ -848,10 +848,12 @@ def admin_templates(request):
 
 
 def user_dashboard(request):
-    return render(
-        request,
-        "CUSTApp/UserDashboard/index.html",
-    )
+    context = {
+        'page_title': 'Dashboard',
+        'active_page': 'dashboard'
+    }
+    return render(request, 'CUSTApp/UserDashboard/index.html', context)
+    
 
 
 def view_applications(request):
@@ -872,3 +874,7 @@ def new_application(request):
 def reports(request):
 
     return render(request, "CUSTApp/UserDashboard/reports.html")
+
+def support(request):
+
+    return render(request, "CUSTApp/UserDashboard/support.html")
