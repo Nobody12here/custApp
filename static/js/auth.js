@@ -48,7 +48,8 @@ function refreshAccessToken(refreshToken) {
         data: JSON.stringify({ refresh: refreshToken })
     })
         .then(response => {
-            console.log(response)
+            console.log(response.refresh)
+            localStorage.setItem('refresh_token',response.refresh)
             localStorage.setItem('access_token', response.access);
             return true;
         })
