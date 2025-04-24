@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ subject }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #343a40;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      border-bottom: 1px solid #dee2e6;
+      margin-bottom: 20px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>{{ subject }}</h2>
+    </div>
+    <p>Hello {{ recipient_name }},</p>
+    <p>{{ message }}</p>
+
+    {% if action_url %}
+      <a href="{{ action_url }}" class="button">View Application</a>
+    {% endif %}
+
+    <div class="footer">
+      <p>You're receiving this alert from {{ site_name }}.</p>
+      <p>For support, contact us at {{ support_email }}.</p>
+    </div>
+  </div>
+</body>
+</html>
