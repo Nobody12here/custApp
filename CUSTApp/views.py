@@ -25,7 +25,7 @@ from .serializers import (
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser
-
+from .utils import send_alert_email
 import csv
 import io
 from reportlab.lib.pagesizes import letter
@@ -189,7 +189,12 @@ class ApplicationRequestAPIView(APIView):
                 )
 
             employee_id = application.default_responsible_employee_id
-            app_name = application.application_name
+            try:
+                employee = Users.objects.get(user_id=employee_id)
+            except ObjectDoesNotExist:
+                return Response({
+                    "status":"error","message":"Invalid employeeId",}
+                    ,status=status.HTTP_404_NOT_FOUND)
             # Verify applicant exists
             try:
                 applicant = Users.objects.get(user_id=student_id)
@@ -255,6 +260,7 @@ class ApplicationRequestAPIView(APIView):
             if serializer.is_valid():
                 logger.info("Serializer is valid")
                 new_request = serializer.save()
+                send_alert_email(employee.email,"New Application request Generated","A new application has been submitted. Please review it at your earliest convenience.",recipient_name=employee.name)
                 logger.info("Request created: %s", new_request.request_id)
             else:
                 logger.error("Serializer errors: %s", serializer.errors)
