@@ -1,325 +1,362 @@
+{% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
+{% block title %}CUST App - View Existing Applications{% endblock %}
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <title>CUST App - View Existing Applications</title>
-  <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-  <link rel="stylesheet" type="text/css"
-    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-  <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
-</head>
+{% block extra_css %}
+<style>
+  .text-success { color: #28a745; }
+  .text-danger { color: #dc3545; }
+  .text-warning { color: #ffc107; }
 
-<body class="">
-  <div class="wrapper">
-    <div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
-      <div class="logo">
-        <a href="#" class="simple-text logo-mini">CT</a>
-        <a href="#" class="simple-text logo-normal">CUST App</a>
-      </div>
-      <div class="sidebar-wrapper">
-        <div class="user">
-          <div class="photo"><img src="../assets/img/faces/avatar.jpg" /></div>
-          <div class="user-info">
-            <a data-toggle="collapse" href="#collapseExample" class="username">
-              <span>Tania Andrew <b class="caret"></b></span>
-            </a>
-            <div class="collapse" id="collapseExample">
-              <ul class="nav">
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> MP </span><span
-                      class="sidebar-normal"> My Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> EP </span><span
-                      class="sidebar-normal"> Edit Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> S </span><span
-                      class="sidebar-normal"> Settings </span></a></li>
-              </ul>
-            </div>
+  /* Modal Styling */
+  #viewApplicationModal .modal-content {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: none;
+  }
+
+  #viewApplicationModal .modal-header {
+    background: linear-gradient(60deg, #ab47bc, #8e24aa);
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 20px;
+  }
+
+  #viewApplicationModal .modal-title {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+  }
+
+  #viewApplicationModal .modal-body {
+    padding: 20px 30px;
+    background: #f8f9fa;
+  }
+
+  #viewApplicationModal .application-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  #viewApplicationModal .detail-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+
+  #viewApplicationModal .detail-item:hover {
+    transform: translateY(-2px);
+  }
+
+  #viewApplicationModal .detail-item strong {
+    display: block;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+
+  #viewApplicationModal .detail-item span {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    color: #555;
+    font-size: 1rem;
+    word-wrap: break-word;
+  }
+
+  #viewApplicationModal .modal-footer {
+    padding: 15px 30px;
+    border-top: none;
+    background: #f8f9fa;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  #viewApplicationModal .btn-secondary {
+    background: #999;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    transition: background 0.3s;
+  }
+
+  #viewApplicationModal .btn-secondary:hover {
+    background: #777;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    #viewApplicationModal .application-details {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header card-header-primary">
+            <h4 class="card-title">Existing Applications</h4>
+            <p class="card-category">View and manage all submitted applications</p>
           </div>
-        </div>
-        <ul class="nav">
-          <li class="nav-item"><a class="nav-link" href="/user/dashboard/"><i class="material-icons">dashboard</i>
-              <p>Dashboard</p>
-            </a></li>
-          <li class="nav-item active"><a class="nav-link" href="/myapplications/"><i
-                class="material-icons">view_list</i>
-              <p>View Existing Applications</p>
-            </a></li>
-          <li class="nav-item"><a class="nav-link" href="/categories/"><i class="material-icons">category</i>
-              <p>Categories</p>
-            </a></li>
-          <li class="nav-item"><a class="nav-link" href="/new-application/"><i class="material-icons">note_add</i>
-              <p>New Application</p>
-            </a></li>
-          <li class="nav-item"><a class="nav-link" href="/reports/"><i class="material-icons">bar_chart</i>
-              <p>Reports</p>
-            </a></li>
-          <li class="nav-item"><a class="nav-link" href="/support/"><i class="material-icons">help</i>
-              <p>Support</p>
-            </a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="main-panel">
-      <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
-        <div class="container-fluid">
-          <div class="navbar-wrapper"><a class="navbar-brand" href="#">View Existing Applications</a></div>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index"
-            aria-expanded="false" aria-label="Toggle navigation">
-            <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon icon-bar"></span><span
-              class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span>
-          </button>
-          <div class="collapse navbar-collapse justify-content-end">
-            <form class="navbar-form" id="search-form">
-              <div class="input-group no-border">
-                <input type="text" id="search-input" class="form-control" placeholder="Search applications...">
-                <button type="submit" class="btn btn-white btn-round btn-just-icon"><i
-                    class="material-icons">search</i></button>
-              </div>
-            </form>
-            <ul class="navbar-nav">
-              <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true"
-                  aria-expanded="false">
-                  <i class="material-icons">person</i>
-                  <p class="d-lg-none d-md-block">Account</p>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
-                  <a class="dropdown-item" href="#">Profile</a><a class="dropdown-item" href="#">Settings</a>
-                  <div class="dropdown-divider"></div><a class="dropdown-item" href="#">Log out</a>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-      <div class="content">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title">Existing Applications</h4>
-                  <p class="card-category">View and manage all submitted applications</p>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table">
-                      <thead class="text-primary">
-                        <tr>
-                          <th>ID</th>
-                          <th>Request Type</th>
-                          <th>Date</th>
-                          <th>Status</th>
-                          <th>Comments</th>
-                          <th>Details</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody id="applications-table">
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Modal for Viewing Application Details -->
-      <div class="modal fade" id="viewApplicationModal" tabindex="-1" role="dialog"
-        aria-labelledby="viewApplicationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="viewApplicationModalLabel">Application Details</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <div id="application-details"></div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="text-primary">
+                  <tr>
+                    <th>ID</th>
+                    <th>Request Type</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Comments</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="applications-table">
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
-  <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
-  <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
+</div>
 
-  <script>
-    $(document).ready(function () {
-      if (!checkAuth()) return;
-      // Fetch and render applications
-      function fetchApplications() {
-        return $.ajax({
-          url: '/requests/',
-          method: 'GET',
-          success: function (data) {
-            allApplications = data;
-            renderApplications(data);
-          },
-          error: function (xhr, status, error) {
-            console.error("Error fetching departments:", error);
-            $('#applications-table').html('<tr><td colspan="7">Error loading applications</td></tr>');
-          }
-        });
-      }
+<!-- Modal for Viewing Application Details -->
+<div class="modal fade" id="viewApplicationModal" tabindex="-1" role="dialog"
+  aria-labelledby="viewApplicationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewApplicationModalLabel">Application Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="application-details" id="application-details"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-      // Render applications to table
-      function renderApplications(data) {
-        const tbody = $('#applications-table');
-        tbody.empty();
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  $(document).ready(function () {
+    if (!checkAuth()) return;
+    let allApplications = [];
 
-        data.forEach(function (app) {
-          const statusClass = {
-            'Approved': 'text-success',
-            'Rejected': 'text-danger',
-            'Pending': 'text-warning'
-          }[app.status] || '';
-
-          const appName = app.application_name || `Application #${app.application_name}`;
-
-          const row = `
-            <tr>
-              <td>${app.request_id}</td>
-              <td>${appName}</td>
-              <td>${new Date(app.created_at).toLocaleDateString()}</td>
-              <td><span class="${statusClass}">${app.status}</span></td>
-              <td>${app.comments || '-'}</td>
-              <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
-              <td>
-                <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
-                <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
-              </td>
-            </tr>`;
-          tbody.append(row);
-        });
-
-        // Attach event listeners for view and download buttons
-        $('.view-btn').off('click').on('click', function () {
-          const requestId = parseInt($(this).data('request-id'));
-          viewApplication(requestId);
-        });
-
-        $('.download-btn').off('click').on('click', function () {
-          const requestId = parseInt($(this).data('request-id'));
-          downloadApplication(requestId);
-        });
-      }
-
-      // View application details in modal
-      function viewApplication(requestId) {
-        const app = allApplications.find(a => a.request_id === requestId);
-        if (!app) {
-          alert('Application not found');
-          return;
-        }
-
-        const detailsHtml = `
-          <p><strong>Request ID:</strong> ${app.request_id}</p>
-          <p><strong>Application Type:</strong> ${app.application_name || `Application #${app.application_name}`}</p>
-          <p><strong>Status:</strong> ${app.status}</p>
-          <p><strong>Applicant ID:</strong> ${app.applicant}</p>
-          <p><strong>Created At:</strong> ${new Date(app.created_at).toLocaleString()}</p>
-          <p><strong>Updated At:</strong> ${new Date(app.updated_at).toLocaleString()}</p>
-          <p><strong>Comments:</strong> ${app.comments || '-'}</p>
-          <p><strong>Payment Status:</strong> ${app.payment_status}</p>
-          <p><strong>Payment Date:</strong> ${app.payment_date || '-'}</p>
-          <p><strong>Employee ID:</strong> ${app.EmployeeID || '-'}</p>
-          <p><strong>Student ID:</strong> ${app.StudentID || '-'}</p>
-          <p><strong>Rendered Template:</strong> ${app.renderedtemplate || '-'}</p>
-        `;
-        $('#application-details').html(detailsHtml);
-        $('#viewApplicationModal').modal('show');
-      }
-
-      // Download application as PDF
-      function downloadApplication(requestId) {
-        console.log('Sending request with requestId:', requestId); // Log input
-        $.ajax({
-          url: '/generate-pdf-with-letterhead/',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ request_id: requestId }),
-          xhrFields: {
-            responseType: 'blob' // For PDF response
-          },
-          success: function (data, textStatus, jqXHR) {
-            console.log('Response received:', { status: jqXHR.status, contentType: jqXHR.getResponseHeader('Content-Type') });
-            var contentType = jqXHR.getResponseHeader('Content-Type');
-            if (contentType && contentType.includes('application/pdf')) {
-              var blob = new Blob([data], { type: 'application/pdf' });
-              var url = window.URL.createObjectURL(blob);
-              var link = document.createElement('a');
-              link.href = url;
-              link.download = 'letter.pdf';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              window.URL.revokeObjectURL(url);
-            } else {
-              alert('Failed to download PDF: Invalid response from server');
-              console.error('Unexpected response:', data);
-            }
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-            // Log full response details
-            console.error('AJAX Error:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              responseJSON: jqXHR.responseJSON
-            });
-            var errorMessage = 'An error occurred while downloading the PDF';
-            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-              errorMessage = jqXHR.responseJSON.error; // e.g., "request_id is required"
-            } else if (jqXHR.statusText) {
-              errorMessage = `Failed to download PDF: ${jqXHR.statusText}`;
-            }
-            alert(errorMessage);
-          }
-        });
-      }
-
-      // Search functionality
-      $('#search-form').on('submit', function (e) {
-        e.preventDefault();
-        const searchTerm = $('#search-input').val().toLowerCase();
-        const filteredApplications = allApplications.filter(app => {
-          const appName = (applicationNames[app.application] || `Application #${app.application}`).toLowerCase();
-          return (
-            app.request_id.toString().includes(searchTerm) ||
-            appName.includes(searchTerm) ||
-            app.status.toLowerCase().includes(searchTerm) ||
-            (app.comments && app.comments.toLowerCase().includes(searchTerm))
-          );
-        });
-        renderApplications(filteredApplications);
-      });
-
-      // Clear search on input change
-      $('#search-input').on('input', function () {
-        if ($(this).val() === '') {
-          renderApplications(allApplications);
+    // Fetch and render applications
+    function fetchApplications() {
+      return $.ajax({
+        url: '/requests/',
+        method: 'GET',
+        success: function (data) {
+          allApplications = data;
+          renderApplications(data);
+        },
+        error: function (xhr, status, error) {
+          console.error("Error fetching applications:", error);
+          $('#applications-table').html('<tr><td colspan="7">Error loading applications</td></tr>');
         }
       });
-      fetchApplications();
+    }
+
+    // Render applications to table
+    function renderApplications(data) {
+      const tbody = $('#applications-table');
+      tbody.empty();
+
+      data.forEach(function (app) {
+        const statusClass = {
+          'Approved': 'text-success',
+          'Rejected': 'text-danger',
+          'Pending': 'text-warning'
+        }[app.status] || '';
+
+        const appName = app.application_name || `Application #${app.application_name}`;
+
+        const row = `
+          <tr>
+            <td>${app.request_id}</td>
+            <td>${appName}</td>
+            <td>${new Date(app.created_at).toLocaleDateString()}</td>
+            <td><span class="${statusClass}">${app.status}</span></td>
+            <td>${app.comments || '-'}</td>
+            <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
+            <td>
+              <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
+              <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
+            </td>
+          </tr>`;
+        tbody.append(row);
+      });
+
+      // Attach event listeners for view and download buttons
+      $('.view-btn').off('click').on('click', function () {
+        const requestId = parseInt($(this).data('request-id'));
+        viewApplication(requestId);
+      });
+
+      $('.download-btn').off('click').on('click', function () {
+        const requestId = parseInt($(this).data('request-id'));
+        downloadApplication(requestId);
+      });
+    }
+
+    // View application details in modal
+    function viewApplication(requestId) {
+      const app = allApplications.find(a => a.request_id === requestId);
+      if (!app) {
+        alert('Application not found');
+        return;
+      }
+
+      const detailsHtml = `
+        <div class="detail-item">
+          <strong>Request ID</strong>
+          <span>${app.request_id}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Application Type</strong>
+          <span>${app.application_name || `Application #${app.application_name}`}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Status</strong>
+          <span>${app.status}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Applicant ID</strong>
+          <span>${app.applicant}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Created At</strong>
+          <span>${new Date(app.created_at).toLocaleString()}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Updated At</strong>
+          <span>${new Date(app.updated_at).toLocaleString()}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Comments</strong>
+          <span>${app.comments || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Payment Status</strong>
+          <span>${app.payment_status}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Payment Date</strong>
+          <span>${app.payment_date || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Employee ID</strong>
+          <span>${app.EmployeeID || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Student ID</strong>
+          <span>${app.StudentID || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Rendered Template</strong>
+          <span>${app.renderedtemplate || '-'}</span>
+        </div>
+      `;
+      $('#application-details').html(detailsHtml);
+      $('#viewApplicationModal').modal('show');
+    }
+
+    // Download application as PDF
+    function downloadApplication(requestId) {
+      console.log('Sending request with requestId:', requestId);
+      $.ajax({
+        url: '/generate-pdf-with-letterhead/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ request_id: requestId }),
+        xhrFields: {
+          responseType: 'blob'
+        },
+        success: function (data, textStatus, jqXHR) {
+          console.log('Response received:', { status: jqXHR.status, contentType: jqXHR.getResponseHeader('Content-Type') });
+          var contentType = jqXHR.getResponseHeader('Content-Type');
+          if (contentType && contentType.includes('application/pdf')) {
+            var blob = new Blob([data], { type: 'application/pdf' });
+            var url = window.URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'letter.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          } else {
+            alert('Failed to download PDF: Invalid response from server');
+            console.error('Unexpected response:', data);
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.error('AJAX Error:', {
+            status: jqXHR.status,
+            statusText: jqXHR.statusText,
+            responseText: jqXHR.responseText,
+            responseJSON: jqXHR.responseJSON
+          });
+          var errorMessage = 'An error occurred while downloading the PDF';
+          if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+            errorMessage = jqXHR.responseJSON.error;
+          } else if (jqXHR.statusText) {
+            errorMessage = `Failed to download PDF: ${jqXHR.statusText}`;
+          }
+          alert(errorMessage);
+        }
+      });
+    }
+
+    // Search functionality
+    $('#search-form').on('submit', function (e) {
+      e.preventDefault();
+      const searchTerm = $('#search-input').val().toLowerCase();
+      const filteredApplications = allApplications.filter(app => {
+        const appName = (app.application_name || `Application #${app.application_name}`).toLowerCase();
+        return (
+          app.request_id.toString().includes(searchTerm) ||
+          appName.includes(searchTerm) ||
+          app.status.toLowerCase().includes(searchTerm) ||
+          (app.comments && app.comments.toLowerCase().includes(searchTerm))
+        );
+      });
+      renderApplications(filteredApplications);
     });
-  </script>
-</body>
 
-</html>
+    // Clear search on input change
+    $('#search-input').on('input', function () {
+      if ($(this).val() === '') {
+        renderApplications(allApplications);
+      }
+    });
+
+    fetchApplications();
+  });
+</script>
+{% endblock %}
