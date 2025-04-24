@@ -63,3 +63,30 @@ function handleSessionExpiry() {
     localStorage.removeItem('refresh_token');
     window.location.href = '/login/';
 }
+function logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    // Call the logout API if refresh token is available
+    if (refreshToken) {
+        $.ajax({
+            url: '/api/logout/', // Update to your actual logout endpoint if different
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ refresh_token: refreshToken }),
+            complete: function () {
+                // Clear tokens and redirect to login regardless of API success/failure
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user_type');
+                window.location.href = '/login/';
+            }
+        });
+    } else {
+        // Just clear and redirect if no refresh token is available
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_type');
+        window.location.href = '/login/';
+    }
+}
+

@@ -190,16 +190,16 @@
             'Rejected': 'text-danger',
             'Pending': 'text-warning'
           }[app.status] || '';
-
+          console.log('Comments ',app.comments)
           const appName = app.application_name || `Application #${app.application_name}`;
-
+          const recentComment = app.comments[app.comments.length - 1].text
           const row = `
             <tr>
               <td>${app.request_id}</td>
               <td>${appName}</td>
               <td>${new Date(app.created_at).toLocaleDateString()}</td>
               <td><span class="${statusClass}">${app.status}</span></td>
-              <td>${app.comments || '-'}</td>
+              <td>${JSON.parse(recentComment) || '-'}</td>
               <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
               <td>
                 <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
