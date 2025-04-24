@@ -66,27 +66,8 @@
       // Logout functionality
       $('#logoutButton').on('click', function (e) {
         e.preventDefault();
-        $.ajax({
-          url: '/api/logout/',
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-          },
-          success: function (data) {
-            if (data.success) {
-              localStorage.clear();
-              alert('Logged out successfully');
-              window.location.href = '/login/';
-            } else {
-              alert(data.error || 'Failed to log out');
-            }
-          },
-          error: function (xhr, status, error) {
-            console.error('Logout error:', error);
-            alert('An error occurred while logging out');
-          }
-        });
-      });
+        logout()
+      })
     });
   </script>
 
