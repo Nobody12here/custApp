@@ -1,78 +1,39 @@
-<!-- includes/sidebar.html -->
-{% load static %}
-<div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
+{%load static%}
+<div class="sidebar" data-color="rose" data-background-color="black"
+    data-image="{% static 'assets/img/sidebar-1.jpg' %}">
     <div class="logo">
         <a href="#" class="simple-text logo-normal">CUST PORTAL</a>
     </div>
     <div class="sidebar-wrapper">
         <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.html">
+            <li class="nav-item active">
+                <a class="nav-link" href="/myadmin/dashboard/">
                     <i class="material-icons">create</i>
                     <p>Create Applications</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="templates.html">
+                <a class="nav-link" href="/admin-templates/">
                     <i class="material-icons">visibility</i>
                     <p>View Existing Applications</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="students.html">
+                <a class="nav-link" href="/students/">
                     <i class="material-icons">people</i>
                     <p>Students</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="departments.html">
-                    <i class="material-icons">business</i>
-                    <p>Departments & Programs</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="faculty.html">
+                <a class="nav-link" href="/admin-faculty/">
                     <i class="material-icons">school</i>
                     <p>Faculty</p>
                 </a>
             </li>
-        </ul>
-    </div>
-</div><!-- includes/sidebar.html -->
-<div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
-    <div class="logo">
-        <a href="#" class="simple-text logo-normal">CUST PORTAL</a>
-    </div>
-    <div class="sidebar-wrapper">
-        <ul class="nav">
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
-                    <i class="material-icons">create</i>
-                    <p>Create Applications</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="templates.html">
-                    <i class="material-icons">visibility</i>
-                    <p>View Existing Applications</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="students.html">
-                    <i class="material-icons">people</i>
-                    <p>Students</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="admin-departments.html">
+                <a class="nav-link" href="/admin-departments/">
                     <i class="material-icons">business</i>
                     <p>Departments & Programs</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="faculty.html">
-                    <i class="material-icons">school</i>
-                    <p>Faculty</p>
                 </a>
             </li>
         </ul>
