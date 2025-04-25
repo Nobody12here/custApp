@@ -11,7 +11,8 @@
     <title>Applications Dashboard</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
     <!-- Load Fonts and Icons -->
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- Load CSS -->
     <link href="{% static '/assets/css/material-dashboard.css' %}" rel="stylesheet" />
@@ -23,7 +24,8 @@
     <style>
         .action-buttons {
             display: flex;
-            gap: 5px; /* Space between buttons */
+            gap: 5px;
+            /* Space between buttons */
             align-items: center;
         }
     </style>
@@ -31,93 +33,10 @@
 
 <body class="">
     <div class="wrapper">
-        <div class="sidebar" data-color="rose" data-background-color="black"
-            data-image="{% static 'assets/img/sidebar-1.jpg' %}">
-            <div class="logo">
-                <a href="#" class="simple-text logo-normal">CUST PORTAL</a>
-            </div>
-            <div class="sidebar-wrapper">
-                <ul class="nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/index/">
-                            <i class="material-icons">create</i>
-                            <p>Create Applications</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin-templates/">
-                            <i class="material-icons">visibility</i>
-                            <p>View Existing Applications</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/students/">
-                            <i class="material-icons">people</i>
-                            <p>Students</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin-faculty/">
-                            <i class="material-icons">school</i>
-                            <p>Faculty</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin-departments/">
-                            <i class="material-icons">business</i>
-                            <p>Departments & Programs</p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
+        {% include 'CUSTApp/AdminDashboard/sidebar.html' %}
+
         <div class="main-panel">
-            <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
-                <div class="container-fluid">
-                    <div class="navbar-wrapper">
-                        <a class="navbar-brand" href="javascript:;">Admin Dashboard</a>
-                    </div>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="navbar-toggler-icon icon-bar"></span>
-                        <span class="navbar-toggler-icon icon-bar"></span>
-                        <span class="navbar-toggler-icon icon-bar"></span>
-                    </button>
-                    <div class="collapse navbar-collapse justify-content-end">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="javascript:;">
-                                    <i class="material-icons">dashboard</i>
-                                    <p class="d-lg-none d-md-block">Stats</p>
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link" href="javascript:;" id="navbarDropdownMenuLink"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="material-icons">notifications</i>
-                                    <span class="notification">5</span>
-                                    <p class="d-lg-none d-md-block">Some Actions</p>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                                    <a class="dropdown-item" href="#">Mike John responded to your email</a>
-                                    <a class="dropdown-item" href="#">You have 5 new tasks</a>
-                                    <a class="dropdown-item" href="#">You're now friend with Andrew</a>
-                                    <a class="dropdown-item" href="#">Another Notification</a>
-                                    <a class="dropdown-item" href="#">Another One</a>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="javascript:;">
-                                    <i class="material-icons">person</i>
-                                    <p class="d-lg-none d-md-block">Account</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+            {% include 'CUSTApp/AdminDashboard/navbar.html' %}
 
             <div class="content">
                 <div class="container-fluid">
@@ -129,7 +48,8 @@
                                     <p class="card-category">View, update, download, or delete applications</p>
                                 </div>
                                 <div class="card-body">
-                                    <table id="templatesTable" class="table table-striped table-bordered" style="width:100%">
+                                    <table id="templatesTable" class="table table-striped table-bordered"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -151,7 +71,8 @@
     </div>
 
     <!-- Modal for Updating Application -->
-    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -181,29 +102,29 @@
         </div>
     </div>
 
-<script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
-<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
-<script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
-<script src="{% static 'assets/js/plugins/bootstrap-datetimepicker.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-<script src="{% static 'assets/js/plugins/bootstrap-tagsinput.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jasny-bootstrap.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/fullcalendar.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
-<script src="{% static 'assets/js/plugins/nouislider.min.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
-<script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
-<script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
-<script src="{% static 'assets/js/material-dashboard.js?v=2.2.2' %}" type="text/javascript"></script>
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery.dataTables.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-tagsinput.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jasny-bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/fullcalendar.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/nouislider.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+    <script src="{% static 'assets/js/plugins/arrive.min.js' %}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+    <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+    <script src="{% static 'assets/js/material-dashboard.js?v=2.2.2' %}" type="text/javascript"></script>
 
     <script>
         let updateEditor = null;
@@ -219,10 +140,10 @@
                     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                 }
             });
-           
-        
+
+
             // Load Sidebar and Navbar
-            $("#sidebar-placeholder").load("./sidebar.html", function() {
+            $("#sidebar-placeholder").load("./sidebar.html", function () {
                 // Highlight the active page
                 $('.nav-link[href="templates.html"]').parent().addClass('active');
                 // Reinitialize sidebar styles
@@ -231,7 +152,7 @@
                 }
             });
 
-            $("#navbar-placeholder").load("./navbar.html", function() {
+            $("#navbar-placeholder").load("./navbar.html", function () {
                 // Set navbar title
                 $("#navbarTitle").text("Applications Dashboard");
                 // Reinitialize Material Dashboard components and Bootstrap dropdowns
@@ -250,7 +171,7 @@
             const table = $('#templatesTable').DataTable({
                 ajax: {
                     url: '/api/application/',
-                    dataSrc: function(json) {
+                    dataSrc: function (json) {
                         console.log('Applications data received:', json);
                         if (json.error) {
                             Swal.fire('Error', json.error, 'error');
@@ -258,7 +179,7 @@
                         }
                         return json;
                     },
-                    error: function(xhr, error, thrown) {
+                    error: function (xhr, error, thrown) {
                         console.error('DataTables AJAX error:', xhr.responseText);
                         Swal.fire('Error', 'Failed to load applications: ' + error, 'error');
                     }
@@ -266,9 +187,9 @@
                 columns: [
                     { data: 'id' },
                     { data: 'application_name' },
-                    { 
+                    {
                         data: 'application_desc',
-                        render: function(data) {
+                        render: function (data) {
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = data;
                             const text = tempDiv.textContent || tempDiv.innerText || '';
@@ -278,7 +199,7 @@
                     { data: 'created_at' },
                     {
                         data: null,
-                        render: function(data, type, row) {
+                        render: function (data, type, row) {
                             const safeContent = row.application_desc.replace(/`/g, '\\`').replace(/'/g, "\\'");
                             const safeName = row.application_name.replace(/'/g, "\\'");
                             return `
@@ -352,16 +273,16 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ id: id, application_name: name, application_desc: content }),
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     if (response.id) {
-                        Swal.fire('Success', response.application_name , ' updated successfully!');
+                        Swal.fire('Success', response.application_name, ' updated successfully!');
                         $('#updateModal').modal('hide');
                         $('#templatesTable').DataTable().ajax.reload();
                     } else {
                         Swal.fire('Error', response.error || 'Failed to update application', 'error');
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to update application: ' + error, 'error');
                     console.error('Update error:', xhr.responseText);
                 }
@@ -374,7 +295,7 @@
                 method: 'POST',
                 data: { name: name, content: content },
                 xhrFields: { responseType: 'blob' },
-                success: function(data, status, xhr) {
+                success: function (data, status, xhr) {
                     const contentType = xhr.getResponseHeader('Content-Type');
                     if (contentType.includes('application/pdf')) {
                         const blob = new Blob([data], { type: 'application/pdf' });
@@ -389,7 +310,7 @@
                         Swal.fire('Success', 'PDF downloaded successfully', 'success');
                     } else {
                         const reader = new FileReader();
-                        reader.onload = function() {
+                        reader.onload = function () {
                             try {
                                 const json = JSON.parse(reader.result);
                                 Swal.fire('Error', json.error || 'Failed to generate PDF', 'error');
@@ -400,7 +321,7 @@
                         reader.readAsText(data);
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire('Error', 'Failed to generate PDF: ' + error, 'error');
                     console.error('PDF generation error:', xhr.responseText);
                 }
@@ -411,7 +332,7 @@
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
-                
+
                 showCancelButton: true,
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
@@ -422,8 +343,8 @@
                         url: `/api/application/${id}`,
                         method: 'DELETE',
                         contentType: 'application/json',
-                        
-                        success: function(response) {
+
+                        success: function (response) {
                             console.log('Delete response:', response);
                             if (response.success) {
                                 Swal.fire('Deleted!', response.success, 'success');
@@ -432,7 +353,7 @@
                                 Swal.fire('Error', response.error || 'Failed to delete application', 'error');
                             }
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.error('Delete AJAX error:', xhr.responseText, 'Status:', status);
                             Swal.fire('Error', 'Failed to delete application: ' + error, 'error');
                         }
