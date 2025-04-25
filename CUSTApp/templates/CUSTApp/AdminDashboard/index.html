@@ -165,6 +165,12 @@
         $(document).ready(function () {
             if(!checkAuth(requiredUserType='admin')) return;
             fetchDepartments();
+            
+        // Logout functionality
+        $('#logoutButton').on('click', function (e) {
+            e.preventDefault();
+            logout()
+        })
         });
 
         function fetchDepartments() {
