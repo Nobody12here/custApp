@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'webpush',
     'drf_yasg',
     'rest_framework',
     'CUSTApp.apps.CustappConfig',
@@ -50,12 +51,18 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist'
 
 ]
-
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BEUPeYWttrMsi5a56-vp9nmIDAJ6kReVWyvsGbLVmJAoRJABTAM20xC2qnlPCPlre_uebZYKTEMbOaFmfqrRk9s",
+    "VAPID_PRIVATE_KEY": "XvsvKvcoLXGAvQ2FH67BD_XP9FIbNMRw4r-9thC_AZo",
+    "VAPID_ADMIN_EMAIL": "support@custapp.pk"
+}
 MIDDLEWARE = [
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'project.middleware.jwt_auth_middleware.JWTAuthenticationMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

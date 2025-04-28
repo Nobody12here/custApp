@@ -50,7 +50,7 @@ from ApplicationTemplate.models import Applications
 from .models import Users
 from .serializers import RequestSerializer
 import json
-
+from webpush import send_user_notification
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
@@ -153,6 +153,7 @@ class ApplicationRequestAPIView(APIView):
 
     def post(self, request):
         try:
+            print("request.user.is_authenticated", request.user.name)
             # Extract data fprirom request
             application_id = request.data.get("applicationID")
             student_id = request.data.get("studentID")
@@ -260,7 +261,7 @@ class ApplicationRequestAPIView(APIView):
             if serializer.is_valid():
                 logger.info("Serializer is valid")
                 new_request = serializer.save()
-                send_alert_email(employee.email,"New Application request Generated","A new application has been submitted. Please review it at your earliest convenience.",recipient_name=employee.name)
+                send_user_notification(user=request.user, payload={"head": "New Application request Generated", "body": "A new application has been submitted. Please review it at your earliest convenience."}, ttl=10000)
                 logger.info("Request created: %s", new_request.request_id)
             else:
                 logger.error("Serializer errors: %s", serializer.errors)
