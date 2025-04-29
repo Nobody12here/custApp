@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from datetime import datetime
 from ApplicationTemplate.models import Applications, Request
+from .utils import send_comment_notification
 from .models import Program, Users, Department
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
@@ -50,7 +51,6 @@ from ApplicationTemplate.models import Applications
 from .models import Users
 from .serializers import RequestSerializer
 import json
-from webpush import send_user_notification
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
@@ -92,21 +92,9 @@ class AddCommentView(APIView):
                 "head": "New Comment",
                 "body": f"{name} commented: {text}",
             }
-            if(user_type == "Student"):
-                # Send notification to employee
-                send_user_notification(
-                    employee,
-                    payload=payload,
-                    ttl=1000,
-                )
-            elif(user_type == "Staff"):
-                # Send notification to student
-                send_alert_email(
-                    student.email,
-                    "New Comment on Your Application",
-                    f"{name} commented: {text}",
-                    recipient_name=student.name,
-                )
+            send_comment_notification(
+                user_type, name, text, employee, student
+            )  # Send notification to the other user
             return Response({"success": True})
 
         except Request.DoesNotExist:
@@ -126,8 +114,15 @@ def update_request_status(request, id):
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
+            student = req.applicant
             req.status = status
             req.save()
+            send_alert_email(
+                student.email,
+                "Application Status Update",
+                f"Your application {req.application.application_name} has been {status.lower()}",
+                recipient_name=student.name,
+            )
             return JsonResponse({"success": True})
         except Request.DoesNotExist:
             return JsonResponse({"error": "Request not found"}, status=404)
