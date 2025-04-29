@@ -317,6 +317,8 @@
             const templateContent = $('<div>').html(templateContentHTML).text(); // Convert HTML to plain text
             const departmentId = $('#departmentSelect').val();
             const employeeId = $('#employeeSelect').val();
+            let applicationFee = $('#applicationFee').val();
+            
             if (!templateName || !templateContent || !departmentId || !employeeId) {
                 Swal.fire('Error', 'Please fill in All the fields', 'error');
                 return;
@@ -332,6 +334,7 @@
                     application_desc: templateContent,
                     responsible_dept: departmentId,
                     status: 1,
+                    amount:applicationFee,
                     default_responsible_employee: employeeId,
                 }),
                 dataType: 'json',
