@@ -7,23 +7,70 @@
 <style>
   .file-input-wrapper {
     position: relative;
-    display: inline-block;
+    display: block;
+    width: 100%;
+    margin-top: 8px;
   }
 
   .file-input {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     opacity: 0;
+    height: 100%;
+    width: 100%;
     cursor: pointer;
   }
 
   .file-name {
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    display: inline-block;
-    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #999;
+    background: #f9f9f9;
+    text-align: center;
     color: #555;
+    border-radius: 4px;
+  }
+
+  .btn-submit {
+    margin-top: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .btn-submit {
+      width: 100%;
+    }
+  }
+
+  .card .card-header.card-header-primary {
+    background: linear-gradient(60deg, #26c6da, #00acc1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14),
+                0 7px 10px -5px rgba(0, 172, 193, 0.4);
+    color: white;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  select.form-control {
+    height: calc(2.25rem + 10px);
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  input[type="text"].form-control {
+    height: calc(2.25rem + 10px);
+  }
+
+  label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
   }
 </style>
 {% endblock %}
@@ -31,8 +78,8 @@
 {% block content %}
 <div class="content">
   <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-8">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
         <div class="card">
           <div class="card-header card-header-primary">
             <h4 class="card-title">Submit New Application</h4>
@@ -43,20 +90,22 @@
               <div class="row">
                 <div class="col-md-12">
                   <div class="form-group">
-                    <label class="bmd-label-floating"></label>
-                    <select class="form-control" id="applicationType" name="applicationType">
-                      <option value="">Select Application Type</option>
+                    <label for="applicationType">Application Type</label>
+                    <select class="form-control" id="applicationType" name="applicationType" required>
+                      <option value=""></option>
                     </select>
                   </div>
                 </div>
               </div>
+              
+
               <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="bmd-label-floating">Student Name</label>
-                    <input type="text" class="form-control" id="studentName" disabled value="Tania Andrew">
-                  </div>
-                </div>
+                <!-- <div class="col-md-6"> -->
+                  <!-- <div class="form-group"> -->
+                    <!-- <label class="bmd-label-floating">Student Name</label> -->
+                    <!-- <input type="text" class="form-control" id="studentName" disabled value="Tania Andrew"> -->
+                  <!-- </div> -->
+                <!-- </div> -->
                 <div class="col-md-6">
                   <div class="form-group">
                     <label class="bmd-label-floating">Student RegNo</label>
@@ -64,27 +113,27 @@
                   </div>
                 </div>
               </div>
+
               <div class="row">
                 <div class="col-md-12">
                   <div class="form-group">
-                    <label class="bmd-label-floating">Comments</label>
-                    <textarea class="form-control" rows="3" id="comments" name="comments"></textarea>
+                    <label class="bmd-label-floating"></label>
+                    <textarea class="form-control" rows="3" id="comments" name="comments" placeholder="Enter any comments..."></textarea>
                   </div>
                 </div>
               </div>
-              <!-- File Upload Button -->
+
               <div class="row">
                 <div class="col-md-12">
-                  <div class="form-group">
-                    <label for="fileUpload">Upload File</label>
-                    <div class="file-input-wrapper">
-                      <input type="file" class="file-input" id="fileUpload" name="file" />
-                      <div class="file-name" id="fileName">No file selected</div>
-                    </div>
+                  <label for="fileUpload">Upload Supporting Document</label>
+                  <div class="file-input-wrapper">
+                    <input type="file" class="file-input" id="fileUpload" name="file" />
+                    <div class="file-name" id="fileName">No file selected</div>
                   </div>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary pull-right">Submit Application</button>
+
+              <button type="submit" class="btn btn-primary btn-submit">Submit Application</button>
               <div class="clearfix"></div>
             </form>
           </div>
