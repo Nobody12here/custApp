@@ -153,6 +153,12 @@
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
+    
+    $(document).on('click','.card-stats',function(){
+      const selectedAppId = $(this).data('app-id');
+      console.log(selectedAppId)
+        renderRequests(allPendingRequests.filter(r => r.application == selectedAppId))
+      })
     $.ajax({
       url: '/api/applications/',
       method: 'GET',
@@ -165,10 +171,10 @@
         data.forEach((item, index) => {
           const color = colors[index % colors.length];
           const icon = icons[index % icons.length];
-
+          console.log(item.id,item.name)
           const cardHtml = `
             <div class="col-lg-3 col-md-6 col-sm-6">
-              <div class="card card-stats">
+              <div class="card card-stats" data-app-id="${item.id}">
                 <div class="card-header card-header-${color} card-header-icon">
                   <div class="card-icon">
                     <i class="material-icons">${icon}</i>
@@ -202,7 +208,7 @@
         }
       });
     }
-
+    
     // Render requests with optional search filter
     function renderRequests(requests, searchTerm = '') {
       const tbody = $('#requestTableBody');
