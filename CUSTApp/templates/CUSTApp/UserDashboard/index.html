@@ -67,62 +67,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-lg-3 col-md-6 col-sm-6">
-    <div class="card card-stats">
-      <div class="card-header card-header-warning card-header-icon">
-        <div class="card-icon">
-          <i class="material-icons">description</i>
-        </div>
-        <p class="card-category">Bonafide Letter</p>
-        <h3 class="card-title">10</h3>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-md-6 col-sm-6">
-    <div class="card card-stats">
-      <div class="card-header card-header-rose card-header-icon">
-        <div class="card-icon">
-          <i class="material-icons">language</i>
-        </div>
-        <p class="card-category">English Proficiency</p>
-        <h3 class="card-title">5</h3>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-md-6 col-sm-6">
-    <div class="card card-stats">
-      <div class="card-header card-header-success card-header-icon">
-        <div class="card-icon">
-          <i class="material-icons">school</i>
-        </div>
-        <p class="card-category">Admission on Merit</p>
-        <h3 class="card-title">8</h3>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-md-6 col-sm-6">
-    <div class="card card-stats">
-      <div class="card-header card-header-info card-header-icon">
-        <div class="card-icon">
-          <i class="material-icons">verified_user</i>
-        </div>
-        <p class="card-category">Student Verification</p>
-        <h3 class="card-title">12</h3>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-md-6 col-sm-6">
-    <div class="card card-stats">
-      <div class="card-header card-header-primary card-header-icon">
-        <div class="card-icon">
-          <i class="material-icons">attach_money</i>
-        </div>
-        <p class="card-category">Fee Equivalence</p>
-        <h3 class="card-title">7</h3>
-      </div>
-    </div>
-  </div>
+<div class="row" id="application-cards">
+  <!-- Cards will be injected here by JavaScript -->
 </div>
 <div class="row">
   <div class="col-md-12">
@@ -207,6 +153,40 @@
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
+    $.ajax({
+      url: '/api/applications/',
+      method: 'GET',
+      success: function (data) {
+        const colors = ['warning', 'rose', 'success', 'info', 'primary', 'danger'];
+        const icons = [
+          'description', 'language', 'school', 'verified_user', 'attach_money', 'people'
+        ];
+
+        data.forEach((item, index) => {
+          const color = colors[index % colors.length];
+          const icon = icons[index % icons.length];
+
+          const cardHtml = `
+            <div class="col-lg-3 col-md-6 col-sm-6">
+              <div class="card card-stats">
+                <div class="card-header card-header-${color} card-header-icon">
+                  <div class="card-icon">
+                    <i class="material-icons">${icon}</i>
+                  </div>
+                  <p class="card-category">${item.name}</p>
+                  <h3 class="card-title">${item.count ?? 0}</h3>
+                </div>
+              </div>
+            </div>
+          `;
+
+          $('#application-cards').append(cardHtml);
+        });
+      },
+      error: function () {
+        $('#application-cards').html('<p>Error loading application data.</p>');
+      }
+    });
     function loadRequests(searchTerm = '') {
       $.ajax({
         url: `/requests/`,
