@@ -19,7 +19,7 @@ def send_alert_email(to_email, subject, message, recipient_name="User", action_u
     email.send()
 
 
-def send_comment_notification(self, user_type, name, text, employee, student):
+def send_comment_notification(user_type, name, text, employee, student):
     payload = {
         "head": "New Comment",
         "body": f"{name} commented: {text}",
