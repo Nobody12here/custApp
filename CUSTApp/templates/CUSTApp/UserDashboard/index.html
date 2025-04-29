@@ -1,9 +1,5 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}CUST App Dashboard{% endblock %}
-
-{% block extra_css %}
+{% extends 'base.html' %} {% load static %} {% block title %}CUST App
+Dashboard{% endblock %} {% block extra_css %}
 <style>
   .modal-textarea {
     width: 100%;
@@ -64,9 +60,7 @@
     padding: 10px;
   }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="row" id="application-cards">
   <!-- Cards will be injected here by JavaScript -->
 </div>
@@ -87,6 +81,7 @@
                 <th>Date</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>Attachments</th>
                 <th>Comments</th>
               </tr>
             </thead>
@@ -101,13 +96,24 @@
 </div>
 
 <!-- Comment Modal -->
-<div class="modal fade chat-modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel"
-  aria-hidden="true">
+<div
+  class="modal fade chat-modal"
+  id="commentModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="commentModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="commentModalLabel">Comments</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -115,8 +121,17 @@
         <!-- Chat messages will be dynamically inserted here -->
       </div>
       <div class="modal-footer chat-input-container">
-        <input type="text" class="form-control chat-input" id="chatInput" placeholder="Type your comment...">
-        <button type="button" class="btn btn-primary chat-send-btn" onclick="saveComment()">
+        <input
+          type="text"
+          class="form-control chat-input"
+          id="chatInput"
+          placeholder="Type your comment..."
+        />
+        <button
+          type="button"
+          class="btn btn-primary chat-send-btn"
+          onclick="saveComment()"
+        >
           <i class="material-icons">send</i>
         </button>
       </div>
@@ -125,53 +140,90 @@
 </div>
 
 <!-- Template Modal -->
-<div class="modal fade" id="templateModal" tabindex="-1" role="dialog" aria-labelledby="templateModalLabel"
-  aria-hidden="true">
+<div
+  class="modal fade"
+  id="templateModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="templateModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="templateModalLabel">Edit Rendered Template</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title" id="templateModalLabel">
+          Edit Rendered Template
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
           <span aria-hidden="true">×</span>
         </button>
       </div>
       <div class="modal-body">
-        <textarea class="form-control modal-textarea" id="templateModalTextarea" rows="6"
-          placeholder="Enter template content here..."></textarea>
+        <textarea
+          class="form-control modal-textarea"
+          id="templateModalTextarea"
+          rows="6"
+          placeholder="Enter template content here..."
+        ></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="updateTemplate()">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="updateTemplate()"
+        >
+          Update
+        </button>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script>
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
-    
-    $(document).on('click','.card-stats',function(){
-      const selectedAppId = $(this).data('app-id');
-      console.log(selectedAppId)
-        renderRequests(allPendingRequests.filter(r => r.application == selectedAppId))
-      })
+
+    $(document).on("click", ".card-stats", function () {
+      const selectedAppId = $(this).data("app-id");
+      console.log(selectedAppId);
+      renderRequests(
+        allPendingRequests.filter((r) => r.application == selectedAppId)
+      );
+    });
     $.ajax({
-      url: '/api/applications/',
-      method: 'GET',
+      url: "/api/applications/",
+      method: "GET",
       success: function (data) {
-        const colors = ['warning', 'rose', 'success', 'info', 'primary', 'danger'];
+        const colors = [
+          "warning",
+          "rose",
+          "success",
+          "info",
+          "primary",
+          "danger",
+        ];
         const icons = [
-          'description', 'language', 'school', 'verified_user', 'attach_money', 'people'
+          "description",
+          "language",
+          "school",
+          "verified_user",
+          "attach_money",
+          "people",
         ];
 
         data.forEach((item, index) => {
           const color = colors[index % colors.length];
           const icon = icons[index % icons.length];
-          console.log(item.id,item.name)
+          console.log(item.id, item.name);
           const cardHtml = `
             <div class="col-lg-3 col-md-6 col-sm-6">
               <div class="card card-stats" data-app-id="${item.id}">
@@ -186,47 +238,61 @@
             </div>
           `;
 
-          $('#application-cards').append(cardHtml);
+          $("#application-cards").append(cardHtml);
         });
       },
       error: function () {
-        $('#application-cards').html('<p>Error loading application data.</p>');
-      }
+        $("#application-cards").html("<p>Error loading application data.</p>");
+      },
     });
-    function loadRequests(searchTerm = '') {
+    function loadRequests(searchTerm = "") {
       $.ajax({
         url: `/requests/`,
-        method: 'GET',
+        method: "GET",
         success: function (requests) {
           // Filter for pending requests only
-          allPendingRequests = requests.filter(request => request.status === 'Pending');
+          allPendingRequests = requests.filter(
+            (request) => request.status === "Pending"
+          );
           renderRequests(allPendingRequests, searchTerm);
         },
         error: function (xhr, status, error) {
-          console.error('Error fetching requests:', error);
-          $('#requestTableBody').html('<tr><td colspan="6">Failed to load requests.</td></tr>');
-        }
+          console.error("Error fetching requests:", error);
+          $("#requestTableBody").html(
+            '<tr><td colspan="6">Failed to load requests.</td></tr>'
+          );
+        },
       });
     }
-    
+
     // Render requests with optional search filter
-    function renderRequests(requests, searchTerm = '') {
-      const tbody = $('#requestTableBody');
+    function renderRequests(requests, searchTerm = "") {
+      const tbody = $("#requestTableBody");
       tbody.empty();
 
       const filteredRequests = searchTerm
-        ? requests.filter(request => {
-          const requestType = (request.application_name || `Application ${request.application_name}`).toLowerCase();
-          const studentName = (request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`).toLowerCase();
-          const status = request.status.toLowerCase();
-          const comments = (request.comments || []).map(c => c.text).join(' ').toLowerCase();
-          return (
-            requestType.includes(searchTerm) ||
-            studentName.includes(searchTerm) ||
-            status.includes(searchTerm) ||
-            comments.includes(searchTerm)
-          );
-        })
+        ? requests.filter((request) => {
+            const requestType = (
+              request.application_name ||
+              `Application ${request.application_name}`
+            ).toLowerCase();
+            const studentName = (
+              request.StudentID
+                ? `Student ${request.StudentID}`
+                : `Applicant ${request.applicant}`
+            ).toLowerCase();
+            const status = request.status.toLowerCase();
+            const comments = (request.comments || [])
+              .map((c) => c.text)
+              .join(" ")
+              .toLowerCase();
+            return (
+              requestType.includes(searchTerm) ||
+              studentName.includes(searchTerm) ||
+              status.includes(searchTerm) ||
+              comments.includes(searchTerm)
+            );
+          })
         : requests;
 
       if (filteredRequests.length === 0) {
@@ -234,12 +300,20 @@
         return;
       }
 
-      filteredRequests.forEach(request => {
-        const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
-        const requestType = request.application_name || `Application ${request.application_name}`;
+      filteredRequests.forEach((request) => {
+        const studentName = request.StudentID
+          ? `Student ${request.StudentID}`
+          : `Applicant ${request.applicant}`;
+        const requestType =
+          request.application_name || `Application ${request.application_name}`;
         const date = new Date(request.created_at).toLocaleDateString();
-        const renderedTemplate = (request.renderedtemplate || '').replace(/"/g, '"');
-        const comments = encodeURIComponent(JSON.stringify(request.comments || []));
+        const renderedTemplate = (request.renderedtemplate || "").replace(
+          /"/g,
+          '"'
+        );
+        const comments = encodeURIComponent(
+          JSON.stringify(request.comments || [])
+        );
 
         const row = `
           <tr data-request-id="${request.request_id}">
@@ -251,7 +325,9 @@
               <button class="btn btn-info btn-sm view-template-btn" 
                       data-toggle="modal" data-target="#templateModal"
                       data-request-id="${request.request_id}"
-                      onclick="openTemplateModal(${request.request_id}, '${encodeURIComponent(renderedTemplate)}')">
+                      onclick="openTemplateModal(${
+                        request.request_id
+                      }, '${encodeURIComponent(renderedTemplate)}')">
                 View
               </button>
               <button class="btn btn-success btn-sm accept-btn" 
@@ -266,6 +342,12 @@
               </button>
             </td>
             <td>
+  <a href="${request.request_file}" download class="btn btn-primary btn-sm">
+    <i class="material-icons">attach_file</i>
+  </a>
+</td>
+<td>
+            
               <button class="btn btn-secondary btn-sm comment-btn" 
                       data-toggle="modal" data-target="#commentModal"
                       data-request-id="${request.request_id}"
@@ -280,14 +362,14 @@
     }
 
     // Search functionality
-    $('#search-form').on('submit', function (e) {
+    $("#search-form").on("submit", function (e) {
       e.preventDefault();
-      const searchTerm = $('#search-input').val().toLowerCase();
+      const searchTerm = $("#search-input").val().toLowerCase();
       renderRequests(allPendingRequests, searchTerm);
     });
 
     // Real-time search on input
-    $('#search-input').on('input', function () {
+    $("#search-input").on("input", function () {
       const searchTerm = $(this).val().toLowerCase();
       renderRequests(allPendingRequests, searchTerm);
     });
@@ -296,23 +378,23 @@
     window.acceptRequest = function (requestId) {
       $.ajax({
         url: `/update-request-status/${requestId}/`,
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-CSRFToken': getCookie('csrftoken')
+          "X-CSRFToken": getCookie("csrftoken"),
         },
-        data: { status: 'Approved' },
+        data: { status: "Approved" },
         success: function (data) {
           if (data.success) {
-            alert('Request approved successfully');
-            loadRequests($('#search-input').val().toLowerCase());
+            alert("Request approved successfully");
+            loadRequests($("#search-input").val().toLowerCase());
           } else {
-            alert(data.error || 'Failed to approve request');
+            alert(data.error || "Failed to approve request");
           }
         },
         error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while approving the request');
-        }
+          console.error("Error:", error);
+          alert("An error occurred while approving the request");
+        },
       });
     };
 
@@ -320,70 +402,72 @@
     window.rejectRequest = function (requestId) {
       $.ajax({
         url: `/update-request-status/${requestId}/`,
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-CSRFToken': getCookie('csrftoken')
+          "X-CSRFToken": getCookie("csrftoken"),
         },
-        data: { status: 'Rejected' },
+        data: { status: "Rejected" },
         success: function (data) {
           if (data.success) {
-            alert('Request rejected successfully');
-            loadRequests($('#search-input').val().toLowerCase());
+            alert("Request rejected successfully");
+            loadRequests($("#search-input").val().toLowerCase());
           } else {
-            alert(data.error || 'Failed to reject request');
+            alert(data.error || "Failed to reject request");
           }
         },
         error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while rejecting the request');
-        }
+          console.error("Error:", error);
+          alert("An error occurred while rejecting the request");
+        },
       });
     };
 
     // Open template modal
     window.openTemplateModal = function (requestId, renderedTemplate) {
-      $('#templateModalTextarea').val(decodeURIComponent(renderedTemplate));
-      $('#templateModal').data('requestId', requestId);
+      $("#templateModalTextarea").val(decodeURIComponent(renderedTemplate));
+      $("#templateModal").data("requestId", requestId);
     };
 
     // Update template
     window.updateTemplate = function () {
-      const requestId = $('#templateModal').data('requestId');
-      const content = $('#templateModalTextarea').val();
+      const requestId = $("#templateModal").data("requestId");
+      const content = $("#templateModalTextarea").val();
 
       $.ajax({
         url: `/update-rendered-template/${requestId}/`,
-        method: 'POST',
+        method: "POST",
         headers: {
-          'X-CSRFToken': getCookie('csrftoken')
+          "X-CSRFToken": getCookie("csrftoken"),
         },
         data: { content: content },
         success: function (data) {
           if (data.success) {
-            $('#templateModal').modal('hide');
-            loadRequests($('#search-input').val().toLowerCase());
+            $("#templateModal").modal("hide");
+            loadRequests($("#search-input").val().toLowerCase());
           } else {
-            alert(data.error || 'Failed to update template');
+            alert(data.error || "Failed to update template");
           }
         },
         error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while updating the template');
-        }
+          console.error("Error:", error);
+          alert("An error occurred while updating the template");
+        },
       });
     };
 
     // Set comment modal
     window.setCommentModal = function (button) {
-      const requestId = $(button).data('request-id');
-      const comments = JSON.parse(decodeURIComponent($(button).data('comments')));
-      $('#commentModal').data('requestId', requestId);
-      const chatBody = $('#chatBody');
+      const requestId = $(button).data("request-id");
+      const comments = JSON.parse(
+        decodeURIComponent($(button).data("comments"))
+      );
+      $("#commentModal").data("requestId", requestId);
+      const chatBody = $("#chatBody");
       chatBody.empty();
 
-      comments.forEach(comment => {
-        const isStudent = comment.type === 'student';
-        const messageClass = isStudent ? 'student' : 'employee';
+      comments.forEach((comment) => {
+        const isStudent = comment.type === "student";
+        const messageClass = isStudent ? "student" : "employee";
         const timestamp = new Date(comment.timestamp).toLocaleString();
         const message = `
           <div class="chat-message ${messageClass}">
@@ -401,29 +485,28 @@
 
     // Save comment
     window.saveComment = function () {
-      const requestId = $('#commentModal').data('requestId');
-      const commentText = $('#chatInput').val().trim();
+      const requestId = $("#commentModal").data("requestId");
+      const commentText = $("#chatInput").val().trim();
       if (!commentText) {
-        alert('Please enter a comment');
+        alert("Please enter a comment");
         return;
       }
 
       $.ajax({
         url: `/add-comment/${requestId}/`,
-        method: 'POST',
+        method: "POST",
         data: {
-          text: commentText
+          text: commentText,
         },
         success: function (data) {
           if (data.success) {
-            $('#chatInput').val('');
+            $("#chatInput").val("");
             // Refresh comments
             loadRequests();
-            
           } else {
-            alert(data.error || 'Failed to add comment');
+            alert(data.error || "Failed to add comment");
           }
-        }
+        },
       });
     };
 
@@ -431,12 +514,12 @@
     loadRequests();
 
     // Handle comment button click
-    $(document).on('click', '.comment-btn', function () {
+    $(document).on("click", ".comment-btn", function () {
       setCommentModal(this);
     });
 
     // Handle Enter key for sending comment
-    $('#chatInput').on('keypress', function (e) {
+    $("#chatInput").on("keypress", function (e) {
       if (e.which === 13 && !e.shiftKey) {
         e.preventDefault();
         saveComment();
