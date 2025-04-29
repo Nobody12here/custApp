@@ -67,9 +67,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="row" id="application-cards">
-  <!-- Cards will be injected here by JavaScript -->
-</div>
+<div class="row" id="application-cards"></div>
+
 <div class="row">
   <div class="col-md-12">
     <div class="card">
@@ -78,6 +77,9 @@
         <p class="card-category">Manage all incoming requests</p>
       </div>
       <div class="card-body">
+        <form id="search-form" class="mb-3">
+          <input type="text" id="search-input" class="form-control" placeholder="Search by request type, student name, or comments...">
+        </form>
         <div class="table-responsive">
           <table class="table">
             <thead class="text-primary">
@@ -87,12 +89,11 @@
                 <th>Date</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>Attachments</th>
                 <th>Comments</th>
               </tr>
             </thead>
-            <tbody id="requestTableBody">
-              <!-- Requests will be dynamically inserted here -->
-            </tbody>
+            <tbody id="requestTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -101,19 +102,16 @@
 </div>
 
 <!-- Comment Modal -->
-<div class="modal fade chat-modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel"
-  aria-hidden="true">
+<div class="modal fade chat-modal" id="commentModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="commentModalLabel">Comments</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">×</span>
+        <h5 class="modal-title">Comments</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
         </button>
       </div>
-      <div class="modal-body" id="chatBody">
-        <!-- Chat messages will be dynamically inserted here -->
-      </div>
+      <div class="modal-body" id="chatBody"></div>
       <div class="modal-footer chat-input-container">
         <input type="text" class="form-control chat-input" id="chatInput" placeholder="Type your comment...">
         <button type="button" class="btn btn-primary chat-send-btn" onclick="saveComment()">
@@ -125,19 +123,17 @@
 </div>
 
 <!-- Template Modal -->
-<div class="modal fade" id="templateModal" tabindex="-1" role="dialog" aria-labelledby="templateModalLabel"
-  aria-hidden="true">
+<div class="modal fade" id="templateModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="templateModalLabel">Edit Rendered Template</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">×</span>
+        <h5 class="modal-title">Edit Rendered Template</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <textarea class="form-control modal-textarea" id="templateModalTextarea" rows="6"
-          placeholder="Enter template content here..."></textarea>
+        <textarea class="form-control modal-textarea" id="templateModalTextarea" rows="6"></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -150,6 +146,8 @@
 
 {% block extra_js %}
 <script>
+  let allPendingRequests = [];
+
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
@@ -164,9 +162,7 @@
       method: 'GET',
       success: function (data) {
         const colors = ['warning', 'rose', 'success', 'info', 'primary', 'danger'];
-        const icons = [
-          'description', 'language', 'school', 'verified_user', 'attach_money', 'people'
-        ];
+        const icons = ['description', 'language', 'school', 'verified_user', 'attach_money', 'people'];
 
         data.forEach((item, index) => {
           const color = colors[index % colors.length];
@@ -229,219 +225,91 @@
         })
         : requests;
 
-      if (filteredRequests.length === 0) {
-        tbody.html('<tr><td colspan="6">No pending requests found.</td></tr>');
-        return;
-      }
-
-      filteredRequests.forEach(request => {
-        const studentName = request.StudentID ? `Student ${request.StudentID}` : `Applicant ${request.applicant}`;
-        const requestType = request.application_name || `Application ${request.application_name}`;
-        const date = new Date(request.created_at).toLocaleDateString();
-        const renderedTemplate = (request.renderedtemplate || '').replace(/"/g, '"');
-        const comments = encodeURIComponent(JSON.stringify(request.comments || []));
-
-        const row = `
-          <tr data-request-id="${request.request_id}">
-            <td>${requestType}</td>
-            <td>${studentName}</td>
-            <td>${date}</td>
-            <td>${request.status}</td>
-            <td>
-              <button class="btn btn-info btn-sm view-template-btn" 
-                      data-toggle="modal" data-target="#templateModal"
-                      data-request-id="${request.request_id}"
-                      onclick="openTemplateModal(${request.request_id}, '${encodeURIComponent(renderedTemplate)}')">
-                View
-              </button>
-              <button class="btn btn-success btn-sm accept-btn" 
-                      data-request-id="${request.request_id}"
-                      onclick="acceptRequest(${request.request_id})">
-                Accept
-              </button>
-              <button class="btn btn-danger btn-sm reject-btn" 
-                      data-request-id="${request.request_id}"
-                      onclick="rejectRequest(${request.request_id})">
-                Reject
-              </button>
-            </td>
-            <td>
-              <button class="btn btn-secondary btn-sm comment-btn" 
-                      data-toggle="modal" data-target="#commentModal"
-                      data-request-id="${request.request_id}"
-                      data-comments="${comments}">
-                <i class="material-icons">comment</i>
-              </button>
-            </td>
-          </tr>
-        `;
-        tbody.append(row);
-      });
+    if (!filtered.length) {
+      tbody.append(`<tr><td colspan="7">No pending requests found.</td></tr>`);
+      return;
     }
 
-    // Search functionality
-    $('#search-form').on('submit', function (e) {
-      e.preventDefault();
-      const searchTerm = $('#search-input').val().toLowerCase();
-      renderRequests(allPendingRequests, searchTerm);
+    filtered.forEach(req => {
+      const name = req.StudentID ? `Student ${req.StudentID}` : `Applicant ${req.applicant}`;
+      const template = (req.renderedtemplate || '').replace(/"/g, '&quot;');
+      const comments = encodeURIComponent(JSON.stringify(req.comments || []));
+      const date = new Date(req.created_at).toLocaleDateString();
+
+      tbody.append(`
+        <tr data-request-id="${req.request_id}">
+          <td>${req.application_name}</td>
+          <td>${name}</td>
+          <td>${date}</td>
+          <td class="request-status">${req.status}</td>
+          <td>
+            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#templateModal" onclick="openTemplateModal('${template}')">View</button>
+            <button class="btn btn-success btn-sm" onclick="updateStatus(${req.request_id}, 'Approved')">Accept</button>
+            <button class="btn btn-danger btn-sm" onclick="updateStatus(${req.request_id}, 'Rejected')">Reject</button>
+          </td>
+          <td>--</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#commentModal" onclick="openCommentsModal(${req.request_id}, '${comments}')">
+              <i class="material-icons">comment</i>
+            </button>
+          </td>
+        </tr>
+      `);
     });
+  }
 
-    // Real-time search on input
-    $('#search-input').on('input', function () {
-      const searchTerm = $(this).val().toLowerCase();
-      renderRequests(allPendingRequests, searchTerm);
-    });
-
-    // Accept request
-    window.acceptRequest = function (requestId) {
-      $.ajax({
-        url: `/update-request-status/${requestId}/`,
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        data: { status: 'Approved' },
-        success: function (data) {
-          if (data.success) {
-            alert('Request approved successfully');
-            loadRequests($('#search-input').val().toLowerCase());
-          } else {
-            alert(data.error || 'Failed to approve request');
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while approving the request');
-        }
-      });
-    };
-
-    // Reject request
-    window.rejectRequest = function (requestId) {
-      $.ajax({
-        url: `/update-request-status/${requestId}/`,
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        data: { status: 'Rejected' },
-        success: function (data) {
-          if (data.success) {
-            alert('Request rejected successfully');
-            loadRequests($('#search-input').val().toLowerCase());
-          } else {
-            alert(data.error || 'Failed to reject request');
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while rejecting the request');
-        }
-      });
-    };
-
-    // Open template modal
-    window.openTemplateModal = function (requestId, renderedTemplate) {
-      $('#templateModalTextarea').val(decodeURIComponent(renderedTemplate));
-      $('#templateModal').data('requestId', requestId);
-    };
-
-    // Update template
-    window.updateTemplate = function () {
-      const requestId = $('#templateModal').data('requestId');
-      const content = $('#templateModalTextarea').val();
-
-      $.ajax({
-        url: `/update-rendered-template/${requestId}/`,
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        data: { content: content },
-        success: function (data) {
-          if (data.success) {
-            $('#templateModal').modal('hide');
-            loadRequests($('#search-input').val().toLowerCase());
-          } else {
-            alert(data.error || 'Failed to update template');
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error('Error:', error);
-          alert('An error occurred while updating the template');
-        }
-      });
-    };
-
-    // Set comment modal
-    window.setCommentModal = function (button) {
-      const requestId = $(button).data('request-id');
-      const comments = JSON.parse(decodeURIComponent($(button).data('comments')));
-      $('#commentModal').data('requestId', requestId);
-      const chatBody = $('#chatBody');
-      chatBody.empty();
-
-      comments.forEach(comment => {
-        const isStudent = comment.type === 'student';
-        const messageClass = isStudent ? 'student' : 'employee';
-        const timestamp = new Date(comment.timestamp).toLocaleString();
-        const message = `
-          <div class="chat-message ${messageClass}">
-            <div class="name">${comment.name}</div>
-            <div class="text">${comment.text}</div>
-            <div class="timestamp">${timestamp}</div>
-          </div>
-        `;
-        chatBody.append(message);
-      });
-
-      // Scroll to bottom
-      chatBody.scrollTop(chatBody[0].scrollHeight);
-    };
-
-    // Save comment
-    window.saveComment = function () {
-      const requestId = $('#commentModal').data('requestId');
-      const commentText = $('#chatInput').val().trim();
-      if (!commentText) {
-        alert('Please enter a comment');
-        return;
+  function updateStatus(id, status) {
+    $.post(`/update-request-status/${id}/`, { status }, (res) => {
+      if (res.success) {
+        alert(`Request ${status.toLowerCase()} successfully`);
+        loadRequests();
+      } else {
+        alert(res.error || `Failed to update request`);
       }
+    }).fail(() => alert('Error updating request'));
+  }
 
-      $.ajax({
-        url: `/add-comment/${requestId}/`,
-        method: 'POST',
-        data: {
-          text: commentText
-        },
-        success: function (data) {
-          if (data.success) {
-            $('#chatInput').val('');
-            // Refresh comments
-            loadRequests();
-            
-          } else {
-            alert(data.error || 'Failed to add comment');
-          }
-        }
-      });
-    };
+  function openTemplateModal(template) {
+    $('#templateModalTextarea').val(decodeURIComponent(template));
+  }
 
-    // Load requests
-    loadRequests();
+  function updateTemplate() {
+    alert('Template updated! (Demo purpose)');
+    $('#templateModal').modal('hide');
+  }
 
-    // Handle comment button click
-    $(document).on('click', '.comment-btn', function () {
-      setCommentModal(this);
+  let currentRequestIdForComments = null;
+
+  function openCommentsModal(id, commentsEncoded) {
+    currentRequestIdForComments = id;
+    const comments = JSON.parse(decodeURIComponent(commentsEncoded));
+    const chatBody = $('#chatBody').empty();
+
+    comments.forEach(c => {
+      const sender = c.is_student ? 'student' : 'employee';
+      chatBody.append(`
+        <div class="chat-message ${sender}">
+          <div class="name">${c.sender}</div>
+          <div>${c.text}</div>
+          <div class="timestamp">${new Date(c.timestamp).toLocaleString()}</div>
+        </div>
+      `);
     });
+  }
 
-    // Handle Enter key for sending comment
-    $('#chatInput').on('keypress', function (e) {
-      if (e.which === 13 && !e.shiftKey) {
-        e.preventDefault();
-        saveComment();
+  function saveComment() {
+    const text = $('#chatInput').val();
+    if (!text) return;
+
+    $.post(`/add-comment/${currentRequestIdForComments}/`, { text }, (res) => {
+      if (res.success) {
+        $('#chatInput').val('');
+        $('#commentModal').modal('hide');
+        loadRequests();
+      } else {
+        alert(res.error || 'Failed to add comment');
       }
-    });
-  });
+    }).fail(() => alert('Error adding comment'));
+  }
 </script>
 {% endblock %}
