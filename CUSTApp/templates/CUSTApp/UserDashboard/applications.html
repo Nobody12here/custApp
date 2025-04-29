@@ -202,7 +202,7 @@
             <td>${appName}</td>
             <td>${new Date(app.created_at).toLocaleDateString()}</td>
             <td><span class="${statusClass}">${app.status}</span></td>
-            <td>${app.comments[app.comments.length - 1].text || '-'}</td>
+            <td>${app.comments?.[app.comments.length - 1]?.text || '-'}</td>
             <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
             <td>
               <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
