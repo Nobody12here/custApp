@@ -31,8 +31,13 @@
         </div>
     </div>
 </nav>
-<script>
-    $(document).ready(function () {
+<script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+<script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
 
+<script>
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', function() {
+        // Perform logout action here, e.g., redirect to logout URL
+        logout();
     });
 </script>

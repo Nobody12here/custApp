@@ -158,7 +158,7 @@ class ApplicationListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         # Return only id and application_name for the dropdown
-        data = [{"id": app.id, "name": app.application_name} for app in queryset]
+        data = [{"id": app.id, "name": app.application_name,"count":app.request_set.count()} for app in queryset]
         return Response(data)
 
 

@@ -230,7 +230,7 @@
       if (!app) {
         alert('Application not found');
         return;
-      }
+      }console.log(app.comments)
       
       const detailsHtml = `
         <div class="detail-item">
@@ -259,7 +259,8 @@
         </div>
         <div class="detail-item">
           <strong>Comments</strong>
-          <span>${app.comments || '-'}</span>
+          
+          <span>${app.comments.map((comment)=>comment.text) || '-'}</span>
         </div>
         <div class="detail-item">
           <strong>Payment Status</strong>
