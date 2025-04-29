@@ -72,7 +72,8 @@ class AddCommentView(APIView):
             # User info
             name = request.user.name
             user_type = request.user.user_type
-
+            student = req.applicant
+            employee = Users.objects.get(user_id = req.EmployeeID)
             # Load and update comments
             try:
                 comments = json.loads(req.comments) if req.comments else []
@@ -87,7 +88,25 @@ class AddCommentView(APIView):
             comments.append(new_comment)
             req.comments = json.dumps(comments)
             req.save()
-
+            payload = {
+                "head": "New Comment",
+                "body": f"{name} commented: {text}",
+            }
+            if(user_type == "Student"):
+                # Send notification to employee
+                send_user_notification(
+                    employee,
+                    payload=payload,
+                    ttl=1000,
+                )
+            elif(user_type == "Staff"):
+                # Send notification to student
+                send_alert_email(
+                    student.email,
+                    "New Comment on Your Application",
+                    f"{name} commented: {text}",
+                    recipient_name=student.name,
+                )
             return Response({"success": True})
 
         except Request.DoesNotExist:
@@ -153,7 +172,6 @@ class ApplicationRequestAPIView(APIView):
 
     def post(self, request):
         try:
-            print("request.user.is_authenticated", request.user.name)
             # Extract data fprirom request
             application_id = request.data.get("applicationID")
             student_id = request.data.get("studentID")
@@ -261,7 +279,7 @@ class ApplicationRequestAPIView(APIView):
             if serializer.is_valid():
                 logger.info("Serializer is valid")
                 new_request = serializer.save()
-                send_user_notification(user=request.user, payload={"head": "New Application request Generated", "body": "A new application has been submitted. Please review it at your earliest convenience."}, ttl=10000)
+                send_alert_email(employee.email,"New Application request Generated","A new application has been submitted. Please review it at your earliest convenience.",recipient_name=employee.name)
                 logger.info("Request created: %s", new_request.request_id)
             else:
                 logger.error("Serializer errors: %s", serializer.errors)
