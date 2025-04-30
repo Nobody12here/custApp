@@ -179,7 +179,7 @@ CACHES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Karachi'  # This is the correct timezone for Pakistan
 
 USE_I18N = True
 
