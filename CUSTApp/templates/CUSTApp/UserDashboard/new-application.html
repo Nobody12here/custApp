@@ -72,6 +72,14 @@
     margin-bottom: 5px;
     display: block;
   }
+#studentSuggestions {
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+#studentSuggestions .list-group-item {
+  cursor: pointer;
+}
 </style>
 {% endblock %}
 
@@ -110,6 +118,7 @@
                   <div class="form-group">
                     <label class="bmd-label-floating">Student RegNo</label>
                     <input type="text" class="form-control" id="studentId" name="studentId" required>
+                    <div id="studentNameSearch" class="list-group position-absolute w-100"></div>
                   </div>
                 </div>
               </div>
