@@ -408,7 +408,7 @@ class UserCSVUploadAPIView(APIView):
                 else:
                     return Response(
                         {
-                            "error": f"Invalid data in row: {row}",
+                            "error": f"Invalid data {serializer.errors}",
                             "details": serializer.errors,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
