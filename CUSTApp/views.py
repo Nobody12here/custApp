@@ -741,7 +741,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             fontName="Helvetica",
             fontSize=12,
             leading=14,
-            alignment=0,  # Left align
+            alignment=4,  # Left align
             leftIndent=90,  # No left indent
             rightIndent=72,  # No right indent
             spaceBefore=0,
