@@ -303,8 +303,8 @@ Dashboard{% endblock %} {% block extra_css %}
       }
 
       filteredRequests.forEach((request) => {
-        const studentName = request.StudentID
-          ? `Student ${request.StudentID}`
+        const studentName = request.student_name
+          ? `${request.student_name}`
           : `Applicant ${request.applicant}`;
         const requestType =
           request.application_name || `Application ${request.application_name}`;
