@@ -184,33 +184,54 @@
 
     // Render applications to table
     function renderApplications(data) {
-      const tbody = $('#applications-table');
-      tbody.empty();
+  const tbody = $('#applications-table');
+  tbody.empty();
 
-      data.forEach(function (app) {
-        const statusClass = {
-          'Approved': 'text-success',
-          'Rejected': 'text-danger',
-          'Pending': 'text-warning'
-        }[app.status] || '';
+  // Sort by status priority and then by created_at (descending)
+  const statusOrder = { 'Approved': 0, 'Pending': 1, 'Rejected': 2 };
+  data.sort((a, b) => {
+    const statusCompare = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+    if (statusCompare !== 0) return statusCompare;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
-        const appName = app.application_name || `Application #${app.application_name}`;
-        console.log(app.comments.text)
-        const row = `
-          <tr>
-            <td>${app.request_id}</td>
-            <td>${appName}</td>
-            <td>${new Date(app.created_at).toLocaleDateString()}</td>
-            <td><span class="${statusClass}">${app.status}</span></td>
-            <td>${app.comments?.[app.comments.length - 1]?.text || '-'}</td>
-            <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
-            <td>
-              <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
-              <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
-            </td>
-          </tr>`;
-        tbody.append(row);
-      });
+  data.forEach(function (app) {
+    const statusClass = {
+      'Approved': 'text-success',
+      'Rejected': 'text-danger',
+      'Pending': 'text-warning'
+    }[app.status] || '';
+
+    const appName = app.application_name || `Application #${app.application_name}`;
+    const latestComment = app.comments?.[app.comments.length - 1]?.text || '-';
+
+    const row = `
+      <tr>
+        <td>${app.request_id}</td>
+        <td>${appName}</td>
+        <td>${new Date(app.created_at).toLocaleDateString()}</td>
+        <td><span class="${statusClass}">${app.status}</span></td>
+        <td>${latestComment}</td>
+        <td>${app.renderedtemplate ? app.renderedtemplate.substring(0, 50) + '...' : '-'}</td>
+        <td>
+          <button class="btn btn-info btn-sm view-btn" data-request-id="${app.request_id}">View</button>
+          <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
+        </td>
+      </tr>`;
+    tbody.append(row);
+  });
+
+  // Attach event listeners
+  $('.view-btn').off('click').on('click', function () {
+    const requestId = parseInt($(this).data('request-id'));
+    viewApplication(requestId);
+  });
+
+  $('.download-btn').off('click').on('click', function () {
+    const requestId = parseInt($(this).data('request-id'));
+    downloadApplication(requestId);
+  });
+}
 
       // Attach event listeners for view and download buttons
       $('.view-btn').off('click').on('click', function () {
@@ -222,7 +243,7 @@
         const requestId = parseInt($(this).data('request-id'));
         downloadApplication(requestId);
       });
-    }
+    
 
     // View application details in modal
     function viewApplication(requestId) {

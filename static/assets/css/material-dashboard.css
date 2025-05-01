@@ -16610,6 +16610,7 @@ thead.thead-inverse th,
 .card .card-stats {
   background: transparent;
   display: flex;
+  cursor: pointer;
 }
 
 .card .card-stats .author,
