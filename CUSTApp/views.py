@@ -792,6 +792,9 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements.append(
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
+        elements.append(
+            Paragraph(serializer.data.get("responsible_dept_name"), signature_style)
+        )
 
         # Build the PDF
         doc.build(elements)
