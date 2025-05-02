@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinLengthValidator
+from django.core.validators import validate_image_file_extension
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,PermissionsMixin
 
 class UserManager(BaseUserManager):
@@ -40,6 +40,7 @@ class Users(AbstractBaseUser,PermissionsMixin):
     remark = models.TextField(null=True, blank=True)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     picture = models.CharField(max_length=255, null=True, blank=True)
+    signature = models.FileField(blank=True,null=True,upload_to='media',validators=[validate_image_file_extension])
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     term = models.CharField(max_length=10, null=True, blank=True)
     DoB = models.DateField(null=True, blank=True)

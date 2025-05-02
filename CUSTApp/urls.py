@@ -92,6 +92,7 @@ urlpatterns = [
         GeneratePDFWithLetterheadAPIView.as_view(),
         name="generate_pdf_with_letterhead",
     ),
-    path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view')
+    path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view'),
+    path("api/upload-signature/",views.UploadEmployeeSignature.as_view(),name="upload-signature")
 ]
 urlpatterns.extend(router.urls)
