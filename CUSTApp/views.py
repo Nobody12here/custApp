@@ -57,6 +57,21 @@ logger = logging.getLogger(__name__)
 
 from django.utils import timezone
 
+class UploadEmployeeSignature(APIView):
+    permission_classes=[IsAuthenticated]
+    parser_classes= [MultiPartParser]
+    def post(self,request):
+        user = self.request.user
+        image = self.request.FILES.get("signature")
+        if not image:
+            return Response({"error":"No image provided!"},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = Users.objects.get(user_id=user.user_id)
+            user.signature = image
+            user.save()
+            return Response({"message":"Signature Uploaded sucessfully !"},status=status.HTTP_201_CREATED)
+        except ObjectDoesNotExist:
+            return Response({"error":" this user does not exists"},status=status.HTTP_404_NOT_FOUND)
 
 class AddCommentView(APIView):
     permission_classes = [IsAuthenticated]
@@ -793,19 +808,19 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Define styles for text
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-
+        from reportlab.platypus import Image
         # Define custom styles
         styles = getSampleStyleSheet()
-
+        
         # Main body text style (left-aligned, no forced indent)
         body_style = ParagraphStyle(
             name="BodyText",
             parent=styles["Normal"],
             fontName="Helvetica",
             fontSize=12,
-            leading=14,
+            leading=16,
             alignment=4,  # Left align
-            leftIndent=90,  # No left indent
+            leftIndent=52,  # No left indent
             rightIndent=72,  # No right indent
             spaceBefore=0,
             spaceAfter=12,
@@ -831,13 +846,18 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             fontSize=12,
             leading=14,
             alignment=0,  # Left align
-            leftIndent=90,  # ~1.5 inch indent
+            leftIndent=52,  # ~1.5 inch indent
             rightIndent=0,
         )
 
         # Build your elements
         elements = []
-
+        #Signature image 
+        signature_image_path = os.path.join(settings.MEDIA_ROOT , serializer.data.get("responsible_employee_signature"))
+        signature_image = Image(signature_image_path,width=128,height=64)
+        signature_image.hAlign = 'LEFT'
+        signature_image.leftIndent = 52
+        
         # 1. Add date (right-aligned)
         current_date = timezone.now().strftime("%B %d, %Y")  # e.g., "November 12, 2024"
         elements.append(Spacer(1, 70))  # Space from top
@@ -852,10 +872,15 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements.append(Spacer(1, 70))
         elements.append(Paragraph("Issued on request", signature_style))
         elements.append(Spacer(1, 70))
+        elements.append(signature_image)
+        elements.append(Spacer(1, 5))
         elements.append(
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
-        elements.append(Paragraph(f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get('responsible_dept_name')}", signature_style))
+        elements.append(Spacer(1, 7))
+        elements.append(Paragraph(f"{serializer.data.get('responsible_employee_designation')} ", signature_style))
+        elements.append(Spacer(1,7))
+        elements.append(Paragraph(f"{serializer.data.get('responsible_dept_name')} ", signature_style))
 
         # Build the PDF
         doc.build(elements)

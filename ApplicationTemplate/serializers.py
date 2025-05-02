@@ -39,17 +39,21 @@ class RequestSerializer(serializers.ModelSerializer):
         source="application.default_responsible_employee.name"
     )
     responsible_employee_designation = serializers.StringRelatedField(
-        source="application.default_responsible_employee.role"
+        source="application.default_responsible_employee.designation"
     )
-
+    responsible_employee_signature = serializers.StringRelatedField(
+        source="application.default_responsible_employee.signature"
+    )
     student_name = serializers.StringRelatedField(source="applicant.name")
     application_name = serializers.StringRelatedField(
         source="application.application_name"
     )
 
+
     class Meta:
         model = Request
         fields = [
+            "responsible_employee_signature",
             "request_id",
             "application",
             "application_name",
