@@ -17,6 +17,7 @@ from .models import Program, Users, Department
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
     ProgramSerializer,
+    UserUpdateSerializer,
     UsersSerializer,
     DepartmentSerializer,
     OTPSendSerializer,
@@ -383,14 +384,23 @@ class UsersList(generics.ListCreateAPIView):
     serializer_class = UsersSerializer
 
 
-class UserRetrieveUpdateDestroyAPI(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [AllowAny]
+class UserUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
-    serializer_class = UsersSerializer
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]  # Only admins can modify users
-    lookup_field = "user_id"
+    serializer_class = UserUpdateSerializer 
+    
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        user_type = str(user.user_type)
+        if user_type.lower() == 'student' and instance.id != user.id:
+            return Response({"error":"The user can only update his profile!"},status=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"User data updated sucessfully"},status=status.HTTP_200_OK)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserCSVUploadAPIView(APIView):
     parser_classes = [MultiPartParser]
@@ -477,6 +487,9 @@ class RequestDelete(generics.DestroyAPIView):
     serializer_class = RequestSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Users.objects.none()  # or a safe fallback
+
         queryset = super().get_queryset()
         user = self.request.user
         user_type = user.user_type
