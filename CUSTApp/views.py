@@ -388,12 +388,12 @@ class UserUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UserUpdateSerializer 
-    
+    lookup_field = 'user_id'
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
         user_type = str(user.user_type)
-        if user_type.lower() == 'student' and instance.id != user.id:
+        if user_type.lower() == 'student' and instance.user_id != user.user_id:
             return Response({"error":"The user can only update his profile!"},status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
@@ -855,12 +855,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements.append(
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
-        elements.append(
-            Paragraph(
-                f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get("responsible_dept_name")}",
-                signature_style,
-            )
-        )
+        elements.append(Paragraph(f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get('responsible_dept_name')}", signature_style))
 
         # Build the PDF
         doc.build(elements)
