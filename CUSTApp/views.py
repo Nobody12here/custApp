@@ -49,7 +49,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from ApplicationTemplate.models import Applications
 from .models import Users
-from .serializers import RequestSerializer
+from ApplicationTemplate.serializers import RequestSerializer
 import json
 logger = logging.getLogger(__name__)
 
@@ -793,7 +793,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
         elements.append(
-            Paragraph(serializer.data.get("responsible_dept_name"), signature_style)
+            Paragraph(f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get("responsible_dept_name")}", signature_style)
         )
 
         # Build the PDF
