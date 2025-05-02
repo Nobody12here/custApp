@@ -51,6 +51,7 @@ from ApplicationTemplate.models import Applications
 from .models import Users
 from ApplicationTemplate.serializers import RequestSerializer
 import json
+
 logger = logging.getLogger(__name__)
 
 from django.utils import timezone
@@ -73,7 +74,7 @@ class AddCommentView(APIView):
             name = request.user.name
             user_type = request.user.user_type
             student = req.applicant
-            employee = Users.objects.get(user_id = req.EmployeeID)
+            employee = Users.objects.get(user_id=req.EmployeeID)
             # Load and update comments
             try:
                 comments = json.loads(req.comments) if req.comments else []
@@ -158,7 +159,14 @@ class ApplicationListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         # Return only id and application_name for the dropdown
-        data = [{"id": app.id, "name": app.application_name,"count":app.request_set.count()} for app in queryset]
+        data = [
+            {
+                "id": app.id,
+                "name": app.application_name,
+                "count": app.request_set.count(),
+            }
+            for app in queryset
+        ]
         return Response(data)
 
 
@@ -206,9 +214,13 @@ class ApplicationRequestAPIView(APIView):
             try:
                 employee = Users.objects.get(user_id=employee_id)
             except ObjectDoesNotExist:
-                return Response({
-                    "status":"error","message":"Invalid employeeId",}
-                    ,status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "Invalid employeeId",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             # Verify applicant exists
             try:
                 applicant = Users.objects.get(uu_id=student_id)
@@ -274,7 +286,12 @@ class ApplicationRequestAPIView(APIView):
             if serializer.is_valid():
                 logger.info("Serializer is valid")
                 new_request = serializer.save()
-                send_alert_email(employee.email,"New Application request Generated","A new application has been submitted. Please review it at your earliest convenience.",recipient_name=employee.name)
+                send_alert_email(
+                    employee.email,
+                    "New Application request Generated",
+                    "A new application has been submitted. Please review it at your earliest convenience.",
+                    recipient_name=employee.name,
+                )
                 logger.info("Request created: %s", new_request.request_id)
             else:
                 logger.error("Serializer errors: %s", serializer.errors)
@@ -454,6 +471,32 @@ class RequestList(generics.ListCreateAPIView):
         if user_type == "Staff":
             queryset = queryset.filter(EmployeeID=user.user_id)
         return queryset
+class RequestDelete(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        user_type = user.user_type
+        if user_type == "Student":
+            queryset = queryset.filter(StudentID=user.user_id)
+        if user_type == "Staff":
+            queryset = queryset.filter(EmployeeID=user.user_id)
+        return queryset
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = self.request.user
+        user_type = str(user.user_type)
+        print(user)
+        if user_type.lower() == 'student' and instance.StudentID != user.user_id:
+            return Response({
+                'error':'This application Does not belong to current user!'
+            },status=status.HTTP_403_FORBIDDEN)
+
+        return super().destroy(request, *args, **kwargs)
+
 
 
 class GetAttributesAPIView(APIView):
@@ -539,6 +582,7 @@ class OTPSendView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
+        platform = request.data.get("platform")
 
         # Check if user exists
         try:
@@ -547,7 +591,13 @@ class OTPSendView(APIView):
             return Response(
                 {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
             )
-
+        if platform == "mobile" and user.user_type.lower() != "student":
+            return Response(
+                {
+                    "error": "Only students can login through mobile app!",
+                    "status": status.HTTP_403_FORBIDDEN,
+                }
+            )
         # Generate a 6-digit OTP
         otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
         user.otp = otp
@@ -793,7 +843,10 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
         elements.append(
-            Paragraph(f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get("responsible_dept_name")}", signature_style)
+            Paragraph(
+                f"{serializer.data.get('responsible_employee_designation')} of {serializer.data.get("responsible_dept_name")}",
+                signature_style,
+            )
         )
 
         # Build the PDF
@@ -865,12 +918,8 @@ def admin_templates(request):
 
 
 def user_dashboard(request):
-    context = {
-        'page_title': 'Dashboard',
-        'active_page': 'dashboard'
-    }
-    return render(request, 'CUSTApp/UserDashboard/index.html', context)
-    
+    context = {"page_title": "Dashboard", "active_page": "dashboard"}
+    return render(request, "CUSTApp/UserDashboard/index.html", context)
 
 
 def view_applications(request):
@@ -891,6 +940,7 @@ def new_application(request):
 def reports(request):
 
     return render(request, "CUSTApp/UserDashboard/reports.html")
+
 
 def support(request):
 
