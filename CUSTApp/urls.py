@@ -73,6 +73,9 @@ urlpatterns = [
         ApplicationRequestAPIView.as_view(),
         name="application_request",
     ),
+    path("api/delete-request/<int:pk>/",
+         views.RequestDelete.as_view(),
+         name='delete_request'),
     path(
         "update-rendered-template/<int:id>/",
         views.update_rendered_template,
