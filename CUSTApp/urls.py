@@ -7,7 +7,7 @@ from .views import (
     DepartmentRetrieveUpdateDestroyAPI,
     GeneratePDFWithLetterheadAPIView,
     GetAttributesAPIView,
-    UserRetrieveUpdateDestroyAPI,
+    UserUpdateView,
     UsersList,
     DepartmentList,
     RequestList,
@@ -44,7 +44,7 @@ urlpatterns = [
     path("index/", index_page, name="index_page"),
     path(
         "users/<int:user_id>/",
-        UserRetrieveUpdateDestroyAPI.as_view(),
+        UserUpdateView.as_view(),
         name="user_detail",
     ),
     path(
