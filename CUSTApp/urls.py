@@ -55,6 +55,7 @@ urlpatterns = [
     path("api/get_attributes/", GetAttributesAPIView.as_view(), name="get_attributes"),
     path("myadmin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("user/dashboard/", views.user_dashboard, name="user_dashboard"),
+    path("profile/",views.user_profile,name="profile"),
     path("myapplications/", views.view_applications, name="view_applications"),
     path("categories/", views.categories, name="categories"),
     path("new-application/", views.new_application, name="new_application"),

@@ -3,18 +3,20 @@ Dashboard{% endblock %} {% block extra_css %}
 <style>
   .modal-textarea {
     width: 100%;
-    min-height: 150px;
+    min-height: 250px;
   }
   .card-stats {
-  cursor: pointer;
-}
+    cursor: pointer;
+  }
 
   .chat-modal .modal-body {
     max-height: 400px;
     overflow-y: auto;
     padding-bottom: 10px;
   }
-
+  .modal-body {
+    width: 100%;
+  }
   .chat-message {
     margin: 10px 15px;
     padding: 10px;
@@ -196,53 +198,53 @@ Dashboard{% endblock %} {% block extra_css %}
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
-
-    $(document).on("click", ".card-stats", function () {
-      const selectedAppId = $(this).data("app-id");
-      console.log(selectedAppId);
-      renderRequests(
-        allPendingRequests.filter((r) => r.application == selectedAppId)
-      );
-    });
     $.ajax({
-      url: "/api/applications/",
+      url: "/requests/",
       method: "GET",
       success: function (data) {
-        const colors = [
-          "warning",
-          "rose",
-          "success",
-          "info",
-          "primary",
-          "danger",
-        ];
-        const icons = [
-          "description",
-          "language",
-          "school",
-          "verified_user",
-          "attach_money",
-          "people",
+        // Initialize counters
+        const statusCounts = {
+          pending: 0,
+          approved: 0,
+          rejected: 0,
+        };
+
+        // Count requests by status
+        data.forEach((item) => {
+          const status = item.status?.toLowerCase();
+          if (statusCounts.hasOwnProperty(status)) {
+            statusCounts[status]++;
+          }
+        });
+
+        // Define card settings
+        const cardSettings = [
+          { status: "pending", color: "warning", icon: "hourglass_empty" },
+          { status: "approved", color: "success", icon: "check_circle" },
+          { status: "rejected", color: "danger", icon: "cancel" },
         ];
 
-        data.forEach((item, index) => {
-          const color = colors[index % colors.length];
-          const icon = icons[index % icons.length];
-          console.log(item.id, item.name);
+        // Clear previous cards
+        $("#application-cards").empty();
+
+        // Create a card for each status
+        cardSettings.forEach((setting) => {
+          const count = statusCounts[setting.status];
           const cardHtml = `
-            <div class="col-lg-3 col-md-6 col-sm-6">
-              <div class="card card-stats" data-app-id="${item.id}">
-                <div class="card-header card-header-${color} card-header-icon">
-                  <div class="card-icon">
-                    <i class="material-icons">${icon}</i>
-                  </div>
-                  <p class="card-category">${item.name}</p>
-                  <h3 class="card-title">${item.count ?? 0}</h3>
-                </div>
+        <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="card card-stats">
+            <div class="card-header card-header-${
+              setting.color
+            } card-header-icon">
+              <div class="card-icon">
+                <i class="material-icons">${setting.icon}</i>
               </div>
+              <p class="card-category">${setting.status.toUpperCase()}</p>
+              <h3 class="card-title">${count}</h3>
             </div>
-          `;
-
+          </div>
+        </div>
+      `;
           $("#application-cards").append(cardHtml);
         });
       },
@@ -250,6 +252,7 @@ Dashboard{% endblock %} {% block extra_css %}
         $("#application-cards").html("<p>Error loading application data.</p>");
       },
     });
+
     function loadRequests(searchTerm = "") {
       $.ajax({
         url: `/requests/`,
@@ -272,54 +275,61 @@ Dashboard{% endblock %} {% block extra_css %}
 
     // Render requests with optional search filter
     function renderRequests(requests, searchTerm = "") {
-  const tbody = $("#requestTableBody");
-  tbody.empty();
+      const tbody = $("#requestTableBody");
+      tbody.empty();
 
-  // Filtered by search term if provided
-  const filteredRequests = searchTerm
-    ? requests.filter((request) => {
-        const requestType = (
-          request.application_name ||
-          `Application ${request.application_name}`
-        ).toLowerCase();
-        const studentName = (
-          request.StudentID
-            ? `Student ${request.StudentID}`
-            : `Applicant ${request.applicant}`
-        ).toLowerCase();
-        const status = request.status.toLowerCase();
-        const comments = (request.comments || [])
-          .map((c) => c.text)
-          .join(" ")
-          .toLowerCase();
-        return (
-          requestType.includes(searchTerm) ||
-          studentName.includes(searchTerm) ||
-          status.includes(searchTerm) ||
-          comments.includes(searchTerm)
+      // Filtered by search term if provided
+      const filteredRequests = searchTerm
+        ? requests.filter((request) => {
+            const requestType = (
+              request.application_name ||
+              `Application ${request.application_name}`
+            ).toLowerCase();
+            const studentName = (
+              request.StudentID
+                ? `Student ${request.StudentID}`
+                : `Applicant ${request.applicant}`
+            ).toLowerCase();
+            const status = request.status.toLowerCase();
+            const comments = (request.comments || [])
+              .map((c) => c.text)
+              .join(" ")
+              .toLowerCase();
+            return (
+              requestType.includes(searchTerm) ||
+              studentName.includes(searchTerm) ||
+              status.includes(searchTerm) ||
+              comments.includes(searchTerm)
+            );
+          })
+        : requests;
+
+      // Sort by created_at descending (newest first)
+      filteredRequests.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      if (filteredRequests.length === 0) {
+        tbody.html('<tr><td colspan="7">No pending requests found.</td></tr>');
+        return;
+      }
+
+      filteredRequests.forEach((request) => {
+        const studentName = request.student_name
+          ? `${request.student_name}`
+          : `Applicant ${request.applicant}`;
+        const requestType =
+          request.application_name || `Application ${request.application_name}`;
+        const date = new Date(request.created_at).toLocaleDateString();
+        const renderedTemplate = (request.renderedtemplate || "").replace(
+          /"/g,
+          '"'
         );
-      })
-    : requests;
+        const comments = encodeURIComponent(
+          JSON.stringify(request.comments || [])
+        );
 
-  // Sort by created_at descending (newest first)
-  filteredRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  if (filteredRequests.length === 0) {
-    tbody.html('<tr><td colspan="7">No pending requests found.</td></tr>');
-    return;
-  }
-
-  filteredRequests.forEach((request) => {
-    const studentName = request.student_name
-      ? `${request.student_name}`
-      : `Applicant ${request.applicant}`;
-    const requestType =
-      request.application_name || `Application ${request.application_name}`;
-    const date = new Date(request.created_at).toLocaleDateString();
-    const renderedTemplate = (request.renderedtemplate || "").replace(/"/g, '"');
-    const comments = encodeURIComponent(JSON.stringify(request.comments || []));
-
-    const row = `
+        const row = `
       <tr data-request-id="${request.request_id}">
         <td>${requestType}</td>
         <td>${studentName}</td>
@@ -329,7 +339,9 @@ Dashboard{% endblock %} {% block extra_css %}
           <button class="btn btn-info btn-sm view-template-btn" 
                   data-toggle="modal" data-target="#templateModal"
                   data-request-id="${request.request_id}"
-                  onclick="openTemplateModal(${request.request_id}, '${encodeURIComponent(renderedTemplate)}')">
+                  onclick="openTemplateModal(${
+                    request.request_id
+                  }, '${encodeURIComponent(renderedTemplate)}')">
             View
           </button>
           <button class="btn btn-success btn-sm accept-btn" 
@@ -344,11 +356,12 @@ Dashboard{% endblock %} {% block extra_css %}
           </button>
         </td>
         <td>
-          ${request.request_file ? 
-            `<a href="${request.request_file}" download class="btn btn-primary btn-sm">
+          ${
+            request.request_file
+              ? `<a href="${request.request_file}" download class="btn btn-primary btn-sm">
               <i class="material-icons">attach_file</i>
-            </a>` :
-            `<button class="btn btn-disabled btn-sm" disabled>
+            </a>`
+              : `<button class="btn btn-disabled btn-sm" disabled>
               <i class="material-icons">attach_file</i>
             </button>`
           }
@@ -363,9 +376,9 @@ Dashboard{% endblock %} {% block extra_css %}
         </td>
       </tr>
     `;
-    tbody.append(row);
-  });
-}
+        tbody.append(row);
+      });
+    }
 
     // Search functionality
     $("#search-form").on("submit", function (e) {
