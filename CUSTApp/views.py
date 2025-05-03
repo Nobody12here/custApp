@@ -277,6 +277,9 @@ class ApplicationRequestAPIView(APIView):
                 "term": applicant.term,
                 "dob": applicant.DoB,
                 "cnic": applicant.CNIC,
+                "He/She":"He" if applicant.gender.lower() == "male" else "She",
+                "His/Her":"His" if applicant.gender.lower() == "male" else "Her" ,
+                "parent_relationship":"S/O" if applicant.gender.lower() == "male" else "D/O"  
             }
 
             # Replace placeholders in the template text
@@ -589,15 +592,15 @@ class GetAttributesAPIView(APIView):
                 attributes[0] = "name"
             else:
                 attributes[0] = "student_name"
+
         elif table == "users" and user_type == "student":
             attributes[0] = "student_name"
-        elif table == "Department":
-            attributes = ["department"]
-        elif table == "Application":
-            attributes = ["date", "issuer_name"]
-        elif table == "Program":
-            attributes = ["program"]
-
+        elif table == "Misc":
+            attributes = [
+                'He/She',
+                'His/Her',
+                'parent_relationship'
+            ]
         return Response(attributes)
 
 
