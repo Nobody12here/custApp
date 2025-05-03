@@ -809,6 +809,8 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         # Define styles for text
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.platypus import Image
+        from reportlab.platypus import Table, TableStyle
+
         # Define custom styles
         styles = getSampleStyleSheet()
         
@@ -855,8 +857,6 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         #Signature image 
         signature_image_path = os.path.join(settings.MEDIA_ROOT , serializer.data.get("responsible_employee_signature"))
         signature_image = Image(signature_image_path,width=128,height=64)
-        signature_image.hAlign = 'LEFT'
-        signature_image.leftIndent = 52
         
         # 1. Add date (right-aligned)
         current_date = timezone.now().strftime("%B %d, %Y")  # e.g., "November 12, 2024"
@@ -871,9 +871,19 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         # 3. Add signature (indented left)
         elements.append(Spacer(1, 70))
         elements.append(Paragraph("Issued on request", signature_style))
-        elements.append(Spacer(1, 70))
-        elements.append(signature_image)
-        elements.append(Spacer(1, 5))
+        elements.append(Spacer(1, 10))
+        signature_table = Table([[signature_image]], colWidths=[550])  
+        signature_table.setStyle(TableStyle([
+            ('LEFTPADDING', (0, 0), (0, 0), 12),  # ~0.75 inch indent
+            ('RIGHTPADDING', (0, 0), (0, 0), 0),
+            ('TOPPADDING', (0, 0), (0, 0), 0),
+            ('BOTTOMPADDING', (0, 0), (0, 0), 0),
+            ('VALIGN', (0, 0), (0, 0),'TOP'),
+        ]))
+
+        # Add to elements
+        elements.append(signature_table)
+        elements.append(Spacer(1, 10))
         elements.append(
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
@@ -973,7 +983,8 @@ def new_application(request):
 def reports(request):
 
     return render(request, "CUSTApp/UserDashboard/reports.html")
-
+def user_profile(request):
+    return render(request,"CUSTApp/UserDashboard/profile.html")
 
 def support(request):
 
