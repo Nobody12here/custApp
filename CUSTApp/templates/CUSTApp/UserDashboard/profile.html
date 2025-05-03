@@ -1,136 +1,186 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <title>CUST App - My Profile</title>
-  <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-  <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
-</head>
-<body class="">
-  <div class="wrapper">
-    <div class="sidebar" data-color="rose" data-background-color="black" data-image="../assets/img/sidebar-1.jpg">
-      <div class="logo">
-        <a href="#" class="simple-text logo-mini">CT</a>
-        <a href="#" class="simple-text logo-normal">CUST App</a>
-      </div>
-      <div class="sidebar-wrapper">
-        <div class="user">
-          <div class="photo"><img src="" /></div>
-          <div class="user-info">
-            <a data-toggle="collapse" href="#collapseExample" class="username">
-              <span>Tania Andrew <b class="caret"></b></span>
-            </a>
-            <div class="collapse" id="collapseExample">
-              <ul class="nav">
-                <li class="nav-item active"><a class="nav-link" href="profile.html"><span class="sidebar-mini"> MP </span><span class="sidebar-normal"> My Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="edit-profile.html"><span class="sidebar-mini"> EP </span><span class="sidebar-normal"> Edit Profile </span></a></li>
-                <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-mini"> S </span><span class="sidebar-normal"> Settings </span></a></li>
-              </ul>
-            </div>
-          </div>
+
+{% block title %}Employee Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card-modern {
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    margin-top: 40px;
+  }
+
+  .card-header.card-header-primary {
+    background: linear-gradient(to right, #2196F3, #21CBF3);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 20px;
+  }
+
+  .form-control {
+    border-radius: 8px;
+  }
+
+  .image-section {
+    text-align: center;
+  }
+
+  .image-preview {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .custom-upload {
+    margin-top: 10px;
+  }
+
+  .upload-btn {
+    background-color: #2196F3;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .upload-btn:hover {
+    background-color: #1976D2;
+  }
+
+  .btn-block {
+    margin-top: 25px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-xl-10 col-lg-11 col-md-12">
+      <div class="card card-modern">
+        <div class="card-header card-header-primary">
+          <h4 class="mb-0">Employee Profile</h4>
+          <small>Update your details and uploads</small>
         </div>
-        <ul class="nav">
-          <li class="nav-item"><a class="nav-link" href="/user/dashboard/"><i class="material-icons">dashboard</i><p>Dashboard</p></a></li>
-          <li class="nav-item active"><a class="nav-link" href="/myapplications/"><i class="material-icons">view_list</i><p>View Existing Applications</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/categories/"><i class="material-icons">category</i><p>Categories</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/new-application/"><i class="material-icons">note_add</i><p>New Application</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/reports/"><i class="material-icons">bar_chart</i><p>Reports</p></a></li>
-          <li class="nav-item"><a class="nav-link" href="/support/"><i class="material-icons">help</i><p>Support</p></a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="main-panel">
-      <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
-        <div class="container-fluid">
-          <div class="navbar-wrapper"><a class="navbar-brand" href="#">My Profile</a></div>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span><span class="navbar-toggler-icon icon-bar"></span>
-          </button>
-          <div class="collapse navbar-collapse justify-content-end">
-            <ul class="navbar-nav">
-              <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="material-icons">person</i><p class="d-lg-none d-md-block">Account</p>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
-                  <a class="dropdown-item" href="profile.html">Profile</a>
-                  <a class="dropdown-item" href="#">Settings</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#">Log out</a>
+        <div class="card-body">
+          <form id="employeeProfileForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+              <!-- Left Side: Employee Info -->
+              <div class="col-md-7">
+                <div class="form-group">
+                  <label for="fullName">Full Name</label>
+                  <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Enter full name" required>
                 </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-      <div class="content">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title">My Profile</h4>
-                  <p class="card-category">View your account details</p>
+
+                <div class="form-group">
+                  <label for="email">Email address</label>
+                  <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
                 </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-3">
-                      <div class="text-center">
-                        <img src="" class="img-fluid rounded-circle" alt="Profile Picture" style="max-width: 120px;" />
-                      </div>
-                    </div>
-                    <div class="col-md-9">
-                      <h4 class="card-title">Tania Andrew</h4>
-                      <p><strong>Student ID:</strong> SE2020001</p>
-                      <p><strong>Email:</strong> tania.andrew@cust.edu</p>
-                      <p><strong>Phone:</strong> +92-333-555-1234</p>
-                      <p><strong>Department:</strong> Software Engineering</p>
-                      <p><strong>Year of Study:</strong> 4th Year</p>
-                    </div>
+
+                <div class="form-group">
+                  <label for="phone">Phone Number</label>
+                  <input type="text" class="form-control" id="phone" name="phone" placeholder="Enter phone number">
+                </div>
+
+                <div class="form-group">
+                  <label for="department">Department</label>
+                  <input type="text" class="form-control" id="department" name="department" placeholder="Enter department">
+                </div>
+
+                <div class="form-group">
+                  <label for="designation">Designation</label>
+                  <input type="text" class="form-control" id="designation" name="designation" placeholder="Enter designation">
+                </div>
+              </div>
+
+              <!-- Right Side: Upload Section -->
+              <div class="col-md-5 image-section">
+                <div class="form-group">
+                  <label>Profile Picture</label><br>
+                  <img id="profileImagePreview" class="image-preview" src="{% static 'images/default-user.png' %}" alt="Profile Preview"><br>
+                  <div class="custom-upload">
+                    <label class="upload-btn">Upload Profile
+                      <input type="file" id="profileImage" name="profileImage" accept="image/*" hidden>
+                    </label>
                   </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <hr>
-                      <h5>Additional Information</h5>
-                      <p><strong>Address:</strong> 123 University Road, Islamabad, Pakistan</p>
-                      <p><strong>Joined:</strong> September 2020</p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <a href="edit-profile.html" class="btn btn-primary pull-right">Edit Profile</a>
-                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                  <label>Signature</label><br>
+                  <img id="signatureImagePreview" class="image-preview" src="{% static 'images/default-sign.png' %}" alt="Signature Preview"><br>
+                  <div class="custom-upload">
+                    <label class="upload-btn">Upload Signature
+                      <input type="file" id="signatureImage" name="signatureImage" accept="image/*" hidden>
+                    </label>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="card card-stats">
-                <div class="card-header card-header-info card-header-icon">
-                  <div class="card-icon"><i class="material-icons">assignment</i></div>
-                  <p class="card-category">Applications Submitted</p>
-                  <h3 class="card-title">5</h3>
-                </div>
-                <div class="card-footer">
-                  <div class="stats">
-                    <i class="material-icons">update</i> Last Submission: 2023-10-01
-                  </div>
-                </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
-  <script src="../assets/js/core/jquery.min.js"></script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/material-dashboard.js?v=2.2.2" type="text/javascript"></script>
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function () {
+    if (!checkAuth()) return;
+
+    function previewImage(input, target) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          $(target).attr('src', e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    $('#profileImage').change(function () {
+      previewImage(this, '#profileImagePreview');
+    });
+
+    $('#signatureImage').change(function () {
+      previewImage(this, '#signatureImagePreview');
+    });
+
+    $('#employeeProfileForm').submit(function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      $.ajax({
+        url: '/api/employee/profile/update/',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function () {
+          alert('Profile updated successfully!');
+        },
+        error: function (xhr, status, error) {
+          alert('Error updating profile.');
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
