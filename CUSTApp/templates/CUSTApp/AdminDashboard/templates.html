@@ -260,6 +260,8 @@
             const id = $('#updateId').val();
             const name = $('#updateName').val();
             const content = updateEditor.getData();
+            const templateContent = $('<div>').html(content).text(); // Convert HTML to plain text
+
 
             if (!name || !content) {
                 Swal.fire('Error', 'Please fill in both name and content.', 'error');
@@ -270,7 +272,7 @@
                 url: '/api/application/' + id + '/',
                 method: 'PATCH',
                 contentType: 'application/json',
-                data: JSON.stringify({ id: id, application_name: name, application_desc: content }),
+                data: JSON.stringify({ id: id, application_name: name, application_desc: templateContent }),
                 dataType: 'json',
                 success: function (response) {
                     if (response.id) {
