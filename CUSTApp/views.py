@@ -295,6 +295,8 @@ class ApplicationRequestAPIView(APIView):
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
                 "comments": comment_data,
+                "created_at":timezone.now().isoformat(),   # This ensures it's timezone-aware
+                "updated_at":timezone.now().isoformat(),
                 "request_file": request_file,  # Include the file in request data
             }
 
@@ -396,10 +398,17 @@ def test_api_view(request):
 
 # Generic API Views
 class UsersList(generics.ListCreateAPIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
+    def list(self, request, *args, **kwargs):
+        user = request.user.user_id
+        try:
+            user = Users.objects.get(user_id=user)
+            serializer = UsersSerializer(user)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"error":"The logged in user does not exists"},status=status.HTTP_404_NOT_FOUND)
 
 
 class UserUpdateView(generics.UpdateAPIView):
@@ -716,6 +725,7 @@ class OTPVerifyView(APIView):
                         "access": access_token,
                         "refresh": refresh_token,
                         "dashboard_url": dashboard_url,
+                        "profile_picture":user.picture.url if user.picture else None,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -859,6 +869,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements = []
         #Signature image 
         signature_image_path = os.path.join(settings.MEDIA_ROOT , serializer.data.get("responsible_employee_signature"))
+        print(signature_image_path)
         signature_image = Image(signature_image_path,width=128,height=64)
         
         # 1. Add date (right-aligned)

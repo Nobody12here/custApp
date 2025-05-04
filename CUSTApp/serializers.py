@@ -15,7 +15,7 @@ class UsersSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['name']
+        fields = ['name','picture','signature']
 
 class DepartmentSerializer(serializers.ModelSerializer):
     dept_head_name = serializers.CharField(source="dept_head.name", read_only=True)
