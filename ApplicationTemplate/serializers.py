@@ -76,8 +76,6 @@ class RequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "request_id",
-            "created_at",
-            "updated_at",
         ]  # Prevent manual override
 
     def to_representation(self, instance):

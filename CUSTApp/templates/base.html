@@ -1,78 +1,114 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <title>{% block title %}CUST App{% endblock %}</title>
-  <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-  <!-- Fonts and Icons -->
-  <link rel="stylesheet" type="text/css"
-    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-  <!-- CSS Files -->
-  <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
-  <!-- Page-specific CSS -->
-  {% block extra_css %}{% endblock %}
-</head>
-<body class="">
-  <div class="wrapper">
-    <!-- Sidebar -->
-    {% include 'sidebar.html' with active_page=active_page %}
-    <div class="main-panel">
-      <!-- Navbar -->
-      {% include 'navbar.html' with page_title=page_title %}
-      <!-- Page Content -->
-      <div class="content">
-        <div class="container-fluid">
-          {% block content %}
-          {% endblock %}
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>{% block title %}CUST App{% endblock %}</title>
+    <meta
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      name="viewport"
+    />
+    <!-- Fonts and Icons -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"
+    />
+    <!-- CSS Files -->
+    <link
+      href="{% static 'assets/css/material-dashboard.css' %}"
+      rel="stylesheet"
+    />
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body class="">
+    <div class="wrapper">
+      <!-- Sidebar -->
+      {% include 'sidebar.html' with active_page=active_page %}
+      <div class="main-panel">
+        <!-- Navbar -->
+        {% include 'navbar.html' with page_title=page_title %}
+        <!-- Page Content -->
+        <div class="content">
+          <div class="container-fluid">{% block content %} {% endblock %}</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Core JS Files -->
-  <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
-  <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
-  <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
-  <script src="{% static 'js/auth.js' %}" type="text/javascript"></script>
-  <script src="{% static 'js/registerServiceWorker.js' %}" type="text/javascript"></script>
+    <!-- Core JS Files -->
+    <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+    <script
+      src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2"
+      type="text/javascript"
+    ></script>
+    <script src="{% static 'js/auth.js' %}" type="text/javascript"></script>
+    <script
+      src="{% static 'js/registerServiceWorker.js' %}"
+      type="text/javascript"
+    ></script>
 
-  <!-- JavaScript for Navbar and Sidebar -->
-  <script>
-    $(document).ready(function () {
-      // Update username in sidebar from localStorage
-      $('.username').text(localStorage.getItem('user_name') || 'User');
+    <!-- JavaScript for Navbar and Sidebar -->
+    <script>
+      $(document).ready(function () {
+        // Update username in sidebar from localStorage
+        if (!checkAuth()) {
+          return;
+        }
+        function fetchUserProfile() {
+          $.ajax({
+            url: `/users/`,
+            type: "GET",
+            success: function (data) {
+              if (data.picture) {
+                console.log(data.picture);
+                $("#photo").attr("src", data.picture);
+              }
+            },
+            error: function () {
+              alert("Failed to load profile data.");
+            },
+          });
+        }
+        fetchUserProfile();
+        $(".username").text(localStorage.getItem("user_name") || "User");
 
-      // Function to get CSRF token
-      function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
+        // Function to get CSRF token
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                  cookie.substring(name.length + 1)
+                );
+                break;
+              }
             }
           }
+          return cookieValue;
         }
-        return cookieValue;
-      }
 
-      // Logout functionality
-      $('#logoutButton').on('click', function (e) {
-        e.preventDefault();
-        logout()
-      })
-    });
-  </script>
+        // Logout functionality
+        $("#logoutButton").on("click", function (e) {
+          e.preventDefault();
+          logout();
+        });
+      });
+    </script>
 
-  <!-- Page-specific JS -->
-  {% block extra_js %}{% endblock %}
-</body>
+    <!-- Page-specific JS -->
+    {% block extra_js %}{% endblock %}
+  </body>
 </html>

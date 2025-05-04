@@ -1,20 +1,15 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Employee Profile{% endblock %}
-
-{% block extra_css %}
+{% extends 'base.html' %} {% load static %} {% block title %}Employee Profile{% endblock %} {% block extra_css %}
 <style>
   .card-modern {
     padding: 30px;
     background-color: #fff;
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     margin-top: 40px;
   }
 
   .card-header.card-header-primary {
-    background: linear-gradient(to right, #2196F3, #21CBF3);
+    background: linear-gradient(to right, #2196f3, #21cbf3);
     color: white;
     padding: 20px 25px;
     border-radius: 10px 10px 0 0;
@@ -43,7 +38,7 @@
   }
 
   .upload-btn {
-    background-color: #2196F3;
+    background-color: #2196f3;
     color: white;
     padding: 8px 16px;
     border: none;
@@ -53,16 +48,14 @@
   }
 
   .upload-btn:hover {
-    background-color: #1976D2;
+    background-color: #1976d2;
   }
 
   .btn-block {
     margin-top: 25px;
   }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="container-fluid">
   <div class="row justify-content-center">
     <div class="col-xl-10 col-lg-11 col-md-12">
@@ -78,49 +71,105 @@
               <!-- Left Side: Employee Info -->
               <div class="col-md-7">
                 <div class="form-group">
-                  <label for="fullName">Full Name</label>
-                  <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Enter full name" required>
+                  <label for="name">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    placeholder="Enter full name"
+                    required
+                  />
                 </div>
 
                 <div class="form-group">
                   <label for="email">Email address</label>
-                  <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    placeholder="Enter email"
+                    required
+                  />
                 </div>
 
                 <div class="form-group">
                   <label for="phone">Phone Number</label>
-                  <input type="text" class="form-control" id="phone" name="phone" placeholder="Enter phone number">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter phone number"
+                  />
                 </div>
 
                 <div class="form-group">
-                  <label for="department">Department</label>
-                  <input type="text" class="form-control" id="department" name="department" placeholder="Enter department">
+                  <label for="cnic">CNIC</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="cnic"
+                    name="cnic"
+                    placeholder="Enter CNIC"
+                  />
                 </div>
 
                 <div class="form-group">
                   <label for="designation">Designation</label>
-                  <input type="text" class="form-control" id="designation" name="designation" placeholder="Enter designation">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="designation"
+                    name="designation"
+                    placeholder="Enter designation"
+                  />
                 </div>
               </div>
 
               <!-- Right Side: Upload Section -->
               <div class="col-md-5 image-section">
                 <div class="form-group">
-                  <label>Profile Picture</label><br>
-                  <img id="profileImagePreview" class="image-preview" src="{% static 'images/default-user.png' %}" alt="Profile Preview"><br>
+                  <label>Profile Picture</label><br />
+                  <img
+                    id="profileImagePreview"
+                    class="image-preview"
+                    src="{% static 'images/default-user.png' %}"
+                    alt="Profile Preview"
+                  /><br />
                   <div class="custom-upload">
-                    <label class="upload-btn">Upload Profile
-                      <input type="file" id="profileImage" name="profileImage" accept="image/*" hidden>
+                    <label class="upload-btn"
+                      >Upload Profile
+                      <input
+                        type="file"
+                        id="profile"
+                        name="picture"
+                        accept="image/*"
+                        hidden
+                      />
                     </label>
                   </div>
                 </div>
 
                 <div class="form-group mt-4">
-                  <label>Signature</label><br>
-                  <img id="signatureImagePreview" class="image-preview" src="{% static 'images/default-sign.png' %}" alt="Signature Preview"><br>
+                  <label>Signature</label><br />
+                  <img
+                    id="signatureImagePreview"
+                    class="image-preview"
+                    src="{% static 'images/default-sign.png' %}"
+                    alt="Signature Preview"
+                  /><br />
                   <div class="custom-upload">
-                    <label class="upload-btn">Upload Signature
-                      <input type="file" id="signatureImage" name="signatureImage" accept="image/*" hidden>
+                    <label class="upload-btn"
+                      >Upload Signature
+                      <input
+                        type="file"
+                        id="signature"
+                        name="signature"
+                        accept="image/*"
+                        hidden
+                      />
                     </label>
                   </div>
                 </div>
@@ -129,7 +178,9 @@
 
             <div class="row">
               <div class="col-md-12">
-                <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
+                <button type="submit" class="btn btn-primary btn-block">
+                  Save Profile
+                </button>
               </div>
             </div>
           </form>
@@ -138,47 +189,87 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script>
   $(document).ready(function () {
     if (!checkAuth()) return;
+    let userId = null;
+    function fetchUserProfile() {
+      $.ajax({
+        url: `/users/`,
+        type: "GET",
+        success: function (data) {
+          console.log(data);
+          userId = data.user_id;
+          $("#name").val(data.name || "");
+          $("#email").val(data.email || "");
+          $("#phone").val(data.phone_number || "");
+          $("#cnic").val(data.CNIC || "");
+          $("#designation").val(data.designation || "");
 
+          if (data.picture) {
+            console.log(data.picture);
+            $("#profileImagePreview").attr("src", data.picture);
+          }
+          if (data.signature) {
+            $("#signatureImagePreview").attr("src", data.signature);
+          }
+        },
+        error: function () {
+          alert("Failed to load profile data.");
+        },
+      });
+    }
+    fetchUserProfile();
     function previewImage(input, target) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          $(target).attr('src', e.target.result);
+          $(target).attr("src", e.target.result);
         };
         reader.readAsDataURL(input.files[0]);
       }
     }
 
-    $('#profileImage').change(function () {
-      previewImage(this, '#profileImagePreview');
+    $("#profile").change(function () {
+      previewImage(this, "#profileImagePreview");
     });
 
-    $('#signatureImage').change(function () {
-      previewImage(this, '#signatureImagePreview');
+    $("#signature").change(function () {
+      previewImage(this, "#signatureImagePreview");
     });
 
-    $('#employeeProfileForm').submit(function (e) {
+    $("#employeeProfileForm").submit(function (e) {
       e.preventDefault();
       const formData = new FormData(this);
+      // Remove profile image field if no file selected
+      const profileInput = $("#profile")[0];
+      if (!profileInput.files.length) {
+        formData.delete("profile");
+      }
+
+      // Remove signature image field if no file selected
+      const signatureInput = $("#signature")[0];
+      if (!signatureInput.files.length) {
+        formData.delete("signature");
+      }
+
+      for (const pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
+      }
 
       $.ajax({
-        url: '/api/employee/profile/update/',
-        type: 'POST',
+        url: `/users/${userId}/`,
+        type: "PATCH",
         data: formData,
         processData: false,
         contentType: false,
         success: function () {
-          alert('Profile updated successfully!');
+          alert("Profile updated successfully!");
         },
         error: function (xhr, status, error) {
-          alert('Error updating profile.');
-        }
+          alert("Error updating profile.");
+        },
       });
     });
   });

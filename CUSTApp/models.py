@@ -39,7 +39,7 @@ class Users(AbstractBaseUser,PermissionsMixin):
     designation = models.CharField(max_length=100, null=True, blank=True)
     remark = models.TextField(null=True, blank=True)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    picture = models.CharField(max_length=255, null=True, blank=True)
+    picture = models.FileField(blank=True,null=True,upload_to='media',validators=[validate_image_file_extension])
     signature = models.FileField(blank=True,null=True,upload_to='media',validators=[validate_image_file_extension])
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     term = models.CharField(max_length=10, null=True, blank=True)
