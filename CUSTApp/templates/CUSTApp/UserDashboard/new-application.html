@@ -12,6 +12,17 @@
     margin-top: 8px;
   }
 
+  .str{
+    padding-top:10px;
+  }
+  select.form-control {
+  height: calc(2.25rem + 10px);
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  appearance: auto; /* Ensures default OS dropdown arrow */
+}
   .file-input {
     position: absolute;
     top: 0;
@@ -97,10 +108,11 @@
             <form id="applicationForm">
               <div class="row">
                 <div class="col-md-12">
+                  <label for="applicationType" class="applicationtype">Application Type</label>
                   <div class="form-group">
-                    <label for="applicationType">Application Type</label>
+                    
                     <select class="form-control" id="applicationType" name="applicationType" required>
-                      <option value=""></option>
+                      <option value="" disabled selected>Select Application Type</option>
                     </select>
                   </div>
                 </div>
@@ -116,7 +128,7 @@
                 <!-- </div> -->
                 <div class="col-md-6">
                   <div class="form-group">
-                    <label class="bmd-label-floating">Student RegNo</label>
+                    <label class="bmd-label-floating str" >Student RegNo</label>
                     <input type="text" class="form-control" id="studentId" name="studentId" required>
                     <div id="studentNameSearch" class="list-group position-absolute w-100"></div>
                   </div>
@@ -205,7 +217,8 @@
         success: function (response) {
           alert(response.message);
           $('#applicationForm')[0].reset();
-          $('#applicationType').html('<option value="">Select Application Type</option>');
+          $('#applicationType').html('<option value="" disabled selected>Select Application Type</option>');
+
           loadApplicationTypes();
           $('#fileName').text('No file selected');
         },
