@@ -133,6 +133,7 @@ def update_request_status(request, id):
             req = Request.objects.get(pk=id)
             student = req.applicant
             req.status = status
+            req.approved_at = timezone.now().isoformat()
             req.save()
             send_alert_email(
                 student.email,
@@ -295,8 +296,8 @@ class ApplicationRequestAPIView(APIView):
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
                 "comments": comment_data,
-                "created_at":timezone.now().isoformat(),   # This ensures it's timezone-aware
-                "updated_at":timezone.now().isoformat(),
+                "created_at":datetime.now().isoformat(),   # This ensures it's timezone-aware
+                "updated_at":datetime.now().isoformat(),
                 "request_file": request_file,  # Include the file in request data
             }
 
