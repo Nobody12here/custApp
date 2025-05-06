@@ -13,9 +13,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 # import pymysql # type: ignore
 # pymysql.install_as_MySQLdb()
-
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -117,19 +118,18 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  #  engine for MariaDB
-        'NAME': 'custappp_custapp',                     #  database name
-        'USER': 'root',               # MariaDB username
-        'PASSWORD': '',           # MariaDB password
-        'HOST': 'localhost',                   #  local development
-        'PORT': '3306',                        # Default MariaDB port
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'test222'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
     }
 }
 # myproject/settings.py (add at the bottom)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing
+EMAIL_BACKEND =os.environ.get('EMAIL_BACKEND','django.core.mail.backends.console.EmailBackend') # For testing
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.custapp.pk'
 EMAIL_PORT = 587
