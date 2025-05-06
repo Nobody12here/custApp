@@ -46,7 +46,8 @@ class Request(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
     applicant = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='applicant_id')
     created_at = models.DateTimeField(null=True,blank=True)  # Auto-set on creation
-    updated_at = models.DateTimeField(auto_now=True)      # Auto-set on update
+    updated_at = models.DateTimeField(auto_now=True)
+    approved_at = models.DateTimeField(null=True,blank=True)      # Auto-set on update
     comments = models.TextField(null=True, blank=True)
     payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='Pending')
     payment_date = models.DateTimeField(null=True, blank=True)

@@ -61,6 +61,7 @@ class RequestSerializer(serializers.ModelSerializer):
             "applicant",
             "created_at",
             "updated_at",
+            "approved_at",
             "comments",
             "payment_status",
             "payment_date",
