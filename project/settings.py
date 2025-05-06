@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'custapp.pk', 'www.custapp.pk']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'custapp.pk', 'www.custapp.pk','http://test.custapp.pk/','test.custapp.pk']
 
 # Application definition
 
