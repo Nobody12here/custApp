@@ -12,10 +12,13 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         exclude = ["password"]  # Exclude password field from serialization
+
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['name','picture','signature']
+        fields = ["name", "picture", "signature"]
+
 
 class DepartmentSerializer(serializers.ModelSerializer):
     dept_head_name = serializers.CharField(source="dept_head.name", read_only=True)
@@ -28,27 +31,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
     def get_programs(self, obj):
         programs = obj.program_set.all()
         return ProgramSerializer(programs, many=True).data
-
-
-# class ApplicationsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Applications
-#         fields = '__all__'
-
-#     def validate(self, data):
-#         if not data.get('application_name'):
-#             raise serializers.ValidationError({"application_name": "This field cannot be empty."})
-#         if not data.get('short_name'):
-#             raise serializers.ValidationError({"short_name": "This field is required."})
-#         if not data.get('application_desc'):
-#             raise serializers.ValidationError({"application_desc": "This field is required."})
-#         if data.get('status') not in [0, 1]:
-#             raise serializers.ValidationError({"status": "Status must be 0 (Disabled) or 1 (Enabled)."})
-#         if data.get('responsible_dept') is None:
-#             raise serializers.ValidationError({"responsible_dept": "This field is required."})
-#         if data.get('default_responsible_employee') is None:
-#             raise serializers.ValidationError({"default_responsible_employee": "This field is required."})
-#         return data
 
 
 class ProgramSerializer(serializers.ModelSerializer):
@@ -68,22 +50,6 @@ class TemplateAttributesSerializer(serializers.ModelSerializer):
                 {"attribute_name": "This field cannot be empty."}
             )
         return data
-
-
-# class TemplateAttributesSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = TemplateAttributes
-#         fields = '__all__'
-
-#     def validate(self, data):
-#         if not data.get('attribute_name'):
-#             raise serializers.ValidationError({"attribute_name": "This field cannot be empty."})
-#         return data
-
-
-# New serializers for OTP APIs
-
-from rest_framework import serializers
 
 
 class OTPSendSerializer(
