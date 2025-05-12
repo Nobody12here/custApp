@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'webpush',
     'drf_yasg',
     'rest_framework',
+    'GuestPass',
     'CUSTApp.apps.CustappConfig',
     'ApplicationTemplate',
     'rest_framework_simplejwt',
