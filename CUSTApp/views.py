@@ -1018,3 +1018,5 @@ def user_profile(request):
 def support(request):
 
     return render(request, "CUSTApp/UserDashboard/support.html")
+def guest_pass(request):
+    return render(request, "CUSTApp/UserDashboard/guest_pass.html")

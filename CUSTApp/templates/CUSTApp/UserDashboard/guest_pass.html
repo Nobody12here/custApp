@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Guest Pass Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-stats {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .card-stats:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(156, 39, 176, 0.4);
+    }
+
+    .guest-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px 0 rgba(0,0,0,0.14);
+        margin-bottom: 30px;
+    }
+
+    .guest-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .guest-form label {
+        color: #555;
+        font-weight: 500;
+    }
+
+    .guest-form .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+    }
+
+    .guest-form .form-control:focus {
+        border-color: #9c27b0;
+        box-shadow: none;
+    }
+
+    .table th {
+        font-weight: 500;
+        color: #9c27b0;
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .action-buttons .btn {
+        margin: 0 2px;
+        padding: 4px 8px;
+        font-size: 0.85em;
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+
+    .search-box .form-control {
+        border-radius: 20px;
+        padding-left: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row" id="guest-stats-cards">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+            <div class="card-header card-header-warning card-header-icon">
+                <div class="card-icon">
+                    <i class="material-icons">hourglass_empty</i>
+                </div>
+                <p class="card-category">PENDING</p>
+                <h3 class="card-title" id="pending-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+            <div class="card-header card-header-success card-header-icon">
+                <div class="card-icon">
+                    <i class="material-icons">check_circle</i>
+                </div>
+                <p class="card-category">APPROVED</p>
+                <h3 class="card-title" id="approved-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+            <div class="card-header card-header-danger card-header-icon">
+                <div class="card-icon">
+                    <i class="material-icons">cancel</i>
+                </div>
+                <p class="card-category">REJECTED</p>
+                <h3 class="card-title" id="rejected-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+            <div class="card-header card-header-info card-header-icon">
+                <div class="card-icon">
+                    <i class="material-icons">people</i>
+                </div>
+                <p class="card-category">TOTAL</p>
+                <h3 class="card-title" id="total-count">0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Guest Pass Form -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Add New Guest Pass</h4>
+                <p class="card-category">Enter guest details to create a new pass</p>
+            </div>
+            <div class="card-body">
+                <form id="guestPassForm" class="guest-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="guestName">Guest Name</label>
+                                <input type="text" class="form-control" id="guestName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="guestCNIC">Guest CNIC</label>
+                                <input type="text" class="form-control" id="guestCNIC" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="guestPhone">Guest Phone Number</label>
+                                <input type="tel" class="form-control" id="guestPhone" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="hostDepartment">Host Department</label>
+                                <input type="text" class="form-control" id="hostDepartment" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="hostName">Host Name</label>
+                                <input type="text" class="form-control" id="hostName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="visitDate">Visit Date</label>
+                                <input type="date" class="form-control" id="visitDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="visitTime">Visit Time</label>
+                                <input type="time" class="form-control" id="visitTime" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="purpose">Purpose of Visit</label>
+                                <input type="text" class="form-control" id="purpose" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Guest Pass Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Guest Pass Requests Table -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Guest Pass Requests</h4>
+                <p class="card-category">Manage all guest pass requests</p>
+            </div>
+            <div class="card-body">
+                <!-- Search Box -->
+                <div class="search-box">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>Guest Name</th>
+                                <th>CNIC</th>
+                                <th>Phone</th>
+                                <th>Host Department</th>
+                                <th>Host Name</th>
+                                <th>Visit Date</th>
+                                <th>Visit Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestPassTableBody">
+                            <!-- Guest pass requests will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    if (!checkAuth()) return;
+
+    // Function to load guest pass statistics
+    function loadGuestPassStats() {
+        $.ajax({
+            url: '/guest-pass-stats/',
+            method: 'GET',
+            success: function(data) {
+                $('#pending-count').text(data.pending || 0);
+                $('#approved-count').text(data.approved || 0);
+                $('#rejected-count').text(data.rejected || 0);
+                $('#total-count').text(data.total || 0);
+            },
+            error: function() {
+                console.error('Error loading guest pass statistics');
+            }
+        });
+    }
+
+    // Function to load guest pass requests
+    function loadGuestPasses(searchTerm = '') {
+        $.ajax({
+            url: '/guest-passes/',
+            method: 'GET',
+            success: function(data) {
+                const tbody = $('#guestPassTableBody');
+                tbody.empty();
+
+                const filteredPasses = searchTerm ? data.filter(pass => {
+                    const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name}`.toLowerCase();
+                    return searchStr.includes(searchTerm.toLowerCase());
+                }) : data;
+
+                if (filteredPasses.length === 0) {
+                    tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
+                    return;
+                }
+
+                filteredPasses.forEach(pass => {
+                    const row = `
+                        <tr>
+                            <td>${pass.guest_name}</td>
+                            <td>${pass.guest_cnic}</td>
+                            <td>${pass.guest_phone}</td>
+                            <td>${pass.host_department}</td>
+                            <td>${pass.host_name}</td>
+                            <td>${new Date(pass.visit_date).toLocaleDateString()}</td>
+                            <td>${pass.visit_time}</td>
+                            <td>
+                                <span class="status-badge status-${pass.status.toLowerCase()}">
+                                    ${pass.status}
+                                </span>
+                            </td>
+                            <td class="action-buttons">
+                                ${pass.status === 'PENDING' ? `
+                                    <button class="btn btn-success btn-sm" onclick="updateGuestPassStatus(${pass.id}, 'APPROVED')">
+                                        <i class="material-icons">check</i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="updateGuestPassStatus(${pass.id}, 'REJECTED')">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-info btn-sm" onclick="viewGuestPassDetails(${pass.id})">
+                                    <i class="material-icons">visibility</i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            },
+            error: function() {
+                $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
+            }
+        });
+    }
+
+    // Handle form submission
+    $('#guestPassForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            guest_name: $('#guestName').val(),
+            guest_cnic: $('#guestCNIC').val(),
+            guest_phone: $('#guestPhone').val(),
+            host_department: $('#hostDepartment').val(),
+            host_name: $('#hostName').val(),
+            visit_date: $('#visitDate').val(),
+            visit_time: $('#visitTime').val(),
+            purpose: $('#purpose').val()
+        };
+
+        $.ajax({
+            url: '/create-guest-pass/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    alert('Guest pass request created successfully');
+                    $('#guestPassForm')[0].reset();
+                    loadGuestPasses();
+                    loadGuestPassStats();
+                } else {
+                    alert(response.error || 'Failed to create guest pass request');
+                }
+            },
+            error: function() {
+                alert('An error occurred while creating the guest pass request');
+            }
+        });
+    });
+
+    // Handle search
+    $('#searchInput').on('input', function() {
+        loadGuestPasses($(this).val());
+    });
+
+    // Initial load
+    loadGuestPasses();
+    loadGuestPassStats();
+});
+
+// Function to update guest pass status
+function updateGuestPassStatus(passId, status) {
+    $.ajax({
+        url: `/update-guest-pass-status/${passId}/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        data: { status: status },
+        success: function(response) {
+            if (response.success) {
+                loadGuestPasses($('#searchInput').val());
+                loadGuestPassStats();
+            } else {
+                alert(response.error || 'Failed to update guest pass status');
+            }
+        },
+        error: function() {
+            alert('An error occurred while updating the guest pass status');
+        }
+    });
+}
+
+// Function to view guest pass details
+function viewGuestPassDetails(passId) {
+    // Implement view details functionality
+    // This could open a modal with detailed information
+    console.log('View details for pass:', passId);
+}
+</script>
+{% endblock %}
