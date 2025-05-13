@@ -27,7 +27,7 @@ from .serializers import (
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser
-from .utils import send_alert_email
+from .utils import send_alert_email, add_comment_to_instance
 import csv
 import io
 from reportlab.lib.pagesizes import letter
@@ -57,71 +57,55 @@ logger = logging.getLogger(__name__)
 
 from django.utils import timezone
 
+
 class UploadEmployeeSignature(APIView):
-    permission_classes=[IsAuthenticated]
-    parser_classes= [MultiPartParser]
-    def post(self,request):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
         user = self.request.user
         image = self.request.FILES.get("signature")
         if not image:
-            return Response({"error":"No image provided!"},status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No image provided!"}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             user = Users.objects.get(user_id=user.user_id)
             user.signature = image
             user.save()
-            return Response({"message":"Signature Uploaded sucessfully !"},status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "Signature Uploaded sucessfully !"},
+                status=status.HTTP_201_CREATED,
+            )
         except ObjectDoesNotExist:
-            return Response({"error":" this user does not exists"},status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": " this user does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
 
 class AddCommentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        try:
-            text = request.data.get("text")
-            if not text:
-                return Response(
-                    {"error": "Comment text is required"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        # User info
+        req = Request.objects.get(pk=id)
+        name = request.user.name
+        user_type = request.user.user_type
+        student = req.applicant
+        employee = Users.objects.get(user_id=req.EmployeeID)
 
-            req = Request.objects.get(pk=id)
-            # User info
-            name = request.user.name
-            user_type = request.user.user_type
-            student = req.applicant
-            employee = Users.objects.get(user_id=req.EmployeeID)
-            # Load and update comments
-            try:
-                comments = json.loads(req.comments) if req.comments else []
-            except Exception:
-                comments = []
-            new_comment = {
-                "name": name,
-                "text": text,
-                "type": user_type,
-                "timestamp": timezone.now().isoformat(),
-            }
-            comments.append(new_comment)
-            req.comments = json.dumps(comments)
-            req.save()
-            payload = {
-                "head": "New Comment",
-                "body": f"{name} commented: {text}",
-            }
-            send_comment_notification(
-                user_type, name, text, employee, student
-            )  # Send notification to the other user
-            return Response({"success": True})
-
-        except Request.DoesNotExist:
+        text = request.data.get("text")
+        if not text:
             return Response(
-                {"error": "Request not found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Comment text is required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        except json.JSONDecodeError:
-            return Response(
-                {"error": "Invalid comment format"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        add_comment_to_instance(request, req)
+        send_comment_notification(
+            user_type, name, text, employee, student
+        )  # Send notification to the other user
+        return Response({"success": True})
 
 
 def update_request_status(request, id):
@@ -278,9 +262,11 @@ class ApplicationRequestAPIView(APIView):
                 "term": applicant.term,
                 "dob": applicant.DoB,
                 "cnic": applicant.CNIC,
-                "He/She":"He" if applicant.gender.lower() == "male" else "She",
-                "His/Her":"His" if applicant.gender.lower() == "male" else "Her" ,
-                "parent_relationship":"S/O" if applicant.gender.lower() == "male" else "D/O"  
+                "He/She": "He" if applicant.gender.lower() == "male" else "She",
+                "His/Her": "His" if applicant.gender.lower() == "male" else "Her",
+                "parent_relationship": (
+                    "S/O" if applicant.gender.lower() == "male" else "D/O"
+                ),
             }
 
             # Replace placeholders in the template text
@@ -296,8 +282,8 @@ class ApplicationRequestAPIView(APIView):
                 "EmployeeID": employee_id,
                 "renderedtemplate": rendered_template,
                 "comments": comment_data,
-                "created_at":datetime.now().isoformat(),   # This ensures it's timezone-aware
-                "updated_at":datetime.now().isoformat(),
+                "created_at": datetime.now().isoformat(),  # This ensures it's timezone-aware
+                "updated_at": datetime.now().isoformat(),
                 "request_file": request_file,  # Include the file in request data
             }
 
@@ -402,33 +388,44 @@ class UsersList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
+
     def list(self, request, *args, **kwargs):
         user = request.user.user_id
         try:
             user = Users.objects.get(user_id=user)
             serializer = UsersSerializer(user)
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({"error":"The logged in user does not exists"},status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "The logged in user does not exists"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
 
 class UserUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
-    serializer_class = UserUpdateSerializer 
-    lookup_field = 'user_id'
+    serializer_class = UserUpdateSerializer
+    lookup_field = "user_id"
+
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
         user_type = str(user.user_type)
-        if user_type.lower() == 'student' and instance.user_id != user.user_id:
-            return Response({"error":"The user can only update his profile!"},status=status.HTTP_403_FORBIDDEN)
+        if user_type.lower() == "student" and instance.user_id != user.user_id:
+            return Response(
+                {"error": "The user can only update his profile!"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message":"User data updated sucessfully"},status=status.HTTP_200_OK)
+            return Response(
+                {"message": "User data updated sucessfully"}, status=status.HTTP_200_OK
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserCSVUploadAPIView(APIView):
     parser_classes = [MultiPartParser]
@@ -509,13 +506,15 @@ class RequestList(generics.ListCreateAPIView):
         if user_type == "Staff":
             queryset = queryset.filter(EmployeeID=user.user_id)
         return queryset
+
+
 class RequestDelete(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
 
     def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, "swagger_fake_view", False):
             return Users.objects.none()  # or a safe fallback
 
         queryset = super().get_queryset()
@@ -526,18 +525,19 @@ class RequestDelete(generics.DestroyAPIView):
         if user_type == "Staff":
             queryset = queryset.filter(EmployeeID=user.user_id)
         return queryset
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         user = self.request.user
         user_type = str(user.user_type)
         print(user)
-        if user_type.lower() == 'student' and instance.StudentID != user.user_id:
-            return Response({
-                'error':'This application Does not belong to current user!'
-            },status=status.HTTP_403_FORBIDDEN)
+        if user_type.lower() == "student" and instance.StudentID != user.user_id:
+            return Response(
+                {"error": "This application Does not belong to current user!"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         return super().destroy(request, *args, **kwargs)
-
 
 
 class GetAttributesAPIView(APIView):
@@ -606,11 +606,7 @@ class GetAttributesAPIView(APIView):
         elif table == "users" and user_type == "student":
             attributes[0] = "student_name"
         elif table == "Misc":
-            attributes = [
-                'He/She',
-                'His/Her',
-                'parent_relationship'
-            ]
+            attributes = ["He/She", "His/Her", "parent_relationship"]
         return Response(attributes)
 
 
@@ -726,7 +722,7 @@ class OTPVerifyView(APIView):
                         "access": access_token,
                         "refresh": refresh_token,
                         "dashboard_url": dashboard_url,
-                        "profile_picture":user.picture.url if user.picture else None,
+                        "profile_picture": user.picture.url if user.picture else None,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -827,7 +823,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Define custom styles
         styles = getSampleStyleSheet()
-        
+
         # Main body text style (left-aligned, no forced indent)
         body_style = ParagraphStyle(
             name="BodyText",
@@ -868,11 +864,13 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Build your elements
         elements = []
-        #Signature image 
-        signature_image_path = os.path.join(settings.MEDIA_ROOT , serializer.data.get("responsible_employee_signature"))
+        # Signature image
+        signature_image_path = os.path.join(
+            settings.MEDIA_ROOT, serializer.data.get("responsible_employee_signature")
+        )
         print(signature_image_path)
-        signature_image = Image(signature_image_path,width=128,height=64)
-        
+        signature_image = Image(signature_image_path, width=128, height=64)
+
         # 1. Add date (right-aligned)
         current_date = timezone.now().strftime("%B %d, %Y")  # e.g., "November 12, 2024"
         elements.append(Spacer(1, 70))  # Space from top
@@ -887,14 +885,18 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         elements.append(Spacer(1, 70))
         elements.append(Paragraph("Issued on request", signature_style))
         elements.append(Spacer(1, 10))
-        signature_table = Table([[signature_image]], colWidths=[550])  
-        signature_table.setStyle(TableStyle([
-            ('LEFTPADDING', (0, 0), (0, 0), 12),  # ~0.75 inch indent
-            ('RIGHTPADDING', (0, 0), (0, 0), 0),
-            ('TOPPADDING', (0, 0), (0, 0), 0),
-            ('BOTTOMPADDING', (0, 0), (0, 0), 0),
-            ('VALIGN', (0, 0), (0, 0),'TOP'),
-        ]))
+        signature_table = Table([[signature_image]], colWidths=[550])
+        signature_table.setStyle(
+            TableStyle(
+                [
+                    ("LEFTPADDING", (0, 0), (0, 0), 12),  # ~0.75 inch indent
+                    ("RIGHTPADDING", (0, 0), (0, 0), 0),
+                    ("TOPPADDING", (0, 0), (0, 0), 0),
+                    ("BOTTOMPADDING", (0, 0), (0, 0), 0),
+                    ("VALIGN", (0, 0), (0, 0), "TOP"),
+                ]
+            )
+        )
 
         # Add to elements
         elements.append(signature_table)
@@ -903,9 +905,18 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
         )
         elements.append(Spacer(1, 7))
-        elements.append(Paragraph(f"{serializer.data.get('responsible_employee_designation')} ", signature_style))
-        elements.append(Spacer(1,7))
-        elements.append(Paragraph(f"{serializer.data.get('responsible_dept_name')} ", signature_style))
+        elements.append(
+            Paragraph(
+                f"{serializer.data.get('responsible_employee_designation')} ",
+                signature_style,
+            )
+        )
+        elements.append(Spacer(1, 7))
+        elements.append(
+            Paragraph(
+                f"{serializer.data.get('responsible_dept_name')} ", signature_style
+            )
+        )
 
         # Build the PDF
         doc.build(elements)
@@ -998,8 +1009,11 @@ def new_application(request):
 def reports(request):
 
     return render(request, "CUSTApp/UserDashboard/reports.html")
+
+
 def user_profile(request):
-    return render(request,"CUSTApp/UserDashboard/profile.html")
+    return render(request, "CUSTApp/UserDashboard/profile.html")
+
 
 def support(request):
 
