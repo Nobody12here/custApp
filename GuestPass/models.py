@@ -13,6 +13,8 @@ class GuestPassRequest(models.Model):
     reason = models.TextField()
     approved = models.BooleanField(default=False)
     date_time = models.DateTimeField(name="date-time")
+    comments = models.TextField(null=True, blank=True)
+
     created_at = models.DateField(auto_now_add=True)
 
     class Meta:
