@@ -1,41 +1,364 @@
-{%load static%}
-<div class="sidebar" data-color="rose" data-background-color="black"
-    data-image="{% static 'assets/img/sidebar-1.jpg' %}">
-    <div class="logo">
-        <a href="#" class="simple-text logo-normal">CUST PORTAL</a>
-    </div>
-    <div class="sidebar-wrapper">
+{% load static %}
+<!-- Admin Sidebar -->
+<div class="sidebar" data-color="blue" data-background-color="white">
+  <!-- Sidebar Header -->
+  <div class="logo">
+    <a href="/" class="simple-text logo-normal d-flex align-items-center">
+      <img src="{% static 'assets/img/logo.png' %}" 
+           alt="Logo" 
+           class="me-2"
+           style="width: 40px; height: 40px;" />
+      <span class="ms-2">CUST Portal</span>
+    </a>
+  </div>
+
+  <!-- Admin Profile -->
+  <div class="user">
+    <!-- <div class="photo"> -->
+      <!-- <img src="{% static 'assets/img/faces/admin-avatar.jpg' %}" alt="Admin Avatar" /> -->
+    <!-- </div> -->
+    <div class="user-info">
+      <a data-toggle="collapse" href="#collapseAdmin" class="username">
+        <span>Admin User</span>
+        <b class="caret"></b>
+      </a>
+      <div class="collapse" id="collapseAdmin">
         <ul class="nav">
-            <li class="nav-item active">
-                <a class="nav-link" href="/myadmin/dashboard/">
-                    <i class="material-icons">create</i>
-                    <p>Create Applications</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-templates/">
-                    <i class="material-icons">visibility</i>
-                    <p>View Existing Applications</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/students/">
-                    <i class="material-icons">people</i>
-                    <p>Students</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-faculty/">
-                    <i class="material-icons">school</i>
-                    <p>Faculty</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-departments/">
-                    <i class="material-icons">business</i>
-                    <p>Departments & Programs</p>
-                </a>
-            </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/myadmin/profile/">
+              <span class="sidebar-mini-icon">P</span>
+              <span class="sidebar-normal">My Profile</span>
+            </a>
+          </li>
         </ul>
+      </div>
     </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <div class="sidebar-wrapper">
+    <ul class="nav">
+      <li class="nav-item {% if active_page == 'admin-dashboard' %}active{% endif %}">
+        <a class="nav-link" href="/myadmin/dashboard/">
+          <i class="material-icons">create</i>
+          <p>Create Applications</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'admin-templates' %}active{% endif %}">
+        <a class="nav-link" href="/admin-templates/">
+          <i class="material-icons">visibility</i>
+          <p>View Existing Applications</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'students' %}active{% endif %}">
+        <a class="nav-link" href="/students/">
+          <i class="material-icons">people</i>
+          <p>Students</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'admin-faculty' %}active{% endif %}">
+        <a class="nav-link" href="/admin-faculty/">
+          <i class="material-icons">school</i>
+          <p>Faculty</p>
+        </a>
+      </li>
+      <li class="nav-item {% if active_page == 'admin-departments' %}active{% endif %}">
+        <a class="nav-link" href="/admin-departments/">
+          <i class="material-icons">business</i>
+          <p>Departments & Programs</p>
+        </a>
+      </li>
+    </ul>
+  </div>
 </div>
+
+<style>
+/* Sidebar Styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 260px;
+  display: block;
+  z-index: 1030;
+  color: #3C4858;
+  font-weight: 200;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 0 45px 0 rgba(10, 54, 157, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Adjust main panel to account for sidebar */
+.main-panel {
+  width: calc(100% - 260px);
+  margin-left: 260px;
+  min-height: 100vh;
+  position: relative;
+  float: right;
+  transition: all 0.3s ease;
+}
+
+/* Adjust navbar position */
+.navbar {
+  left: 260px;
+  width: calc(100% - 260px);
+  transition: all 0.3s ease;
+}
+
+.sidebar .logo {
+  padding: 15px 0;
+  margin: 0;
+  display: block;
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  border-bottom: 1px solid rgba(10, 54, 157, 0.1);
+  background: linear-gradient(90deg, rgba(10, 54, 157, 0.05) 0%, rgba(30, 136, 229, 0.05) 100%);
+}
+
+.sidebar .logo a {
+  padding: 5px 15px;
+  text-decoration: none;
+  color: #0A369D;
+  font-weight: 500;
+  font-size: 18px;
+  text-transform: uppercase;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar .logo a:hover {
+  color: #1E88E5;
+  transform: translateY(-1px);
+}
+
+.sidebar .user {
+  padding: 15px 0;
+  margin: 0;
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  border-bottom: 1px solid rgba(10, 54, 157, 0.1);
+  background: linear-gradient(90deg, rgba(10, 54, 157, 0.02) 0%, rgba(30, 136, 229, 0.02) 100%);
+}
+
+.sidebar .user .photo {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+}
+
+.sidebar .user .photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar .user .user-info {
+  margin-top: 10px;
+}
+
+.sidebar .user .username {
+  color: #0A369D;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 5px 15px;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.sidebar .user .username:hover {
+  color: #1E88E5;
+}
+
+.sidebar .user .username .caret {
+  margin-left: 5px;
+  border-top: 4px solid #0A369D;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  vertical-align: middle;
+  transition: all 0.3s ease;
+}
+
+.sidebar .user .username:hover .caret {
+  border-top-color: #1E88E5;
+}
+
+.sidebar .sidebar-wrapper {
+  position: relative;
+  height: calc(100vh - 200px);
+  overflow: auto;
+  width: 260px;
+  z-index: 4;
+  padding-bottom: 30px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.sidebar .nav {
+  margin-top: 20px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.sidebar .nav li {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.sidebar .nav li > a {
+  margin: 10px 15px;
+  border-radius: 8px;
+  color: #3C4858;
+  text-transform: capitalize;
+  font-size: 13px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar .nav li > a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(10, 54, 157, 0.05) 0%, rgba(30, 136, 229, 0.05) 100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav li > a:hover {
+  color: #0A369D;
+  transform: translateX(5px);
+}
+
+.sidebar .nav li > a:hover::before {
+  opacity: 1;
+}
+
+.sidebar .nav li.active > a {
+  background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 20px 0px rgba(10, 54, 157, 0.2);
+  transform: translateX(5px);
+}
+
+.sidebar .nav li.active > a::before {
+  opacity: 0;
+}
+
+.sidebar .nav li > a i {
+  font-size: 24px;
+  float: left;
+  margin-right: 15px;
+  line-height: 30px;
+  width: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav li > a:hover i {
+  transform: scale(1.1);
+  color: #0A369D;
+}
+
+.sidebar .nav li.active > a i {
+  color: #FFFFFF;
+}
+
+/* Mini sidebar styles */
+.sidebar-mini .sidebar {
+  width: 80px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.sidebar-mini .sidebar .logo {
+  background: linear-gradient(90deg, rgba(10, 54, 157, 0.05) 0%, rgba(30, 136, 229, 0.05) 100%);
+}
+
+.sidebar-mini .sidebar .user {
+  background: linear-gradient(90deg, rgba(10, 54, 157, 0.02) 0%, rgba(30, 136, 229, 0.02) 100%);
+}
+
+.sidebar-mini .sidebar .nav li > a {
+  padding: 12px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.sidebar-mini .sidebar .nav li > a:hover {
+  transform: translateY(-2px);
+}
+
+.sidebar-mini .sidebar .nav li.active > a {
+  transform: translateY(-2px);
+}
+
+/* Scrollbar styling */
+.sidebar .sidebar-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar .sidebar-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar .sidebar-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(10, 54, 157, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar .sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(10, 54, 157, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .sidebar {
+    transform: translateX(-260px);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+    box-shadow: 0 0 45px 0 rgba(10, 54, 157, 0.15);
+  }
+  
+  .main-panel {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .navbar {
+    left: 0;
+    width: 100%;
+  }
+  
+  .sidebar-mini .sidebar {
+    transform: translateX(-80px);
+  }
+  
+  .sidebar-mini .main-panel {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .sidebar-mini .navbar {
+    left: 0;
+    width: 100%;
+  }
+}
+</style>

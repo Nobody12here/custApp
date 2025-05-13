@@ -41,10 +41,10 @@
 /* Navbar Styles */
 .navbar {
   padding: 0.5rem 1rem;
-  background: #fff;
+  background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
   border: 0;
   border-radius: 0;
-  box-shadow: 0 1px 20px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 20px 0px rgba(10, 54, 157, 0.2);
   transition: all 0.3s ease;
   position: fixed;
   top: 0;
@@ -77,13 +77,19 @@
 .navbar .navbar-minimize .btn {
   margin: 0;
   padding: 0;
-  color: #3C4858;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar .navbar-minimize .btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
 .navbar .navbar-brand {
   font-size: 1.25rem;
   font-weight: 500;
-  color: #3C4858;
+  color: #ffffff;
   text-transform: capitalize;
   white-space: nowrap;
   overflow: hidden;
@@ -107,27 +113,40 @@
 
 .navbar .navbar-form .input-group {
   margin: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
 }
 
 .navbar .navbar-form .form-control {
   border-radius: 20px;
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
   border: none;
   padding: 10px 15px;
-  color: #3C4858;
+  color: #ffffff;
   box-shadow: none;
   transition: all 0.3s ease;
 }
 
+.navbar .navbar-form .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .navbar .navbar-form .form-control:focus {
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 .navbar .navbar-form .btn {
   margin: 0;
   padding: 0;
-  color: #3C4858;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar .navbar-form .btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
 .navbar .navbar-nav {
@@ -143,14 +162,16 @@
 
 .navbar .nav-link {
   padding: 0.5rem;
-  color: #3C4858;
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   transition: all 0.3s ease;
+  border-radius: 50%;
 }
 
 .navbar .nav-link:hover {
-  color: #0A369D;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .navbar .nav-link i {
@@ -164,6 +185,7 @@
     left: 0;
     width: 100%;
     padding-left: 70px;
+    background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
   }
 
   .main-panel {
@@ -177,7 +199,8 @@
     right: -100%;
     width: 100%;
     height: calc(100vh - 70px);
-    background: #fff;
+    background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
+    backdrop-filter: blur(10px);
     padding: 20px;
     transition: all 0.3s ease;
     z-index: 1028;
@@ -207,17 +230,52 @@
     padding: 10px 0;
     width: 100%;
   }
+
+  .navbar .navbar-form .input-group {
+    background: rgba(255, 255, 255, 0.15);
+  }
 }
 
 /* Mini sidebar adjustments */
 .sidebar-mini .navbar {
   left: 80px;
   width: calc(100% - 80px);
+  background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
 }
 
 .sidebar-mini .main-panel {
   width: calc(100% - 80px);
   margin-left: 80px;
+}
+
+/* Add subtle animation for hover effects */
+.navbar .nav-link,
+.navbar .navbar-minimize .btn,
+.navbar .navbar-form .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar .nav-link::after,
+.navbar .navbar-minimize .btn::after,
+.navbar .navbar-form .btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.navbar .nav-link:hover::after,
+.navbar .navbar-minimize .btn:hover::after,
+.navbar .navbar-form .btn:hover::after {
+  width: 40px;
+  height: 40px;
 }
 </style>
 
