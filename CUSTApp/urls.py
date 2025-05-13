@@ -94,6 +94,7 @@ urlpatterns = [
         name="generate_pdf_with_letterhead",
     ),
     path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view'),
-    path("api/upload-signature/",views.UploadEmployeeSignature.as_view(),name="upload-signature")
+    path("api/upload-signature/",views.UploadEmployeeSignature.as_view(),name="upload-signature"),
+    path("guest-pass/",views.guest_pass,name="guest_pass")
 ]
 urlpatterns.extend(router.urls)
