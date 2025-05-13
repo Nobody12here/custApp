@@ -1,47 +1,42 @@
 {% load static %}
-<div class="sidebar" data-color="rose" data-background-color="black"
-  data-image="{% static 'assets/img/sidebar-1.jpg' %}">
-  <div class="logo d-flex align-items-center">
-    <img class="simple-text logo-mini" src="{% static 'assets/img/logo.png' %}" style="width: 64px; height: 64px; margin-right: 12px; margin-left: 12px;" alt="Logo" />
-    <a href="#" class="simple-text logo-normal ms-2">CUST App</a>
+<!-- Sidebar -->
+<div class="sidebar" data-color="blue" data-background-color="white">
+  <!-- Sidebar Header -->
+  <div class="logo">
+    <a href="/" class="simple-text logo-normal d-flex align-items-center">
+      <img src="{% static 'assets/img/logo.png' %}" 
+           alt="Logo" 
+           class="me-2"
+           style="width: 40px; height: 40px;" />
+      <span class="ms-2">CUST App</span>
+    </a>
   </div>
-  <div class="sidebar-wrapper">
-    <div class="user">
-      <div class="photo">
-        <img src="{% static 'assets/img/faces/avatar.jpg' %}" />
-      </div>
-      <div class="user-info">
-        <a data-toggle="collapse" href="#collapseExample" class="username">
-          <span class="username">Tania Andrew <b class="caret"></b></span>
-        </a>
-        <div class="collapse" id="collapseExample">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/profile/">
-                <span class="sidebar-mini"> P </span>
-                <span class="sidebar-normal"> My Profile </span>
-              </a>
-            </li>
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span class="sidebar-mini"> EP </span>
-                <span class="sidebar-normal"> Edit Profile </span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span class="sidebar-mini"> S </span>
-                <span class="sidebar-normal"> Settings </span>
-              </a>
-            </li> -->
-          </ul>
-        </div>
-      </div>
-      <!-- Debug Output -->
-      <div style="color: red;">
-        <!-- Debug: Authenticated={{ request.user.is_authenticated }} Username={{ request.user.username }} -->
+
+  <!-- User Profile -->
+  <div class="user">
+    <div class="photo">
+      <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" />
+    </div>
+    <div class="user-info">
+      <a data-toggle="collapse" href="#collapseUser" class="username">
+        <span>Tania Andrew</span>
+        <b class="caret"></b>
+      </a>
+      <div class="collapse" id="collapseUser">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/">
+              <span class="sidebar-mini-icon">P</span>
+              <span class="sidebar-normal">My Profile</span>
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
+  </div>
+
+  <!-- Main Navigation -->
+  <div class="sidebar-wrapper">
     <ul class="nav">
       <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
         <a class="nav-link" href="/user/dashboard/">
@@ -52,7 +47,7 @@
       <li class="nav-item {% if active_page == 'myapplications' %}active{% endif %}">
         <a class="nav-link" href="/myapplications/">
           <i class="material-icons">view_list</i>
-          <p>View Existing Applications</p>
+          <p>View Applications</p>
         </a>
       </li>
       <li class="nav-item {% if active_page == 'new-application' %}active{% endif %}">
@@ -61,7 +56,7 @@
           <p>New Application</p>
         </a>
       </li>
-      <li class="nav-item {% if active_page == 'support' %}active{% endif %}">
+      <li class="nav-item {% if active_page == 'guest-pass' %}active{% endif %}">
         <a class="nav-link" href="/guest-pass/">
           <i class="material-icons">person_add</i>
           <p>Guest Pass</p>
@@ -76,3 +71,235 @@
     </ul>
   </div>
 </div>
+
+<style>
+/* Sidebar Styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 260px;
+  display: block;
+  z-index: 1;
+  color: #fff;
+  font-weight: 200;
+  background-size: cover;
+  background-position: center center;
+  background-color: #fff;
+  box-shadow: 0 0 45px 0 rgba(0, 0, 0, .2);
+  transition: all 0.3s ease;
+}
+
+.sidebar .logo {
+  padding: 15px 0;
+  margin: 0;
+  display: block;
+  position: relative;
+  z-index: 4;
+  text-align: center;
+}
+
+.sidebar .logo a {
+  padding: 5px 15px;
+  text-decoration: none;
+  color: #3C4858;
+  font-weight: 400;
+  font-size: 18px;
+  text-transform: uppercase;
+  border-radius: 3px;
+}
+
+.sidebar .user {
+  padding: 15px 0;
+  margin: 0;
+  position: relative;
+  z-index: 4;
+  text-align: center;
+}
+
+.sidebar .user .photo {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .user .photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar .user .user-info {
+  margin-top: 10px;
+}
+
+.sidebar .user .username {
+  color: #3C4858;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 5px 15px;
+  display: block;
+}
+
+.sidebar .user .username .caret {
+  margin-left: 5px;
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  vertical-align: middle;
+}
+
+.sidebar .sidebar-wrapper {
+  position: relative;
+  height: calc(100vh - 200px);
+  overflow: auto;
+  width: 260px;
+  z-index: 4;
+  padding-bottom: 30px;
+}
+
+.sidebar .nav {
+  margin-top: 20px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.sidebar .nav li {
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar .nav li > a {
+  margin: 10px 15px;
+  border-radius: 3px;
+  color: #3C4858;
+  text-transform: capitalize;
+  font-size: 13px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav li > a:hover {
+  background-color: rgba(200, 200, 200, 0.2);
+  color: #0A369D;
+}
+
+.sidebar .nav li.active > a {
+  background-color: #0A369D;
+  color: #FFFFFF;
+  box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(10, 54, 157, 0.4);
+}
+
+.sidebar .nav li > a i {
+  font-size: 24px;
+  float: left;
+  margin-right: 15px;
+  line-height: 30px;
+  width: 30px;
+  text-align: center;
+}
+
+.sidebar .nav li > a p {
+  margin: 0;
+  line-height: 30px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* Responsive Styles */
+@media (max-width: 991px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-panel {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+  
+  .navbar .navbar-toggler {
+    display: block;
+  }
+}
+
+@media (min-width: 992px) {
+  .main-panel {
+    width: calc(100% - 260px);
+    margin-left: 260px;
+  }
+  
+  .navbar .navbar-toggler {
+    display: none;
+  }
+}
+
+/* Mini Sidebar Styles */
+.sidebar-mini .sidebar {
+  width: 80px;
+}
+
+.sidebar-mini .sidebar .logo a span,
+.sidebar-mini .sidebar .user .user-info,
+.sidebar-mini .sidebar .nav li > a p {
+  display: none;
+}
+
+.sidebar-mini .sidebar .nav li > a {
+  margin: 10px 15px;
+  padding: 10px;
+  text-align: center;
+}
+
+.sidebar-mini .sidebar .nav li > a i {
+  margin: 0;
+  float: none;
+}
+
+.sidebar-mini .main-panel {
+  width: calc(100% - 80px);
+  margin-left: 80px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle sidebar toggle
+  const sidebarToggle = document.querySelector('.navbar-toggler');
+  const sidebar = document.querySelector('.sidebar');
+  const mainPanel = document.querySelector('.main-panel');
+  
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('show');
+    });
+  }
+
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', function(event) {
+    if (window.innerWidth < 992) {
+      if (sidebar && !sidebar.contains(event.target) && 
+          sidebarToggle && !sidebarToggle.contains(event.target)) {
+        sidebar.classList.remove('show');
+      }
+    }
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', function() {
+    if (window.innerWidth >= 992) {
+      sidebar.classList.remove('show');
+    }
+  });
+});
+</script>

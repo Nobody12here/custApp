@@ -1,33 +1,258 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top">
+<nav class="navbar navbar-expand-lg navbar-absolute fixed-top">
   <div class="container-fluid">
+    <!-- Left side -->
     <div class="navbar-wrapper">
+      <div class="navbar-minimize">
+        <button id="minimizeSidebar" class="btn btn-link btn-just-icon">
+          <i class="material-icons">menu</i>
+        </button>
+      </div>
       <a class="navbar-brand" href="#">{{ page_title|default:"Dashboard" }}</a>
     </div>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index"
-      aria-expanded="false" aria-label="Toggle navigation">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="navbar-toggler-icon icon-bar"></span>
-      <span class="navbar-toggler-icon icon-bar"></span>
-      <span class="navbar-toggler-icon icon-bar"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end">
+
+    <!-- Right side -->
+    <div class="navbar-collapse">
+      <!-- Search Form -->
       <form class="navbar-form" id="search-form">
         <div class="input-group no-border">
           <input type="text" id="search-input" class="form-control" placeholder="Search...">
-          <button type="submit" class="btn btn-white btn-round btn-just-icon">
+          <button type="submit" class="btn btn-link btn-just-icon">
             <i class="material-icons">search</i>
           </button>
         </div>
       </form>
+
+      <!-- Navigation Items -->
       <ul class="navbar-nav">
+        <!-- Logout Button -->
         <li class="nav-item">
-          <a class="nav-link" href="#" id="logoutButton">
-            <i class="material-icons">exit_to_app</i>
-            <p class="d-lg-none d-md-block">Log out</p>
+          <a class="nav-link" href="#" id="logoutButton" title="Logout">
+            <i class="material-icons">logout</i>
+            <p class="d-lg-none d-md-block">Logout</p>
           </a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
+<style>
+/* Navbar Styles */
+.navbar {
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 1px 20px 0px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 260px;
+  z-index: 1029;
+  height: 70px;
+  width: calc(100% - 260px);
+}
+
+/* Adjust main content padding */
+.main-panel {
+  padding-top: 70px;
+  width: calc(100% - 260px);
+  margin-left: 260px;
+}
+
+/* Navbar Components */
+.navbar .navbar-wrapper {
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+}
+
+.navbar .navbar-minimize {
+  padding: 0;
+  margin-right: 15px;
+}
+
+.navbar .navbar-minimize .btn {
+  margin: 0;
+  padding: 0;
+  color: #3C4858;
+}
+
+.navbar .navbar-brand {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #3C4858;
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar .navbar-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+}
+
+.navbar .navbar-form {
+  margin: 0;
+  padding: 0;
+  margin-right: 15px;
+  flex: 0 1 300px;
+}
+
+.navbar .navbar-form .input-group {
+  margin: 0;
+}
+
+.navbar .navbar-form .form-control {
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  padding: 10px 15px;
+  color: #3C4858;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.navbar .navbar-form .form-control:focus {
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .navbar-form .btn {
+  margin: 0;
+  padding: 0;
+  color: #3C4858;
+}
+
+.navbar .navbar-nav {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.navbar .nav-item {
+  position: relative;
+  margin: 0 5px;
+}
+
+.navbar .nav-link {
+  padding: 0.5rem;
+  color: #3C4858;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #0A369D;
+}
+
+.navbar .nav-link i {
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* Responsive Styles */
+@media (max-width: 991px) {
+  .navbar {
+    left: 0;
+    width: 100%;
+    padding-left: 70px;
+  }
+
+  .main-panel {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .navbar .navbar-collapse {
+    position: fixed;
+    top: 70px;
+    right: -100%;
+    width: 100%;
+    height: calc(100vh - 70px);
+    background: #fff;
+    padding: 20px;
+    transition: all 0.3s ease;
+    z-index: 1028;
+  }
+
+  .navbar .navbar-collapse.show {
+    right: 0;
+  }
+
+  .navbar .navbar-form {
+    flex: 1;
+    margin: 15px 0;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .navbar .nav-item {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .navbar .nav-link {
+    padding: 10px 0;
+    width: 100%;
+  }
+}
+
+/* Mini sidebar adjustments */
+.sidebar-mini .navbar {
+  left: 80px;
+  width: calc(100% - 80px);
+}
+
+.sidebar-mini .main-panel {
+  width: calc(100% - 80px);
+  margin-left: 80px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle sidebar minimize
+  const minimizeBtn = document.getElementById('minimizeSidebar');
+  if (minimizeBtn) {
+    minimizeBtn.addEventListener('click', function() {
+      document.body.classList.toggle('sidebar-mini');
+      // Adjust navbar position when sidebar is minimized
+      const navbar = document.querySelector('.navbar');
+      const mainPanel = document.querySelector('.main-panel');
+      if (document.body.classList.contains('sidebar-mini')) {
+        navbar.style.left = '80px';
+        navbar.style.width = 'calc(100% - 80px)';
+        mainPanel.style.width = 'calc(100% - 80px)';
+        mainPanel.style.marginLeft = '80px';
+      } else {
+        navbar.style.left = '260px';
+        navbar.style.width = 'calc(100% - 260px)';
+        mainPanel.style.width = 'calc(100% - 260px)';
+        mainPanel.style.marginLeft = '260px';
+      }
+    });
+  }
+
+  // Handle logout
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Add your logout logic here
+      console.log('Logging out...');
+    });
+  }
+});
+</script>
