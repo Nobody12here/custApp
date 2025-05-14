@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -33,9 +34,9 @@ def send_alert_email(
     email.send()
 
 
-def add_comment_to_instance(request, instance):
+def add_comment_to_instance(request, instance, employee=None, student=None):
     try:
-        text = request.text
+        text = request.data.get("text")
         if not text:
             return Response(
                 {"error": "Comment text is required!"},
@@ -53,15 +54,27 @@ def add_comment_to_instance(request, instance):
             "name": name,
             "text": text,
             "user_type": user_type,
-            "timestamp": timezone.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),
         }
         comments.append(new_comment)
         instance.comments = json.dumps(comments)
-        instance.save
-        return Response({"message": ""})
-    except:
+        instance.save()
+        if employee and student:
+            send_comment_notification(
+                name=name,
+                user_type=user_type,
+                text=text,
+                employee=employee,
+                student=student,
+            )
         return Response(
-            {"error": "Some error occured!"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": "Saved sucessfully", "success": True},
+            status=status.HTTP_201_CREATED,
+        )
+    except Exception as e:
+        return Response(
+            {"error": "Some error occured!", "details": str(e)},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 

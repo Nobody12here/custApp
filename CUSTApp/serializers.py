@@ -1,9 +1,6 @@
 # myapp/serializers.py
 from rest_framework import serializers
-
-from ApplicationTemplate.models import Request
 from .models import Users, Department, TemplateAttributes, Program
-import json
 
 
 class UsersSerializer(serializers.ModelSerializer):
