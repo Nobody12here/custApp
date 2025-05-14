@@ -760,7 +760,7 @@ progress {
   height: auto;
 }
 
-.logo {
+.img-thumbnail {
   padding: 0.25rem;
   background-color: #fff;
   border: 1px solid #d4d4d4;
@@ -22448,6 +22448,7 @@ fieldset:disabled .btn {
 .card {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e5e5;
+  margin-top: 30px;
 }
 
 .card[data-animation=true] .card-header {
