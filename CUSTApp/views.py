@@ -90,8 +90,6 @@ class AddCommentView(APIView):
     def post(self, request, id):
         # User info
         req = Request.objects.get(pk=id)
-        name = request.user.name
-        user_type = request.user.user_type
         student = req.applicant
         employee = Users.objects.get(user_id=req.EmployeeID)
 
@@ -101,11 +99,7 @@ class AddCommentView(APIView):
                 {"error": "Comment text is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        add_comment_to_instance(request, req)
-        send_comment_notification(
-            user_type, name, text, employee, student
-        )  # Send notification to the other user
-        return Response({"success": True})
+        return add_comment_to_instance(request, req, student=student, employee=employee)
 
 
 def update_request_status(request, id):
@@ -1018,5 +1012,7 @@ def user_profile(request):
 def support(request):
 
     return render(request, "CUSTApp/UserDashboard/support.html")
+
+
 def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
