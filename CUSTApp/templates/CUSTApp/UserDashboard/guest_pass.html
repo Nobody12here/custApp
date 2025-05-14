@@ -9,7 +9,7 @@
         cursor: pointer;
         transition: transform 0.2s;
     }
-    
+
     .card-stats:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(156, 39, 176, 0.4);
@@ -19,7 +19,7 @@
         background: #fff;
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 1px 4px 0 rgba(0,0,0,0.14);
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.14);
         margin-bottom: 30px;
     }
 
@@ -170,17 +170,24 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="hostDepartment">Host Department</label>
-                                <input type="text" class="form-control" id="hostDepartment" required>
+                                <select class="form-control" onchange="populateDepartmentHead()" id="hostDepartment"
+                                    required>
+                                    <option value="">Select Department</option>
+                                    <!-- Options will be added here dynamically -->
+                                </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
+
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="hostName">Host Name</label>
-                                <input type="text" class="form-control" id="hostName" required>
+                                <select class="form-control" id="hostName" required>
+                                    <option value="">Select Host</option>
+                                    <!-- Options will be added based on selected department -->
+                                </select>
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="visitDate">Visit Date</label>
@@ -222,7 +229,7 @@
                 <div class="search-box">
                     <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table">
                         <thead class="text-primary">
@@ -251,58 +258,104 @@
 
 {% block extra_js %}
 <script>
-$(document).ready(function() {
-    if (!checkAuth()) return;
+    let departmentData = [];
+    function populateDepartmentHead() {
+        const departmentId = $("#hostDepartment").val();
+        console.log(departmentId)
+        const selectedDept = departmentData.find(dept => dept.dept_id == departmentId);
+        const $headSelect = $("#hostName");
 
-    // Function to load guest pass statistics
-    function loadGuestPassStats() {
-        $.ajax({
-            url: '/guest-pass-stats/',
-            method: 'GET',
-            success: function(data) {
-                $('#pending-count').text(data.pending || 0);
-                $('#approved-count').text(data.approved || 0);
-                $('#rejected-count').text(data.rejected || 0);
-                $('#total-count').text(data.total || 0);
-            },
-            error: function() {
-                console.error('Error loading guest pass statistics');
-            }
-        });
+        if (selectedDept && selectedDept.dept_head) {
+            $headSelect.html(`
+            <option value="${selectedDept.dept_head}">${selectedDept.dept_head_name}</option>
+        `);
+        } else {
+            $headSelect.html(`<option value="">No Head Assigned</option>`);
+        }
     }
+    $(document).ready(function () {
+        if (!checkAuth()) return;
+        fetchDepartments()
 
-    // Function to load guest pass requests
-    function loadGuestPasses(searchTerm = '') {
-        $.ajax({
-            url: '/guest-passes/',
-            method: 'GET',
-            success: function(data) {
-                const tbody = $('#guestPassTableBody');
-                tbody.empty();
+        function fetchDepartments() {
+            $.ajax({
+                url: "/departments/",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    const $departmentSelect = $("#hostDepartment");
+                    const $employeeSelect = $("#hostName");
 
-                const filteredPasses = searchTerm ? data.filter(pass => {
-                    const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name}`.toLowerCase();
-                    return searchStr.includes(searchTerm.toLowerCase());
-                }) : data;
+                    // Reset options
+                    $departmentSelect.html(`<option value="">Select Department</option>`);
+                    $employeeSelect.html(`<option value="">Select Employee</option>`);
 
-                if (filteredPasses.length === 0) {
-                    tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
-                    return;
+                    departmentData = data;
+
+                    data.forEach(department => {
+                        $departmentSelect.append(
+                            `<option value="${department.dept_id}">${department.dept_name}</option>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching departments:", error);
+                    $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
                 }
+            });
+        }
 
-                filteredPasses.forEach(pass => {
-                    const row = `
+
+
+        // Function to load guest pass statistics
+        function loadGuestPassStats() {
+            $.ajax({
+                url: '/guest-pass-stats/',
+                method: 'GET',
+                success: function (data) {
+                    $('#pending-count').text(data.pending || 0);
+                    $('#approved-count').text(data.approved || 0);
+                    $('#rejected-count').text(data.rejected || 0);
+                    $('#total-count').text(data.total || 0);
+                },
+                error: function () {
+                    console.error('Error loading guest pass statistics');
+                }
+            });
+        }
+
+        // Function to load guest pass requests
+        function loadGuestPasses(searchTerm = '') {
+            $.ajax({
+                url: '/guestpass/',
+                method: 'GET',
+                success: function (data) {
+                    const tbody = $('#guestPassTableBody');
+                    tbody.empty();
+
+                    const filteredPasses = searchTerm ? data.filter(pass => {
+                        const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name}`.toLowerCase();
+                        return searchStr.includes(searchTerm.toLowerCase());
+                    }) : data;
+
+                    if (filteredPasses.length === 0) {
+                        tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
+                        return;
+                    }
+                    console.log("filteredPasses = ", filteredPasses)
+                    filteredPasses.forEach(pass => {
+                        const row = `
                         <tr>
                             <td>${pass.guest_name}</td>
                             <td>${pass.guest_cnic}</td>
                             <td>${pass.guest_phone}</td>
-                            <td>${pass.host_department}</td>
+                            <td>${pass.host_department_name}</td>
                             <td>${pass.host_name}</td>
-                            <td>${new Date(pass.visit_date).toLocaleDateString()}</td>
-                            <td>${pass.visit_time}</td>
+                            <td>${new Date(pass["date-time"]).toLocaleDateString()}</td>
+                            <td>${new Date(pass["date-time"]).toLocaleTimeString()}</td>
                             <td>
-                                <span class="status-badge status-${pass.status.toLowerCase()}">
-                                    ${pass.status}
+                                <span class="status-badge">
+                                    ${pass.approved}
                                 </span>
                             </td>
                             <td class="action-buttons">
@@ -320,91 +373,95 @@ $(document).ready(function() {
                             </td>
                         </tr>
                     `;
-                    tbody.append(row);
-                });
-            },
-            error: function() {
-                $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
-            }
+                        tbody.append(row);
+                    });
+                },
+                error: function () {
+                    $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
+                }
+            });
+        }
+
+        // Handle form submission
+        $('#guestPassForm').on('submit', function (e) {
+            e.preventDefault();
+            const date = $('#visitDate').val()
+            const time = $('#visitTime').val()
+            let datetimeString = `${date}T${time}:00`
+            const departmentId = $("#hostDepartment").val();
+            console.log("host department id = ",departmentId)
+            const datetime = new Date(datetimeString)
+            datetimeString = datetime.toISOString()
+            const formData = {
+                name: $('#guestName').val(),
+                CNIC: $('#guestCNIC').val(),
+                phone_number: $('#guestPhone').val(),
+                host_department:departmentId,
+                ["date-time"]: datetimeString,
+                reason: $('#purpose').val()
+            };
+
+            $.ajax({
+                url: '/guestpass/',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData,
+                success: function (response, textStatus, jqXHR) {
+                    if (jqXHR.status === 201) {
+                        alert('Guest pass request created successfully');
+                        $('#guestPassForm')[0].reset();
+                        loadGuestPasses();
+                        loadGuestPassStats();
+                    } else {
+                        alert(response.error || 'Failed to create guest pass request');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while creating the guest pass request');
+                }
+            });
         });
-    }
 
-    // Handle form submission
-    $('#guestPassForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            guest_name: $('#guestName').val(),
-            guest_cnic: $('#guestCNIC').val(),
-            guest_phone: $('#guestPhone').val(),
-            host_department: $('#hostDepartment').val(),
-            host_name: $('#hostName').val(),
-            visit_date: $('#visitDate').val(),
-            visit_time: $('#visitTime').val(),
-            purpose: $('#purpose').val()
-        };
+        // Handle search
+        $('#searchInput').on('input', function () {
+            loadGuestPasses($(this).val());
+        });
 
+        // Initial load
+        loadGuestPasses();
+        loadGuestPassStats();
+    });
+
+    // Function to update guest pass status
+    function updateGuestPassStatus(passId, status) {
         $.ajax({
-            url: '/create-guest-pass/',
+            url: `/update-guest-pass-status/${passId}/`,
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            data: formData,
-            success: function(response) {
+            data: { status: status },
+            success: function (response) {
                 if (response.success) {
-                    alert('Guest pass request created successfully');
-                    $('#guestPassForm')[0].reset();
-                    loadGuestPasses();
+                    loadGuestPasses($('#searchInput').val());
                     loadGuestPassStats();
                 } else {
-                    alert(response.error || 'Failed to create guest pass request');
+                    alert(response.error || 'Failed to update guest pass status');
                 }
             },
-            error: function() {
-                alert('An error occurred while creating the guest pass request');
+            error: function () {
+                alert('An error occurred while updating the guest pass status');
             }
         });
-    });
+    }
 
-    // Handle search
-    $('#searchInput').on('input', function() {
-        loadGuestPasses($(this).val());
-    });
-
-    // Initial load
-    loadGuestPasses();
-    loadGuestPassStats();
-});
-
-// Function to update guest pass status
-function updateGuestPassStatus(passId, status) {
-    $.ajax({
-        url: `/update-guest-pass-status/${passId}/`,
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        data: { status: status },
-        success: function(response) {
-            if (response.success) {
-                loadGuestPasses($('#searchInput').val());
-                loadGuestPassStats();
-            } else {
-                alert(response.error || 'Failed to update guest pass status');
-            }
-        },
-        error: function() {
-            alert('An error occurred while updating the guest pass status');
-        }
-    });
-}
-
-// Function to view guest pass details
-function viewGuestPassDetails(passId) {
-    // Implement view details functionality
-    // This could open a modal with detailed information
-    console.log('View details for pass:', passId);
-}
+    // Function to view guest pass details
+    function viewGuestPassDetails(passId) {
+        // Implement view details functionality
+        // This could open a modal with detailed information
+        console.log('View details for pass:', passId);
+    }
 </script>
 {% endblock %}
