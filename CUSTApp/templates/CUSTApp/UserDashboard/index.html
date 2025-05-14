@@ -7,6 +7,92 @@ Dashboard{% endblock %} {% block extra_css %}
   }
   .card-stats {
     cursor: pointer;
+    background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+    color: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(10, 54, 157, 0.13);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 0 12px 24px 12px;
+    min-width: 220px;
+    max-width: 300px;
+    border: none;
+  }
+  .card-stats:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(30, 136, 229, 0.18);
+  }
+  .card-stats .card-header {
+    background: transparent;
+    border-radius: 18px 18px 0 0;
+    padding: 24px 20px 16px 20px;
+    text-align: center;
+  }
+  .card-stats .card-icon {
+    border-radius: 50%;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+    font-size: 2.2rem;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(10, 54, 157, 0.10);
+    background: rgba(255,255,255,0.12); /* fallback */
+    transition: background 0.3s;
+  }
+  /* Green gradient for check_circle (approved) */
+  .card-stats .card-icon .material-icons.check_circle {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+    border-radius: 50%;
+    padding: 8px;
+  }
+  /* Red gradient for cancel (rejected) */
+  .card-stats .card-icon .material-icons.cancel {
+    background: linear-gradient(135deg, #ff5858 0%, #f857a6 100%);
+    color: #fff;
+    border-radius: 50%;
+    padding: 8px;
+  }
+  /* Yellow/orange gradient for hourglass_empty (pending) */
+  .card-stats .card-icon .material-icons.hourglass_empty {
+    background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+    color: #fff;
+    border-radius: 50%;
+    padding: 8px;
+  }
+  .card-stats .card-category {
+    color: #e3e3e3;
+    font-size: 1.05rem;
+    font-weight: 400;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .card-stats .card-title {
+    color: #fff;
+    font-size: 2.1rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  #application-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 991px) {
+    #application-cards {
+      flex-direction: column;
+      align-items: center;
+    }
+    .card-stats {
+      min-width: 90vw;
+      max-width: 98vw;
+    }
   }
   .card{
     margin-top: 30px;

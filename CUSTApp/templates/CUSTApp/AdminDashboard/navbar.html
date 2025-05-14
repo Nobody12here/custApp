@@ -1,8 +1,8 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg navbar-absolute fixed-top">
-  <div class="container-fluid">
+    <div class="container-fluid">
     <!-- Left side -->
-    <div class="navbar-wrapper">
+        <div class="navbar-wrapper">
       <div class="navbar-minimize">
         <button id="minimizeSidebar" class="btn btn-link btn-just-icon">
           <i class="material-icons">menu</i>
@@ -14,27 +14,27 @@
     <!-- Right side -->
     <div class="navbar-collapse">
       <!-- Search Form -->
-      <form class="navbar-form" id="search-form">
-        <div class="input-group no-border">
-          <input type="text" id="search-input" class="form-control" placeholder="Search...">
+            <form class="navbar-form" id="search-form">
+                <div class="input-group no-border">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search...">
           <button type="submit" class="btn btn-link btn-just-icon">
-            <i class="material-icons">search</i>
-          </button>
-        </div>
-      </form>
+                        <i class="material-icons">search</i>
+                    </button>
+                </div>
+            </form>
 
       <!-- Navigation Items -->
-      <ul class="navbar-nav">
+            <ul class="navbar-nav">
         <!-- Logout Button -->
-        <li class="nav-item">
+                <li class="nav-item">
           <a class="nav-link" href="#" id="logoutButton" title="Logout">
             <i class="material-icons">logout</i>
             <p class="d-lg-none d-md-block">Logout</p>
-          </a>
-        </li>
-      </ul>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
 
 <style>
@@ -252,7 +252,7 @@
 .navbar .nav-link,
 .navbar .navbar-minimize .btn,
 .navbar .navbar-form .btn {
-  /* position:; */
+  position: relative;
   overflow: hidden;
 }
 
@@ -317,5 +317,5 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('Logging out...');
     });
   }
-});
+    });
 </script>
