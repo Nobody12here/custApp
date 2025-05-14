@@ -17,11 +17,33 @@
     <link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
     <style>
+        /* Only updating form control visibility */
+        .form-control {
+            border: 2px solid #0A369D;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control:focus {
+            border-color: #1E88E5;
+            box-shadow: 0 0 0 0.2rem rgba(10, 54, 157, 0.25);
+        }
+
+        select.form-control {
+            border: 2px solid #0A369D;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        select.form-control:disabled {
+            background-color: #f8f9fa;
+            border-color: #6c757d;
+        }
+
         #templateContent {
-            border: 1px solid #ccc;
-            padding: 10px;
-            min-height: 500px;
-            overflow-y: auto;
+            border: 2px solid #0A369D;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .form-floating>.form-control {
