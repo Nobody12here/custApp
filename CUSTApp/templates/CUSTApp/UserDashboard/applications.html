@@ -9,30 +9,49 @@
   .text-danger { color: #dc3545; }
   .text-warning { color: #ffc107; }
 
-  /* Modal Styling */
+  /* Modal Styling - Updated to match project theme */
   #viewApplicationModal .modal-content {
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 6px 32px rgba(10, 54, 157, 0.15);
     border: none;
+    background: #fff;
   }
 
   #viewApplicationModal .modal-header {
-    background: linear-gradient(60deg, #ab47bc, #8e24aa);
-    color: white;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 20px;
+    background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+    color: #fff;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 24px 32px 20px 32px;
+    border-bottom: none;
+    box-shadow: 0 2px 8px rgba(10, 54, 157, 0.08);
+    align-items: center;
   }
 
   #viewApplicationModal .modal-title {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
+    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    font-weight: 600;
     font-size: 1.5rem;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  #viewApplicationModal .close {
+    color: #fff;
+    opacity: 1;
+    font-size: 1.7rem;
+    transition: color 0.2s;
+    margin-top: -6px;
+  }
+  #viewApplicationModal .close:hover {
+    color: #e3e3e3;
   }
 
   #viewApplicationModal .modal-body {
-    padding: 20px 30px;
+    padding: 28px 36px 24px 36px;
     background: #f8f9fa;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
   }
 
   #viewApplicationModal .application-details {
@@ -42,62 +61,75 @@
   }
 
   #viewApplicationModal .detail-item {
-    background: white;
-    padding: 15px;
+    background: #fff;
+    padding: 16px 18px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(10, 54, 157, 0.07);
+    border: 1px solid #e0e0e0;
+    transition: box-shadow 0.2s, transform 0.2s;
   }
-
   #viewApplicationModal .detail-item:hover {
-    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(30, 136, 229, 0.10);
+    transform: translateY(-2px) scale(1.01);
   }
-
   #viewApplicationModal .detail-item strong {
     display: block;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    color: #333;
+    color: #0A369D;
     margin-bottom: 5px;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-
   #viewApplicationModal .detail-item span {
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
-    color: #555;
+    color: #333;
     font-size: 1rem;
     word-wrap: break-word;
   }
 
   #viewApplicationModal .modal-footer {
-    padding: 15px 30px;
+    padding: 18px 36px 18px 36px;
     border-top: none;
     background: #f8f9fa;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    box-shadow: 0 -1px 6px rgba(10, 54, 157, 0.04);
   }
 
   #viewApplicationModal .btn-secondary {
-    background: #999;
+    background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+    color: #fff;
     border: none;
     border-radius: 20px;
-    padding: 8px 20px;
+    padding: 8px 28px;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    transition: background 0.3s;
+    font-size: 1rem;
+    transition: background 0.3s, color 0.3s;
+    box-shadow: 0 2px 8px rgba(10, 54, 157, 0.08);
   }
-
   #viewApplicationModal .btn-secondary:hover {
-    background: #777;
+    background: linear-gradient(90deg, #1E88E5 0%, #0A369D 100%);
+    color: #fff;
   }
 
   /* Responsive Adjustments */
   @media (max-width: 768px) {
+    #viewApplicationModal .modal-header,
+    #viewApplicationModal .modal-body,
+    #viewApplicationModal .modal-footer {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
     #viewApplicationModal .application-details {
       grid-template-columns: 1fr;
     }
+  }
+  .card{
+    margin-top: 30px;
   }
 </style>
 {% endblock %}
@@ -144,7 +176,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewApplicationModalLabel">Application Details</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
