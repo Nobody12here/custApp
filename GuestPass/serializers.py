@@ -14,17 +14,17 @@ class GuestPassRequestSerializer(ModelSerializer):
     guest_name = serializers.CharField(source="guest.name", read_only=True)
     guest_phone = serializers.CharField(source="guest.phone_number", read_only=True)
     host_department_name = serializers.CharField(
-        source="host_department.dept_name", read_only=True
+        source="host.dept.dept_name", read_only=True
     )
     host_name = serializers.CharField(
-        source="host_department.dept_head.name", read_only=True
+        source="host.name", read_only=True
     )
 
     class Meta:
         model = Request
         fields = [
             "guest",
-            "host_department",
+            "host",
             "status",
             "created_at",
             "request_id",

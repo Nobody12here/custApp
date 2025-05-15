@@ -46,8 +46,8 @@ class Request(models.Model):
     guest = models.ForeignKey(
         Users, on_delete=models.CASCADE, related_name="guest_reqests",null=True,blank=True
     )
-    host_department = models.ForeignKey(
-        Department, on_delete=models.CASCADE, related_name="guest_pass_requests",null=True,blank=True
+    host = models.ForeignKey(
+        Users, on_delete=models.CASCADE, related_name="host",null=True
     )
     reason = models.TextField(null=True)
     date_time = models.DateTimeField(name="meeting_date_time",blank=True,null=True)
