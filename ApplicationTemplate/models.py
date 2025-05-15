@@ -42,9 +42,19 @@ class Request(models.Model):
     ]
 
     request_id = models.AutoField(primary_key=True)
-    application = models.ForeignKey(Applications, on_delete=models.CASCADE, db_column='application_id')
+    #GuestPass fields
+    guest = models.ForeignKey(
+        Users, on_delete=models.CASCADE, related_name="guest_reqests",null=True,blank=True
+    )
+    host_department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name="guest_pass_requests",null=True,blank=True
+    )
+    reason = models.TextField(null=True)
+    date_time = models.DateTimeField(name="meeting_date_time",blank=True,null=True)
+    request_type = models.CharField(max_length=50, choices=[('GuestPass', 'Application')], default='Application')
+    application = models.ForeignKey(Applications, on_delete=models.CASCADE, db_column='application_id',blank=True,null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
-    applicant = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='applicant_id')
+    applicant = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='applicant_id',blank=True,null=True)
     created_at = models.DateTimeField(null=True,blank=True)  # Auto-set on creation
     updated_at = models.DateTimeField(auto_now=True)
     approved_at = models.DateTimeField(null=True,blank=True)      # Auto-set on update

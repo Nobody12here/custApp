@@ -2,11 +2,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ModelViewSet
-from .serializers import GuestPassRequestSerializer,GuestPassRequest
+from ApplicationTemplate.models import Request
+from .serializers import GuestPassRequestSerializer
 
 
 class RequestGuestPassView(ModelViewSet):
     serializer_class = GuestPassRequestSerializer
     permission_classes = [AllowAny]
-    queryset = GuestPassRequest.objects.all()
-    
+    queryset = Request.objects.filter(request_type="GuestPass").order_by("-created_at")

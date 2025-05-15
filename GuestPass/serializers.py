@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import GuestPassRequest
+from ApplicationTemplate.models import Request
 from CUSTApp.models import Users
 
 
@@ -17,12 +17,31 @@ class GuestPassRequestSerializer(ModelSerializer):
         source="host_department.dept_name", read_only=True
     )
     host_name = serializers.CharField(
-        source="host_department.dept_head.name",read_only = True
+        source="host_department.dept_head.name", read_only=True
     )
 
     class Meta:
-        model = GuestPassRequest
-        fields = "__all__"
+        model = Request
+        fields = [
+            "guest",
+            "host_department",
+            "status",
+            "created_at",
+            "request_id",
+            "reason",
+            "status",
+            "request_type",
+            "meeting_date_time",
+            "comments",
+            "CNIC",
+            "name",
+            "phone_number",
+            "host_name",
+            "host_department_name",
+            "guest_phone",
+            "guest_name",
+            "guest_cnic",
+        ]
         read_only_fields = ["guest", "created_at"]
         extra_kwargs = {
             "guest_cnic_read": {"read_only": True},
@@ -46,4 +65,5 @@ class GuestPassRequestSerializer(ModelSerializer):
             },
         )
         validated_data["guest"] = guest
-        return GuestPassRequest.objects.create(**validated_data)
+        validated_data["request_type"] = "GuestPass"
+        return Request.objects.create(**validated_data)

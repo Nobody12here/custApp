@@ -23,7 +23,7 @@ class UserManager(BaseUserManager):
 
 class Users(AbstractBaseUser,PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
-    uu_id = models.CharField(max_length=50, unique=True)
+    uu_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     name = models.CharField(max_length=255)
     father_name = models.CharField(max_length=255, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
@@ -31,7 +31,7 @@ class Users(AbstractBaseUser,PermissionsMixin):
     dept_name = models.CharField(max_length=255, null=True, blank=True)
     gender = models.CharField(max_length=50, null=True, blank=True)
     status = models.CharField(max_length=50, null=True, blank=True)
-    email = models.CharField(max_length=255, unique=True)
+    email = models.CharField(max_length=255, unique=True,null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user_type = models.CharField(max_length=50, null=True, blank=True)
