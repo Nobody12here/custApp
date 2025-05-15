@@ -235,7 +235,7 @@ h1,
   margin-bottom: 0.5rem;
   font-weight: 400;
   line-height: 1.2;
-  color: var(--bs-heading-color);
+  /* color: var(--bs-heading-color); */
 }
 
 h1,
@@ -24738,7 +24738,7 @@ hr.horizontal.gray-light {
 
 .navbar.navbar-absolute {
   position: absolute;
-  width: 100%;
+  /* width: 100%; */
   z-index: 1;
 }
 
