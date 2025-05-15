@@ -276,17 +276,24 @@
     let departmentData = [];
     function populateDepartmentHead() {
         const departmentId = $("#hostDepartment").val();
-        console.log(departmentId)
-        const selectedDept = departmentData.find(dept => dept.dept_id == departmentId);
-        const $headSelect = $("#hostName");
+        $.ajax({
+            url: `/users/?department=${departmentId}&user_type=Staff`,
+            dataType: 'json',
+            success: function (data) {
+                console.log("data = ", data)
+                const hostSelect = $('#hostName');
+                hostSelect.empty();
+                hostSelect.append('<option value="">Select Host</option>');
+                data.forEach(user => {
+                    console.log(user)
+                    hostSelect.append(`<option value="${user.user_id}">${user.name}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error(error)
+            }
 
-        if (selectedDept && selectedDept.dept_head) {
-            $headSelect.html(`
-            <option value="${selectedDept.dept_head}">${selectedDept.dept_head_name}</option>
-        `);
-        } else {
-            $headSelect.html(`<option value="">No Head Assigned</option>`);
-        }
+        })
     }
     $(document).ready(function () {
         if (!checkAuth()) return;
@@ -299,14 +306,8 @@
                 dataType: "json",
                 success: function (data) {
                     const $departmentSelect = $("#hostDepartment");
-                    const $employeeSelect = $("#hostName");
-
                     // Reset options
                     $departmentSelect.html(`<option value="">Select Department</option>`);
-                    $employeeSelect.html(`<option value="">Select Employee</option>`);
-
-                    departmentData = data;
-
                     data.forEach(department => {
                         $departmentSelect.append(
                             `<option value="${department.dept_id}">${department.dept_name}</option>`
@@ -404,14 +405,14 @@
             const time = $('#visitTime').val()
             let datetimeString = `${date}T${time}:00`
             const departmentId = $("#hostDepartment").val();
-            console.log("host department id = ",departmentId)
+            console.log("host department id = ", departmentId)
             const datetime = new Date(datetimeString)
             datetimeString = datetime.toISOString()
             const formData = {
                 name: $('#guestName').val(),
                 CNIC: $('#guestCNIC').val(),
                 phone_number: $('#guestPhone').val(),
-                host_department:departmentId,
+                host_department: departmentId,
                 ["date-time"]: datetimeString,
                 reason: $('#purpose').val()
             };
