@@ -1,3 +1,16 @@
+
+let isRefreshing = false;
+let refreshQueue = [];
+
+function addRequestToQueue(callback) {
+    refreshQueue.push(callback);
+}
+
+function processQueue(error, token = null) {
+    refreshQueue.forEach(cb => cb(error, token));
+    refreshQueue = [];
+}
+
 function checkAuth(requiredUserType = 'Staff') {
     const token = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
@@ -21,18 +34,36 @@ function checkAuth(requiredUserType = 'Staff') {
 
     $(document).ajaxError(function (event, jqxhr, settings, thrownError) {
         if (jqxhr.status === 401) {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (refreshToken) {
-                refreshAccessToken(refreshToken).then(success => {
-                    if (success) {
-                        // Re-run the original request
+            if (!isRefreshing) {
+                isRefreshing = true;
+
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken) {
+                    refreshAccessToken(refreshToken).then(success => {
+                        if (success) {
+                            isRefreshing = false;
+                            processQueue(null, localStorage.getItem('access_token'));
+                            // Retry the original request
+                            $.ajax(settings);
+                        } else {
+                            isRefreshing = false;
+                            processQueue(new Error('Session expired'));
+                            handleSessionExpiry();
+                        }
+                    });
+                } else {
+                    handleSessionExpiry();
+                }
+            } else {
+                // Queue the current request until token refresh finishes
+                addRequestToQueue((error, newToken) => {
+                    if (!error) {
+                        // Retry the original request after token is refreshed
                         $.ajax(settings);
                     } else {
                         handleSessionExpiry();
                     }
                 });
-            } else {
-                handleSessionExpiry();
             }
         }
     });
@@ -49,7 +80,7 @@ function refreshAccessToken(refreshToken) {
     })
         .then(response => {
             console.log(response.refresh)
-            localStorage.setItem('refresh_token',response.refresh)
+            localStorage.setItem('refresh_token', response.refresh)
             localStorage.setItem('access_token', response.access);
             return true;
         })
@@ -93,14 +124,14 @@ function logout() {
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
-      }
     }
     return cookieValue;
-  }
+}
