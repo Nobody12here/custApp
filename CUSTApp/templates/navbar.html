@@ -4,7 +4,7 @@
     <!-- Left side -->
     <div class="navbar-wrapper">
       <div class="navbar-minimize">
-        <button id="minimizeSidebar" class="btn btn-link btn-just-icon">
+        <button id="" class="btn btn-link btn-just-icon">
           <i class="material-icons">menu</i>
         </button>
       </div>
@@ -49,10 +49,10 @@
   position: fixed;
   top: 0;
   right: 0;
-  left: 260px;
+  left: 0;              /* Changed: stretch full width */
   z-index: 1029;
   height: 70px;
-  width: calc(100% - 260px);
+  width: 100%;          /* Changed: full width */
 }
 
 /* Adjust main content padding */
@@ -197,7 +197,7 @@
     position: fixed;
     top: 70px;
     right: -100%;
-    /* width: 100%; */
+    width: 100%;
     height: calc(100vh - 70px);
     background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
     backdrop-filter: blur(10px);
@@ -219,6 +219,7 @@
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+    
   }
 
   .navbar .nav-item {
@@ -238,8 +239,8 @@
 
 /* Mini sidebar adjustments */
 .sidebar-mini .navbar {
-  left: 80px;
-  width: calc(100% - 80px);
+  left: 0;              /* Changed: always full width */
+  width: 100%;          /* Changed: always full width */
   background: linear-gradient(135deg, #0A369D 0%, #1E88E5 100%);
 }
 
