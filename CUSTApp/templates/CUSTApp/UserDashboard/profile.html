@@ -199,7 +199,7 @@
         url: `/users/`,
         type: "GET",
         success: function (data) {
-          console.log(data);
+          data = data[0]
           userId = data.user_id;
           $("#name").val(data.name || "");
           $("#email").val(data.email || "");
