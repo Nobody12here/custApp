@@ -352,8 +352,8 @@
                             <td>${pass.guest_phone}</td>
                             <td>${pass.host_department_name}</td>
                             <td>${pass.host_name}</td>
-                            <td>${new Date(pass["date-time"]).toLocaleDateString()}</td>
-                            <td>${new Date(pass["date-time"]).toLocaleTimeString()}</td>
+                            <td>${new Date(pass.meeting_date_time).toLocaleDateString()}</td>
+                            <td>${new Date(pass.meeting_date_time).toLocaleTimeString()}</td>
                             <td>
                                 <span class="status-badge">
                                     ${pass.approved}
@@ -389,16 +389,15 @@
             const date = $('#visitDate').val()
             const time = $('#visitTime').val()
             let datetimeString = `${date}T${time}:00`
-            const departmentId = $("#hostDepartment").val();
-            console.log("host department id = ", departmentId)
+            const departmentId = $("#hostName").val()
             const datetime = new Date(datetimeString)
             datetimeString = datetime.toISOString()
             const formData = {
                 name: $('#guestName').val(),
                 CNIC: $('#guestCNIC').val(),
                 phone_number: $('#guestPhone').val(),
-                host_department: departmentId,
-                ["date-time"]: datetimeString,
+                host: departmentId,
+                meeting_date_time: datetimeString,
                 reason: $('#purpose').val()
             };
 
@@ -412,9 +411,9 @@
                 success: function (response, textStatus, jqXHR) {
                     if (jqXHR.status === 201) {
                         alert('Guest pass request created successfully');
-                        $('#guestPassForm')[0].reset();
-                        loadGuestPasses();
-                        loadGuestPassStats();
+                        // $('#guestPassForm')[0].reset();
+                        // loadGuestPasses();
+                        // loadGuestPassStats();
                     } else {
                         alert(response.error || 'Failed to create guest pass request');
                     }
