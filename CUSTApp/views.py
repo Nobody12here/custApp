@@ -235,7 +235,7 @@ class ApplicationRequestAPIView(APIView):
             template_data = {
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
-                "department": applicant.dept_name,
+                "department": applicant.dept.dept_name,
                 "program": applicant.program_name,
                 "date": timezone.now().date(),
                 "issuer_name": application.default_responsible_employee,
@@ -383,18 +383,28 @@ class UsersList(generics.ListCreateAPIView):
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
-    def list(self, request, *args, **kwargs):
-        user = request.user.user_id
-        try:
-            user = Users.objects.get(user_id=user)
-            serializer = UsersSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
-            return Response(
-                {"error": "The logged in user does not exists"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    def get_queryset(self):
+        department = self.request.query_params.get("department")
+        user_type = self.request.query_params.get("user_type")
+        show_all = self.request.query_params.get("all", "False").lower() == 'true'
 
+        if show_all:
+            return Users.objects.all()
+
+        queryset = Users.objects.all()
+
+        if department:
+            queryset = queryset.filter(dept=department)
+        if user_type:
+            queryset = queryset.filter(user_type=user_type)
+
+        if department or user_type:
+            return queryset
+
+        try:
+            return Users.objects.filter(user_id=self.request.user.user_id)
+        except Users.DoesNotExist:
+            return Users.objects.none()
 
 class UserUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]

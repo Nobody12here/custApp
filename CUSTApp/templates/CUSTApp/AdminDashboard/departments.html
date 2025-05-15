@@ -246,9 +246,10 @@
             }
             function fetchUsers() {
                 $.ajax({
-                    url: '/users/',
+                    url: '/users/?all=true',
                     dataType: 'json',
                     success: function (data) {
+                        console.log("data = ",data)
                         const headSelect = $('#headSelect');
                         headSelect.empty();
                         headSelect.append('<option value="">Select Department Head</option>');
