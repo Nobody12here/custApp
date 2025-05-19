@@ -1,19 +1,21 @@
 from datetime import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.utils import timezone
+from firebase_admin import messaging
 import json
 from push_notifications.models import GCMDevice
 from rest_framework.response import Response
 from rest_framework import status
 
-# def notify_user_devices(user, title, body):
-#     devices = GCMDevice.objects.filter(user=user)
-#     devices.send_message(
-#         {"title": title, "body": body,"message":"testing"},
-#         content_available=True,
-#         extra={"click_action": "https://your-website.com/dashboard"}
-#     )
+
+def notify_user_devices(user, title, body):
+    devices = GCMDevice.objects.filter(user=user)
+    payload = {
+        "title": title,
+        "body": body,
+    }
+    devices.send_message(messaging.Message(data=payload))
+
 
 def send_alert_email(
     to_email, subject, message, recipient_name="User", action_url=None
@@ -91,7 +93,7 @@ def send_comment_notification(user_type, name, text, employee, student):
         "body": f"{name} commented: {text}",
     }
     if user_type == "Student":
-        # notify_user_devices(employee, "New comment on your applicaiton", body="You a new comment in your application!")
+        notify_user_devices(employee, "New comment on your applicaiton", body="You a new comment in your application!")
         send_alert_email(
             employee.email,
             "New Comment on Your Application",

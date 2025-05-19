@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from push_notifications.models import GCMDevice
-import json
+from firebase_admin import messaging
 
 
 class Command(BaseCommand):
@@ -19,26 +19,28 @@ class Command(BaseCommand):
         title = str(kwargs.get("title") or "")
         body = str(kwargs.get("body") or "")
         url = kwargs.get("url")
-
+        payload = {
+            "title":title,
+            "body":body,
+            "url": "/"
+        }
         if not title or not body:
             self.stdout.write(self.style.ERROR("Both --title and --body are required."))
             return
-
-        payload = {"title": title, "body": body, "message": "test"}
-        # extra = {}
-        # if url:
-        #     extra["click_action"] = url
-
-        devices = GCMDevice.objects.all()
+        devices = GCMDevice.objects.filter(active=True)
         if not devices.exists():
             self.stdout.write(self.style.WARNING("No devices found."))
             return
 
+        # result = devices.send_message(
+        #     None,  # Leave this None to avoid creating a notification message
+        #     extra={"title": title, "body": body, "click_action": url},
+        #     content_available=True,
+        # )
         result = devices.send_message(
-            message="test", data_message={
-                "title":title,
-                "body":body
-            }, content_available=True
+            messaging.Message(
+                data=payload,
+            )
         )
         print(result)
         self.stdout.write(

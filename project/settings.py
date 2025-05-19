@@ -70,7 +70,6 @@ INSTALLED_APPS = [
 ]
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-    "FCM_API_KEY": "",  # Optional with Firebase Admin SDK, but required for legacy methods
     "UNIQUE_REG_ID": True,  # Prevent duplicate device registrations
     "UPDATE_ON_DUPLICATE_REG_ID": True,
 }

@@ -14,7 +14,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
     console.log("Received background message ", payload);
-
+    console.log("testing")
     const notificationTitle = payload.data?.title || "No title";
     const notificationOptions = {
         body: payload.data?.body || "No body",
@@ -27,7 +27,7 @@ messaging.onBackgroundMessage(function (payload) {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     const url = event.notification.data.click_action;
     event.waitUntil(clients.openWindow(url));
