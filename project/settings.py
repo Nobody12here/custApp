@@ -14,66 +14,88 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from firebase_admin import credentials
+import firebase_admin
+
 # import pymysql # type: ignore
 # pymysql.install_as_MySQLdb()
 load_dotenv()
+#
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Firebase SDK initalizer
+FIREBASE_CRED_PATH = BASE_DIR / "project/firebase/key.json"
+cred = credentials.Certificate(FIREBASE_CRED_PATH)
+default_app = firebase_admin.initialize_app(cred)
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#'
+SECRET_KEY = "django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'custapp.pk', 'www.custapp.pk','http://test.custapp.pk/','test.custapp.pk']
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "custapp.pk",
+    "www.custapp.pk",
+    "http://test.custapp.pk/",
+    "test.custapp.pk",
+]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'webpush',
-    'drf_yasg',
-    'rest_framework',
-    'GuestPass',
-    'CUSTApp.apps.CustappConfig',
-    'ApplicationTemplate',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist'
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "push_notifications",
+    "webpush",
+    "drf_yasg",
+    "rest_framework",
+    "GuestPass",
+    "CUSTApp.apps.CustappConfig",
+    "ApplicationTemplate",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
 ]
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "FCM_API_KEY": "",  # Optional with Firebase Admin SDK, but required for legacy methods
+    "UNIQUE_REG_ID": True,  # Prevent duplicate device registrations
+    "UPDATE_ON_DUPLICATE_REG_ID": True,
+}
+
 WEBPUSH_SETTINGS = {
     "VAPID_PUBLIC_KEY": "BEUPeYWttrMsi5a56-vp9nmIDAJ6kReVWyvsGbLVmJAoRJABTAM20xC2qnlPCPlre_uebZYKTEMbOaFmfqrRk9s",
     "VAPID_PRIVATE_KEY": "XvsvKvcoLXGAvQ2FH67BD_XP9FIbNMRw4r-9thC_AZo",
-    "VAPID_ADMIN_EMAIL": "support@custapp.pk"
+    "VAPID_ADMIN_EMAIL": "support@custapp.pk",
 }
 MIDDLEWARE = [
-    
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'project.middleware.jwt_auth_middleware.JWTAuthenticationMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "project.middleware.jwt_auth_middleware.JWTAuthenticationMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # Add REST_FRAMEWORK configuration for JWT
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
 AUTH_USER_MODEL = "CUSTApp.Users"
@@ -82,63 +104,62 @@ AUTH_USER_MODEL = "CUSTApp.Users"
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'BLACKLIST_AFTER_ROTATION': True,
-    'ROTATE_REFRESH_TOKENS': True,
-    'USER_ID_FIELD': 'user_id',
-    'USER_ID_CLAIM': 'user_id',
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
+    "USER_ID_FIELD": "user_id",
+    "USER_ID_CLAIM": "user_id",
 }
 
 
-
-ROOT_URLCONF = 'project.urls'
+ROOT_URLCONF = "project.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'CUSTApp' / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "CUSTApp" / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 
-
-
-WSGI_APPLICATION = 'project.wsgi.application'
+WSGI_APPLICATION = "project.wsgi.application"
 
 # LOGIN_URL = '/login/'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'custappp_custapp'),
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.environ.get("DB_NAME", "custappp_custapp"),
+        "USER": os.environ.get("DB_USER", "root"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "3306"),
     }
 }
 # myproject/settings.py (add at the bottom)
-EMAIL_BACKEND =os.environ.get('EMAIL_BACKEND','django.core.mail.backends.console.EmailBackend') # For testing
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)  # For testing
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.custapp.pk'
+EMAIL_HOST = "mail.custapp.pk"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'support@custapp.pk'
-EMAIL_HOST_PASSWORD = 'supportcust@123'  # Replace with the correct password
-DEFAULT_FROM_EMAIL = 'support@custapp.pk'
+EMAIL_HOST_USER = "support@custapp.pk"
+EMAIL_HOST_PASSWORD = "supportcust@123"  # Replace with the correct password
+DEFAULT_FROM_EMAIL = "support@custapp.pk"
 EMAIL_TIMEOUT = 30
 
 # Password validation
@@ -146,41 +167,39 @@ EMAIL_TIMEOUT = 30
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     }
 }
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Asia/Karachi'  # This is the correct timezone for Pakistan
+TIME_ZONE = "Asia/Karachi"  # This is the correct timezone for Pakistan
 
 USE_I18N = True
 
@@ -196,13 +215,13 @@ USE_TZ = True
 # ]
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Corrected path: removed extra 'project/'
+    os.path.join(BASE_DIR, "static"),  # Corrected path: removed extra 'project/'
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

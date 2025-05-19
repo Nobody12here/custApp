@@ -5,10 +5,14 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView  # Import TokenRefreshView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from push_notifications.api.rest_framework import GCMDeviceViewSet
+from rest_framework.routers import DefaultRouter
+
 from rest_framework import permissions
 from django.views.generic import TemplateView
 
-...
+router = DefaultRouter()
+router.register("devices", GCMDeviceViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -33,12 +37,20 @@ urlpatterns = [
             template_name="sw.js", content_type="application/x-javascript"
         ),
     ),
+    path(
+        "firebase-messaging-sw.js",
+        TemplateView.as_view(
+            template_name="firebase-messaging-sw.js",
+            content_type="application/x-javascript",
+        ),
+    ),
     path("api/application/", include("ApplicationTemplate.urls")),
     path(
         "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),  # Add refresh endpoint
     path("api/docs/", schema_view.with_ui("swagger"), name="swagger-docs"),
 ]
+urlpatterns += router.urls
 # Serve static files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
