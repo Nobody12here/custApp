@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "push_notifications",
-    "webpush",
     "drf_yasg",
     "rest_framework",
     "GuestPass",
@@ -76,11 +75,6 @@ PUSH_NOTIFICATIONS_SETTINGS = {
     "UPDATE_ON_DUPLICATE_REG_ID": True,
 }
 
-WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BEUPeYWttrMsi5a56-vp9nmIDAJ6kReVWyvsGbLVmJAoRJABTAM20xC2qnlPCPlre_uebZYKTEMbOaFmfqrRk9s",
-    "VAPID_PRIVATE_KEY": "XvsvKvcoLXGAvQ2FH67BD_XP9FIbNMRw4r-9thC_AZo",
-    "VAPID_ADMIN_EMAIL": "support@custapp.pk",
-}
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

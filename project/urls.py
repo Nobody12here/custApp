@@ -29,14 +29,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("CUSTApp.urls")),
-    path("guestpass/", include("GuestPass.urls")),
-    path("webpush/", include("webpush.urls")),
-    path(
-        "sw.js",
-        TemplateView.as_view(
-            template_name="sw.js", content_type="application/x-javascript"
-        ),
-    ),
+    path("guestpass/", include("GuestPass.urls")),   
     path(
         "firebase-messaging-sw.js",
         TemplateView.as_view(
