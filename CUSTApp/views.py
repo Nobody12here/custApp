@@ -3,16 +3,14 @@ from datetime import datetime
 from io import BytesIO
 from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import render
 from django.apps import apps
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from datetime import datetime
 from ApplicationTemplate.models import Applications, Request
-from .utils import send_comment_notification
 from .models import Program, Users, Department
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
@@ -24,7 +22,6 @@ from .serializers import (
     OTPVerifySerializer,
 )
 
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser
 from .utils import send_alert_email, add_comment_to_instance
@@ -40,22 +37,12 @@ import random
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.permissions import BasePermission
-from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from ApplicationTemplate.models import Applications
-from .models import Users
-from ApplicationTemplate.serializers import RequestSerializer
-import json
+
+import os
+from PyPDF2 import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)
-
-from django.utils import timezone
 
 
 class UploadEmployeeSignature(APIView):
@@ -386,7 +373,7 @@ class UsersList(generics.ListCreateAPIView):
     def get_queryset(self):
         department = self.request.query_params.get("department")
         user_type = self.request.query_params.get("user_type")
-        show_all = self.request.query_params.get("all", "False").lower() == 'true'
+        show_all = self.request.query_params.get("all", "False").lower() == "true"
 
         if show_all:
             return Users.objects.all()
@@ -405,6 +392,7 @@ class UsersList(generics.ListCreateAPIView):
             return Users.objects.filter(user_id=self.request.user.user_id)
         except Users.DoesNotExist:
             return Users.objects.none()
+
 
 class UserUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -762,10 +750,6 @@ class LogoutAPIView(APIView):
             )
 
 
-import os
-from PyPDF2 import PdfReader, PdfWriter
-from reportlab.pdfgen import canvas
-
 # Path to the predefined letterhead PDF
 LETTERHEAD_PATH = os.path.join(
     os.path.dirname(__file__), "..", "static", "LetterHead", "LetterHead.pdf"
@@ -996,22 +980,18 @@ def user_dashboard(request):
 
 
 def view_applications(request):
-
     return render(request, "CUSTApp/UserDashboard/applications.html")
 
 
 def categories(request):
-
     return render(request, "CUSTApp/UserDashboard/categories.html")
 
 
 def new_application(request):
-
     return render(request, "CUSTApp/UserDashboard/new-application.html")
 
 
 def reports(request):
-
     return render(request, "CUSTApp/UserDashboard/reports.html")
 
 
@@ -1020,7 +1000,6 @@ def user_profile(request):
 
 
 def support(request):
-
     return render(request, "CUSTApp/UserDashboard/support.html")
 
 

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 """
 
+# Configure JWT settings
+from datetime import timedelta
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -93,8 +95,6 @@ REST_FRAMEWORK = {
 }
 AUTH_USER_MODEL = "CUSTApp.Users"
 
-# Configure JWT settings
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
