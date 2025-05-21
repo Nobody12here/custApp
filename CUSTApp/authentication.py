@@ -1,8 +1,6 @@
 # authentication.py
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from rest_framework_simplejwt.tokens import UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.conf import settings
 import jwt
 

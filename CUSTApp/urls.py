@@ -16,8 +16,6 @@ from .views import (
     OTPSendView,
     OTPVerifyView,
     verify_otp_page,
-    admin_dashboard,
-    user_dashboard,
     ApplicationRequestAPIView,
     ProgramView,  # Added new view
 )
