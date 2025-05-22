@@ -100,12 +100,13 @@ def update_request_status(request, id):
             req.status = status
             req.approved_at = timezone.now().isoformat()
             req.save()
-            send_alert_email(
-                student.email,
-                "Application Status Update",
-                f"Your application {req.application.application_name} has been {status.lower()}",
-                recipient_name=student.name,
-            )
+            if student:
+                send_alert_email(
+                    student.email,
+                    "Application Status Update",
+                    f"Your application {req.application.application_name} has been {status.lower()}",
+                    recipient_name=student.name,
+                )
             return JsonResponse({"success": True})
         except Request.DoesNotExist:
             return JsonResponse({"error": "Request not found"}, status=404)

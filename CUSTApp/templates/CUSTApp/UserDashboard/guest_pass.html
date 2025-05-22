@@ -371,15 +371,15 @@
                             <td>${new Date(pass.meeting_date_time).toLocaleTimeString()}</td>
                             <td>
                                 <span class="status-badge">
-                                    ${pass.approved}
+                                    ${pass.status}
                                 </span>
                             </td>
                             <td class="action-buttons">
-                                ${pass.status === 'PENDING' ? `
-                                    <button class="btn btn-success btn-sm" onclick="updateGuestPassStatus(${pass.id}, 'APPROVED')">
+                                ${pass.status === 'Pending' ? `
+                                    <button class="btn btn-success btn-sm" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
                                         <i class="material-icons">check</i>
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="updateGuestPassStatus(${pass.id}, 'REJECTED')">
+                                    <button class="btn btn-danger btn-sm" onclick="updateGuestPassStatus(${pass.request_id}, 'Rejected')">
                                         <i class="material-icons">close</i>
                                     </button>
                                 ` : ''}
@@ -457,7 +457,7 @@
     // Function to update guest pass status
     function updateGuestPassStatus(passId, status) {
         $.ajax({
-            url: `/update-guest-pass-status/${passId}/`,
+            url: `/update-request-status/${passId}/`,
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
