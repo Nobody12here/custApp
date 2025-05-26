@@ -5,7 +5,109 @@ Dashboard{% endblock %} {% block extra_css %}
     width: 100%;
     min-height: 250px;
   }
+  
   .card-stats {
+    cursor: pointer;
+    background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+    color: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(10, 54, 157, 0.13);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 0 12px 24px 12px;
+    min-width: 220px;
+    max-width: 300px;
+    border: none;
+  }
+  
+  .card-stats:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(30, 136, 229, 0.18);
+  }
+  
+  /* ... (keep all your existing card styles) ... */
+
+  /* Responsive table styles */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  
+  .table {
+    min-width: 800px; /* Minimum width before scrolling kicks in */
+    width: 100%;
+  }
+  
+  @media (max-width: 991px) {
+    .table {
+      font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+    
+    .material-icons {
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .card-header {
+      padding: 1rem 0.5rem;
+    }
+    
+    .card-title {
+      font-size: 1.2rem;
+    }
+    
+    .card-category {
+      font-size: 0.8rem;
+    }
+    
+    /* Stack buttons vertically on small screens */
+    .table td:nth-child(5) {
+      white-space: normal;
+    }
+    
+    .table td:nth-child(5) .btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    .table td:nth-child(5) .btn:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  @media (max-width: 575px) {
+    .card-stats {
+      min-width: 90vw;
+      max-width: 98vw;
+    }
+    
+    .modal-dialog {
+      margin: 0.5rem auto;
+    }
+    
+    .chat-message {
+      max-width: 85%;
+    }
+  }
+
+  /* Chat modal styles remain the same */
+  .chat-modal .modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-bottom: 10px;
+  }
+  .modal-textarea {
+    width: 100%;
+    min-height: 250px;
+  }
+  /* .card-stats {
     cursor: pointer;
     background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
     color: #fff;
@@ -20,7 +122,7 @@ Dashboard{% endblock %} {% block extra_css %}
   .card-stats:hover {
     transform: translateY(-4px) scale(1.03);
     box-shadow: 0 8px 32px rgba(30, 136, 229, 0.18);
-  }
+  } */
   .card-stats .card-header {
     background: transparent;
     border-radius: 18px 18px 0 0;

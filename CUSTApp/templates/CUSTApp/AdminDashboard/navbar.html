@@ -36,6 +36,9 @@
     </div>
   </div>
 </nav>
+<div id="mobileSidebar" class="mobile-sidebar d-lg-none">
+  {% include 'sidebar.html' %}
+</div>
 
 <style>
 /* Navbar Styles */
@@ -278,40 +281,54 @@
   width: 40px;
   height: 40px;
 }
+.mobile-sidebar {
+  position: fixed;
+  top: 70px;
+  left: -260px;
+  width: 260px;
+  height: calc(100vh - 70px);
+  background-color: #ffffff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  z-index: 1030;
+  transition: left 0.3s ease;
+}
+
+.mobile-sidebar.show {
+  left: 0;
+}
+
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle sidebar minimize
-  const minimizeBtn = document.getElementById('minimizeSidebar');
-  if (minimizeBtn) {
-    minimizeBtn.addEventListener('click', function() {
-      document.body.classList.toggle('sidebar-mini');
-      // Adjust navbar position when sidebar is minimized
-      const navbar = document.querySelector('.navbar');
-      const mainPanel = document.querySelector('.main-panel');
-      if (document.body.classList.contains('sidebar-mini')) {
-        navbar.style.left = '80px';
-        navbar.style.width = 'calc(100% - 80px)';
-        mainPanel.style.width = 'calc(100% - 80px)';
-        mainPanel.style.marginLeft = '80px';
-      } else {
-        navbar.style.left = '260px';
-        navbar.style.width = 'calc(100% - 260px)';
-        mainPanel.style.width = 'calc(100% - 260px)';
-        mainPanel.style.marginLeft = '260px';
+
+document.addEventListener('DOMContentLoaded', function () {
+  const menuToggle = document.getElementById('menuToggle');
+  const navbarContent = document.getElementById('navbarContent');
+  const mobileSidebar = document.getElementById('mobileSidebar');
+
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      // Only toggle mobile sidebar on small screens
+      if (window.innerWidth < 992 && mobileSidebar) {
+        mobileSidebar.classList.toggle('show');
+      } else if (navbarContent) {
+        navbarContent.classList.toggle('show');
       }
     });
   }
 
-  // Handle logout
   const logoutButton = document.getElementById('logoutButton');
   if (logoutButton) {
-    logoutButton.addEventListener('click', function(e) {
+    logoutButton.addEventListener('click', function (e) {
       e.preventDefault();
-      // Add your logout logic here
       console.log('Logging out...');
+      // Add your logout functionality here
     });
   }
 });
+
+
+
+
 </script>
