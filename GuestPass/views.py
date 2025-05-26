@@ -3,7 +3,8 @@ from rest_framework.viewsets import ModelViewSet
 from ApplicationTemplate.models import Request
 from .serializers import GuestPassRequestSerializer
 from django.db.models import Case, When, Value, BooleanField
-from datetime import date
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 
 class RequestGuestPassView(ModelViewSet):
@@ -11,21 +12,30 @@ class RequestGuestPassView(ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        today = date.today()
+        # Get today's date in the correct timezone
+        now = timezone.now()
+        today = now.date()
+        
+        # Compute start and end of today (timezone-aware)
+        start_of_day = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+        end_of_day = start_of_day + timedelta(days=1)
 
-        # Annotate each request with whether its meeting date is today
         queryset = (
             Request.objects.filter(request_type="GuestPass")
             .annotate(
                 is_today=Case(
-                    When(meeting_date_time__date=today, then=Value(True)),
+                    When(
+                        meeting_date_time__gte=start_of_day,
+                        meeting_date_time__lt=end_of_day,
+                        then=Value(True)
+                    ),
                     default=Value(False),
                     output_field=BooleanField(),
                 )
             )
             .order_by(
                 "-is_today",  # Today's meetings first
-                "meeting_date_time",  # Then sort by meeting time (earliest first)
+                "meeting_date_time",  # Then by meeting time (earliest first)
                 "-created_at",  # Finally by creation time (newest first)
             )
         )
