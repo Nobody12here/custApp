@@ -165,8 +165,9 @@
 
 <!-- Add New Guest Pass Button -->
 <div class="row">
-    <div class="col-md-12 text-right mb-3">  <!-- Changed text-right to text-center -->
-        <button id="toggleGuestPassForm" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center;">
+    <div class="col-md-12 text-right mb-3"> <!-- Changed text-right to text-center -->
+        <button id="toggleGuestPassForm" class="btn btn-primary"
+            style="display: inline-flex; align-items: center; justify-content: center;">
             <i class="material-icons" style="margin-right: 8px;">add</i> Add New Guest Pass
         </button>
     </div>
@@ -239,31 +240,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Purpose of Visit</label>
-                                <div class="purpose-radio">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="purpose" id="purposeMeeting"
-                                            value="Meeting" checked>
-                                        <label class="form-check-label" for="purposeMeeting">Meeting</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="purpose" id="purposeDelivery"
-                                            value="Delivery">
-                                        <label class="form-check-label" for="purposeDelivery">Delivery</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="purpose"
-                                            id="purposeInterview" value="Interview">
-                                        <label class="form-check-label" for="purposeInterview">Interview</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="purpose" id="purposeOther"
-                                            value="Other">
-                                        <label class="form-check-label" for="purposeOther">Other</label>
-                                    </div>
-                                </div>
-                                <div id="otherPurposeGroup">
-                                    <input type="text" class="form-control mt-2" id="otherPurpose"
+                                <label for="purposeSelect">Purpose of Visit</label>
+                                <select class="form-control" id="purposeSelect" required>
+                                    <option value="Meeting" selected>Meeting</option>
+                                    <option value="Delivery">Delivery</option>
+                                    <option value="Interview">Interview</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div id="otherPurposeGroup" class="mt-2" style="display: none;">
+                                    <input type="text" class="form-control" id="otherPurpose"
                                         placeholder="Please specify">
                                 </div>
                             </div>
@@ -458,9 +443,8 @@
         fetchDepartments();
         setDefaultDateTime();
 
-        // Handle purpose radio buttons
-        $('input[name="purpose"]').change(function () {
-            if ($('#purposeOther').is(':checked')) {
+        $('#purposeSelect').change(function () {
+            if ($(this).val() === 'Other') {
                 $('#otherPurposeGroup').show();
                 $('#otherPurpose').prop('required', true);
             } else {
@@ -587,7 +571,7 @@
             e.preventDefault();
 
             // Get purpose value
-            let purpose = $('input[name="purpose"]:checked').val();
+            let purpose = $('#purposeSelect').val();
             if (purpose === 'Other') {
                 purpose = $('#otherPurpose').val();
             }
