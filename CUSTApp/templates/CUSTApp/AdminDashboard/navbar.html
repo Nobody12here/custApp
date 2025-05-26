@@ -4,7 +4,7 @@
     <!-- Left side -->
     <div class="navbar-wrapper">
       <div class="navbar-minimize">
-        <button id="" class="btn btn-link btn-just-icon">
+        <button id="menuToggle" class="btn btn-link btn-just-icon">
           <i class="material-icons">menu</i>
         </button>
       </div>
@@ -238,6 +238,19 @@
   .navbar .navbar-form .input-group {
     background: rgba(255, 255, 255, 0.15);
   }
+
+  /* Show sidebar inside mobileSidebar in mobile view */
+  #mobileSidebar .sidebar {
+    transform: none !important;
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    background: #fff;
+    z-index: 1;
+  }
+  #mobileSidebar .sidebar-wrapper {
+    width: 100%;
+  }
 }
 
 /* Mini sidebar adjustments */
@@ -301,19 +314,14 @@
 </style>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function () {
   const menuToggle = document.getElementById('menuToggle');
-  const navbarContent = document.getElementById('navbarContent');
   const mobileSidebar = document.getElementById('mobileSidebar');
 
-  if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-      // Only toggle mobile sidebar on small screens
-      if (window.innerWidth < 992 && mobileSidebar) {
+  if (menuToggle && mobileSidebar) {
+    menuToggle.addEventListener('click', function () {
+      if (window.innerWidth < 992) {
         mobileSidebar.classList.toggle('show');
-      } else if (navbarContent) {
-        navbarContent.classList.toggle('show');
       }
     });
   }
@@ -327,8 +335,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
-
-
-
-
 </script>
