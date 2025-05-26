@@ -41,7 +41,9 @@ SECRET_KEY = "django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+FCM_DJANGO_SETTINGS = {
+    'MYSQL_COMPATIBILITY': True,
+}
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
     "127.0.0.1",
