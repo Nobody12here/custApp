@@ -1,7 +1,7 @@
 # CUSTApp/views.py
 from datetime import datetime
 from io import BytesIO
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import render
@@ -1006,3 +1006,32 @@ def support(request):
 
 def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
+
+
+class SupportTicketAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        issue_description = request.data.get('issue_description', '')
+        user = request.user
+
+        if not issue_description:
+            return Response({'message': 'Issue description is required.'}, status=400)
+
+        # Compose the email
+        subject = 'New Support Ticket'
+        message = f"From: {user.email}\nUser: {user.name}\n\nIssue:\n{issue_description}"
+        from_email = 'no-reply@custapp.pk'
+        recipient_list = ['support@custapp.pk']
+
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=from_email,
+                recipient_list=recipient_list,
+                fail_silently=False,
+            )
+            return Response({'message': 'Support ticket submitted successfully.'})
+        except Exception as e:
+            return Response({'message': f'Failed to send email: {str(e)}'}, status=500)

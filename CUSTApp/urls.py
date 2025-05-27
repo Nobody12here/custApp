@@ -7,6 +7,7 @@ from .views import (
     DepartmentRetrieveUpdateDestroyAPI,
     GeneratePDFWithLetterheadAPIView,
     GetAttributesAPIView,
+    SupportTicketAPIView,
     UserUpdateView,
     UsersList,
     DepartmentList,
@@ -93,6 +94,7 @@ urlpatterns = [
     ),
     path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view'),
     path("api/upload-signature/",views.UploadEmployeeSignature.as_view(),name="upload-signature"),
-    path("guest-pass/",views.guest_pass,name="guest_pass")
+    path("guest-pass/",views.guest_pass,name="guest_pass"),
+    path('api/support-ticket/', SupportTicketAPIView.as_view(), name='support_ticket_api'),
 ]
 urlpatterns.extend(router.urls)
