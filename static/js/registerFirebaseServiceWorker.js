@@ -37,7 +37,7 @@ Notification.requestPermission().then((permission) => {
           },
           body: JSON.stringify({
             registration_id: currentToken,
-            type: "web",
+            
           }),
         });
       } else {

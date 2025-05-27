@@ -153,7 +153,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "support@custapp.pk"
-EMAIL_HOST_PASSWORD = "supportcust@123"  # Replace with the correct password
+EMAIL_HOST_PASSWORD = "wnfm7gaqk8r7"  # Replace with the correct password
 DEFAULT_FROM_EMAIL = "support@custapp.pk"
 EMAIL_TIMEOUT = 30
 
