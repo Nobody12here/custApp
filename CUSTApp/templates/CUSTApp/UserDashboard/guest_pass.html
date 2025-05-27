@@ -500,6 +500,23 @@
                 success: function (data) {
                     const tbody = $('#guestPassTableBody');
                     tbody.empty();
+                        // Calculate statistics
+                    let pending = 0;
+                    let approved = 0;
+                    let rejected = 0;
+                    const total = data.length;
+
+                    data.forEach(pass => {
+                        switch(pass.status) {
+                            case 'Pending': pending++; break;
+                            case 'Approved': approved++; break;
+                            case 'Rejected': rejected++; break;
+                        }
+                    });
+                    $('#pending-count').text(pending);
+                    $('#approved-count').text(approved);
+                    $('#rejected-count').text(rejected);
+                    $('#total-count').text(total);
 
                     const filteredPasses = searchTerm ? data.filter(pass => {
                         const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name}`.toLowerCase();
