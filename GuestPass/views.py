@@ -21,13 +21,18 @@ class RequestGuestPassView(ModelViewSet):
         # Compute start and end of today (timezone-aware)
         start_of_day = timezone.make_aware(datetime.combine(today, datetime.min.time()))
         end_of_day = start_of_day + timedelta(days=1)
-
-        if user.dept.dept_name == "Security" and user.dept.dept_head_id == user.user_id:
-            # That means that the user is the head of security department
-            print("head of security")
-            queryset = base_queryset
+        if user.is_authenticated:
+            if (
+                user.dept.dept_name == "Security"
+                and user.dept.dept_head_id == user.user_id
+            ):
+                # That means that the user is the head of security department
+                print("head of security")
+                queryset = base_queryset
+            else:
+                queryset = base_queryset.filter(host=user.user_id)
         else:
-            queryset = base_queryset.filter(host=user.user_id)
+            queryset = base_queryset
         queryset = queryset.annotate(
             is_today=Case(
                 When(
