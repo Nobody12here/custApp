@@ -367,7 +367,7 @@ def test_api_view(request):
 
 # Generic API Views
 class UsersList(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
@@ -471,7 +471,7 @@ class UserCSVUploadAPIView(APIView):
 
 
 class DepartmentList(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
