@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CustApp | Home</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:700,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: #f7fafc;
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #1a237e;
+            overflow-x: hidden;
+        }
+        .topbar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 1.2rem 2.5rem 0.5rem 2.5rem;
+            box-sizing: border-box;
+            background: transparent;
+        }
+        .login-btn {
+            background: #116CAB;
+            color: #fff;
+            font-weight: 500;
+            font-size: 1.08rem;
+            border: 1px solid #116CAB;
+            border-radius: 4px;
+            padding: 0.7rem 2.2rem;
+            cursor: pointer;
+            min-width: 130px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 12px #116cab22;
+            font-family: 'Poppins', Arial, sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .login-btn:hover {
+            background: #0A369D;
+            color: #fff;
+            border-color: #0A369D;
+        }
+        .main-layout {
+            display: flex;
+            min-height: 80vh;
+            width: 100vw;
+            align-items: center;
+            justify-content: center;
+            gap: 4vw;
+        }
+        .hero-section {
+            background: #fff;
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
+            border-radius: 18px;
+            border: 1.5px solid #e3f2fd;
+            max-width: 480px;
+            margin: 0;
+            padding: 2.5rem 2rem 2rem 2rem;
+            text-align: left;
+            flex: 1 1 480px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .logo-animate {
+            width: 90px;
+            height: 90px;
+            margin-bottom: 1.2rem;
+            animation: floatLogo 2.8s ease-in-out infinite alternate, rotateLogo 7s linear infinite;
+            box-shadow: 0 4px 24px #116cab22;
+            border-radius: 50%;
+            background: #f7fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-animate-large {
+            flex: 0 0 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 340px;
+        }
+        .logo-animate-large img {
+            width: 260px;
+            height: 260px;
+            animation: floatLogo 2.8s ease-in-out infinite alternate;
+            box-shadow: 0 8px 48px #116cab22;
+            border-radius: 50%;
+            background: #f7fafc;
+            display: block;
+        }
+        @keyframes floatLogo {
+            0% { transform: translateY(0px) scale(1);}
+            100% { transform: translateY(-28px) scale(1.07);}
+        }
+        @keyframes rotateLogo {
+            0% { filter: hue-rotate(0deg);}
+            100% { filter: hue-rotate(360deg);}
+        }
+        .hero-title {
+            font-size: 2.1rem;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+            letter-spacing: 0.5px;
+            color: #0A369D;
+        }
+        .hero-desc {
+            font-size: 1.08rem;
+            margin-bottom: 2.2rem;
+            line-height: 1.7;
+            color: #333;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        .hero-btns {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .main-btn, .guest-btn {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.08rem;
+            min-width: 150px;
+            padding: 0.8rem 2.2rem;
+            border-radius: 4px;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 12px #00eaff22;
+            font-family: 'Poppins', Arial, sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .main-btn {
+            background: #116CAB;
+            color: #fff;
+            border: 1px solid #116CAB;
+        }
+        .main-btn:hover {
+            background: #0A369D;
+            border-color: #0A369D;
+        }
+        .guest-btn {
+            background: linear-gradient(90deg, #ffb300 0%, #ff6f00 100%);
+            color: #fff;
+            box-shadow: 0 2px 12px #ffb30022;
+        }
+        .guest-btn:hover {
+            background: linear-gradient(90deg, #ff6f00 0%, #ffb300 100%);
+        }
+        .features-list {
+            margin: 2rem 0 1.5rem 0;
+            color: #116CAB;
+            font-size: 1.01rem;
+            padding-left: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            text-align: left;
+        }
+        .features-list li {
+            margin-bottom: 0.7rem;
+            list-style: none;
+            position: relative;
+            padding-left: 1.7em;
+        }
+        .features-list li:before {
+            content: "•";
+            color: #116CAB;
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .cta-bar {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100vw;
+            background: #fff;
+            color: #0A369D;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+            z-index: 100;
+            box-shadow: 0 -2px 24px #0a369d22;
+            font-size: 1.18rem;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .cta-bar .cta-text {
+            font-weight: 500;
+            font-size: 1.08rem;
+            letter-spacing: 0.5px;
+            color:#0A369D;
+        }
+        .cta-bar .cta-guest-btn {
+            background: #116CAB;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 0.7rem 2.2rem;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 12px #116cab22;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .cta-bar .cta-guest-btn:hover {
+            background: #0A369D;
+            color: #fff;
+        }
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; gap: 2vw;}
+            .logo-animate-large { height: 180px; }
+            .logo-animate-large img { width: 120px; height: 120px; }
+        }
+        @media (max-width: 700px) {
+            .hero-section { max-width: 97vw; padding: 1.5rem 0.7rem 1.2rem 0.7rem; }
+            .hero-title { font-size: 1.3rem; }
+            .cta-bar { flex-direction: column; gap: 1rem; font-size: 1rem; }
+            .hero-btns { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <button class="login-btn" onclick="window.location.href='{% url 'login' %}'">
+            <i class="material-icons" style="font-size:1.3em;">login</i> Login
+        </button>
+    </div>
+    <div class="main-layout">
+        <div class="hero-section">
+            <div class="hero-title">CustApp Campus Portal</div>
+            <div class="hero-desc">
+                Welcome to CustApp, your formal and secure campus management solution.<br>
+                Apply for services, generate guest passes, and track your requests with confidence.
+            </div>
+            <!-- <div class="hero-btns">
+                <button class="main-btn" onclick="window.location.href="/login/">
+                    <i class="material-icons" style="vertical-align:middle;">login</i> Login
+                </button>
+                <button class="guest-btn" onclick="window.location.href='{% url 'guest_pass' %}'">
+                    <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
+                </button>
+            </div> -->
+            <ul class="features-list">
+                <li>Formal, secure, and efficient application process</li>
+                <li>Instant guest pass generation for campus visitors</li>
+                <li>Track your application status in real time</li>
+                <li>Trusted by students, staff, and administration</li>
+            </ul>
+        </div>
+        <div class="logo-animate-large">
+            <img src="{% static 'assets/img/favicon.png' %}" alt="CustApp Logo" />
+        </div>
+    </div>
+    <div class="cta-bar">
+        <span class="cta-text">
+            Want to visit our campus? Get your digital guest pass now!
+        </span>
+        <button class="cta-guest-btn" onclick="window.location.href='{% url 'guest_pass' %}'">
+            <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
+        </button>
+    </div>
+</body>
+</html>

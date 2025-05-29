@@ -328,12 +328,6 @@ class IsAdminUser(BasePermission):
         return request.user.role == "admin"
 
 
-# Basic Views
-def home(request):
-    # return HttpResponse(request, 'CUSTApp/login.html')
-    return HttpResponse("CUSTApp Django!")
-
-
 def about(request):
     return HttpResponse("This is the about page.")
 
@@ -1008,6 +1002,8 @@ def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
 def public_guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass_open.html")
+def home(request):
+    return render(request, "CUSTApp/home.html")
 
 
 class SupportTicketAPIView(APIView):
