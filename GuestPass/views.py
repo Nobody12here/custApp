@@ -14,6 +14,8 @@ class RequestGuestPassView(ModelViewSet):
     def get_queryset(self):
         # Get today's date in the correct timezone
         user = self.request.user
+        show_today = self.request.query_params.get("show_today", False)
+
         base_queryset = Request.objects.filter(request_type="GuestPass")
         now = timezone.now()
         today = now.date()
@@ -48,5 +50,6 @@ class RequestGuestPassView(ModelViewSet):
             "meeting_date_time",  # Then by meeting time (earliest first)
             "-created_at",  # Finally by creation time (newest first)
         )
-
+        if show_today:
+            queryset = queryset.filter(is_today=True)
         return queryset
