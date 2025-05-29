@@ -51,26 +51,30 @@
         }
         .main-layout {
             display: flex;
-            min-height: 80vh;
+            height: 100vh;
             width: 100vw;
-            align-items: center;
-            justify-content: center;
-            gap: 4vw;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 0;
         }
         .hero-section {
             background: #fff;
             box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
-            border-radius: 18px;
+            border-radius: 0 18px 18px 0;
             border: 1.5px solid #e3f2fd;
-            max-width: 480px;
+            width: 50vw;
+            min-width: 320px;
+            max-width: 700px;
+            height: 100vh;
             margin: 0;
             padding: 2.5rem 2rem 2rem 2rem;
             text-align: left;
-            flex: 1 1 480px;
+            flex: 0 0 50vw;
             z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            justify-content: center;
         }
         .logo-animate {
             width: 90px;
@@ -85,7 +89,7 @@
             justify-content: center;
         }
         .logo-animate-large {
-            flex: 0 0 340px;
+            flex: 1 1 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -113,6 +117,7 @@
             font-family: 'Poppins', Arial, sans-serif;
             font-weight: 700;
             margin-bottom: 0.7rem;
+            margin-top: 0;
             letter-spacing: 0.5px;
             color: #0A369D;
         }
@@ -229,8 +234,60 @@
             background: #0A369D;
             color: #fff;
         }
+        .background-animated {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background: #f7fafc;
+            overflow: hidden;
+        }
+        .background-animated::before, .background-animated::after {
+            content: "";
+            position: absolute;
+            width: 180vw;
+            height: 180vw;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: repeating-linear-gradient(
+                120deg,
+                rgba(17,108,171,0.07) 0px,
+                rgba(17,108,171,0.07) 2px,
+                transparent 2px,
+                transparent 80px
+            );
+            animation: movePattern 18s linear infinite;
+            z-index: 1;
+        }
+        .background-animated::after {
+            background: repeating-linear-gradient(
+                60deg,
+                rgba(255,193,7,0.04) 0px,
+                rgba(255,193,7,0.04) 1.5px,
+                transparent 1.5px,
+                transparent 60px
+            );
+            animation: movePattern2 24s linear infinite;
+        }
+        @keyframes movePattern {
+            0% { background-position: 0 0; }
+            100% { background-position: 160px 320px; }
+        }
+        @keyframes movePattern2 {
+            0% { background-position: 0 0; }
+            100% { background-position: -120px -180px; }
+        }
         @media (max-width: 900px) {
-            .main-layout { flex-direction: column; gap: 2vw;}
+            .main-layout { flex-direction: column; height: auto; }
+            .hero-section {
+                width: 100vw;
+                max-width: 100vw;
+                min-width: 0;
+                height: auto;
+                margin-top: 0;
+                border-radius: 0 0 18px 18px;
+            }
             .logo-animate-large { height: 180px; }
             .logo-animate-large img { width: 120px; height: 120px; }
         }
@@ -243,11 +300,12 @@
     </style>
 </head>
 <body>
-    <div class="topbar">
+    <div class="background-animated"></div>
+    <!-- <div class="topbar">
         <button class="login-btn" onclick="window.location.href='{% url 'login' %}'">
             <i class="material-icons" style="font-size:1.3em;">login</i> Login
         </button>
-    </div>
+    </div> -->
     <div class="main-layout">
         <div class="hero-section">
             <div class="hero-title">CustApp Campus Portal</div>
@@ -255,14 +313,14 @@
                 Welcome to CustApp, your formal and secure campus management solution.<br>
                 Apply for services, generate guest passes, and track your requests with confidence.
             </div>
-            <!-- <div class="hero-btns">
-                <button class="main-btn" onclick="window.location.href="/login/">
+            <div class="hero-btns">
+                <button class="main-btn" onclick="window.location.href='{% url 'login' %}'">
                     <i class="material-icons" style="vertical-align:middle;">login</i> Login
                 </button>
                 <button class="guest-btn" onclick="window.location.href='{% url 'guest_pass' %}'">
                     <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
                 </button>
-            </div> -->
+            </div>
             <ul class="features-list">
                 <li>Formal, secure, and efficient application process</li>
                 <li>Instant guest pass generation for campus visitors</li>
@@ -282,5 +340,52 @@
             <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
         </button>
     </div>
+    <style>
+        .background-animated {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background: #f7fafc;
+            overflow: hidden;
+        }
+        .background-animated::before, .background-animated::after {
+            content: "";
+            position: absolute;
+            width: 180vw;
+            height: 180vw;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: repeating-linear-gradient(
+                120deg,
+                rgba(17,108,171,0.07) 0px,
+                rgba(17,108,171,0.07) 2px,
+                transparent 2px,
+                transparent 80px
+            );
+            animation: movePattern 18s linear infinite;
+            z-index: 1;
+        }
+        .background-animated::after {
+            background: repeating-linear-gradient(
+                60deg,
+                rgba(255,193,7,0.04) 0px,
+                rgba(255,193,7,0.04) 1.5px,
+                transparent 1.5px,
+                transparent 60px
+            );
+            animation: movePattern2 24s linear infinite;
+        }
+        @keyframes movePattern {
+            0% { background-position: 0 0; }
+            100% { background-position: 160px 320px; }
+        }
+        @keyframes movePattern2 {
+            0% { background-position: 0 0; }
+            100% { background-position: -120px -180px; }
+        }
+        /* ...rest of your CSS remains unchanged... */
+    </style>
 </body>
 </html>
