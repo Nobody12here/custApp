@@ -10,9 +10,48 @@
         transition: transform 0.2s;
     }
 
-    .card-stats:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(156, 39, 176, 0.4);
+    /* Guest Stats Cards Styling */
+    #guest-stats-cards .card-stats {
+        background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+        color: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14),
+            0 7px 10px -5px rgba(10, 54, 157, 0.4);
+        margin-bottom: 20px;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    #guest-stats-cards .card-icon {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    #guest-stats-cards .card-icon i.material-icons {
+        color: white;
+        font-size: 30px;
+    }
+
+    #guest-stats-cards .card-category {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        margin: 0 0 5px 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    #guest-stats-cards .card-title {
+        color: white;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
     }
 
     .guest-form {
@@ -58,27 +97,6 @@
         color: #0A369D;
     }
 
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 0.85em;
-        font-weight: 500;
-    }
-
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .status-approved {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-rejected {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
 
     /* Add to your CSS section */
     #filterToday,
@@ -132,7 +150,7 @@
 <div class="row" id="guest-stats-cards">
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card card-stats">
-            <div class="card-header card-header-warning card-header-icon">
+            <div class="card-body">
                 <div class="card-icon">
                     <i class="material-icons">hourglass_empty</i>
                 </div>
@@ -143,7 +161,7 @@
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card card-stats">
-            <div class="card-header card-header-success card-header-icon">
+            <div class="card-body">
                 <div class="card-icon">
                     <i class="material-icons">check_circle</i>
                 </div>
@@ -154,7 +172,7 @@
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card card-stats">
-            <div class="card-header card-header-danger card-header-icon">
+            <div class="card-body">
                 <div class="card-icon">
                     <i class="material-icons">cancel</i>
                 </div>
@@ -165,7 +183,7 @@
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card card-stats">
-            <div class="card-header card-header-info card-header-icon">
+            <div class="card-body">
                 <div class="card-icon">
                     <i class="material-icons">people</i>
                 </div>
