@@ -80,6 +80,19 @@
         color: #721c24;
     }
 
+    /* Add to your CSS section */
+    #filterToday,
+    #clearFilters {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #filterToday i,
+    #clearFilters i {
+        margin-right: 5px;
+    }
+
     .action-buttons .btn {
         margin: 0 2px;
         padding: 4px 8px;
@@ -270,9 +283,18 @@
                 <p class="card-category">Manage all guest pass requests</p>
             </div>
             <div class="card-body">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <button id="filterToday" class="btn btn-info">
+                            <i class="material-icons">today</i> Today's Visits
+                        </button>
+                        <button id="clearFilters" class="btn btn-secondary ml-2">
+                            <i class="material-icons">clear</i> Clear Filters
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -342,6 +364,102 @@
 
 {% block extra_js %}
 <script>
+
+    function loadGuestPasses(searchTerm = '', showTodayOnly = false) {
+        let url = '/guestpass/'
+        if (showTodayOnly) {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            url += `?show_today=${showTodayOnly}`
+        }
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function (data) {
+                const tbody = $('#guestPassTableBody');
+                tbody.empty();
+                // Calculate statistics
+                let pending = 0;
+                let approved = 0;
+                let rejected = 0;
+                const total = data.length;
+
+                data.forEach(pass => {
+                    switch (pass.status) {
+                        case 'Pending': pending++; break;
+                        case 'Approved': approved++; break;
+                        case 'Rejected': rejected++; break;
+                    }
+                });
+                $('#pending-count').text(pending);
+                $('#approved-count').text(approved);
+                $('#rejected-count').text(rejected);
+                $('#total-count').text(total);
+
+                const filteredPasses = searchTerm ? data.filter(pass => {
+                    const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name} ${pass.status}`.toLowerCase();
+                    return searchStr.includes(searchTerm.toLowerCase());
+                }) : data;
+
+                if (filteredPasses.length === 0) {
+                    tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
+                    return;
+                }
+
+                filteredPasses.forEach(pass => {
+                    const visitDate = new Date(pass.meeting_date_time);
+                    const dateStr = visitDate.toLocaleDateString();
+                    const timeStr = visitDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    // In the loadGuestPasses function, update the row generation to include comments:
+                    const row = `
+    <tr>
+        <td>${pass.guest_name}</td>
+        <td>${pass.guest_cnic}</td>
+        <td>${pass.guest_phone}</td>
+        <td>${pass.host_department_name}</td>
+        <td>${pass.host_name}</td>
+        <td>${dateStr}</td>
+        <td>${timeStr}</td>
+        <td>
+            <span class="status-badge ${pass.status.toLowerCase()}">
+                ${pass.status}
+            </span>
+        </td>
+        <td>
+            ${pass.comments ? `
+                <div class="comment-tooltip">
+                    
+                    <span class="tooltip-text">${pass.comments}</span>
+                </div>
+            ` : '-'}
+        </td>
+        <td class="action-buttons">
+            ${pass.status === 'Pending' ? `
+                <button class="btn btn-success" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
+                    <i class="material-icons">check</i>
+                </button>
+                <button class="btn btn-danger " onclick="updateGuestPassStatus(${pass.request_id}, 'Rejected')">
+                    <i class="material-icons">close</i>
+                </button>
+                <button class="btn btn-warning btn" onclick="openDatetimeModal(${pass.request_id}, '${pass.meeting_date_time}')">
+                    <i class="material-icons">edit</i>
+                </button>
+            ` : ''}
+            <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.id})">
+                <i class="material-icons">visibility</i>
+            </button>
+        </td>
+    </tr>
+`;
+                    tbody.append(row);
+                });
+            },
+            error: function () {
+                $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
+            }
+        });
+    }
     let departmentData = [];
     function openDatetimeModal(passId, currentDatetime) {
         const datetime = new Date(currentDatetime);
@@ -442,7 +560,8 @@
         if (!checkAuth()) return;
         fetchDepartments();
         setDefaultDateTime();
-
+        $('#filterToday').on('click', () => loadGuestPasses(searchTerm = '', showTodayOnly = true))
+        $('#clearfilter').on('click', loadGuestPasses)
         $('#purposeSelect').change(function () {
             if ($(this).val() === 'Other') {
                 $('#otherPurposeGroup').show();
@@ -474,115 +593,10 @@
                 }
             });
         }
-
-        // Function to load guest pass statistics
-        function loadGuestPassStats() {
-            $.ajax({
-                url: '/guest-pass-stats/',
-                method: 'GET',
-                success: function (data) {
-                    $('#pending-count').text(data.pending || 0);
-                    $('#approved-count').text(data.approved || 0);
-                    $('#rejected-count').text(data.rejected || 0);
-                    $('#total-count').text(data.total || 0);
-                },
-                error: function () {
-                    console.error('Error loading guest pass statistics');
-                }
-            });
-        }
-
-        // Function to load guest pass requests
-        function loadGuestPasses(searchTerm = '') {
-            $.ajax({
-                url: '/guestpass/',
-                method: 'GET',
-                success: function (data) {
-                    const tbody = $('#guestPassTableBody');
-                    tbody.empty();
-                        // Calculate statistics
-                    let pending = 0;
-                    let approved = 0;
-                    let rejected = 0;
-                    const total = data.length;
-
-                    data.forEach(pass => {
-                        switch(pass.status) {
-                            case 'Pending': pending++; break;
-                            case 'Approved': approved++; break;
-                            case 'Rejected': rejected++; break;
-                        }
-                    });
-                    $('#pending-count').text(pending);
-                    $('#approved-count').text(approved);
-                    $('#rejected-count').text(rejected);
-                    $('#total-count').text(total);
-
-                    const filteredPasses = searchTerm ? data.filter(pass => {
-                        const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name}`.toLowerCase();
-                        return searchStr.includes(searchTerm.toLowerCase());
-                    }) : data;
-
-                    if (filteredPasses.length === 0) {
-                        tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
-                        return;
-                    }
-
-                    filteredPasses.forEach(pass => {
-                        const visitDate = new Date(pass.meeting_date_time);
-                        const dateStr = visitDate.toLocaleDateString();
-                        const timeStr = visitDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                        // In the loadGuestPasses function, update the row generation to include comments:
-                        const row = `
-    <tr>
-        <td>${pass.guest_name}</td>
-        <td>${pass.guest_cnic}</td>
-        <td>${pass.guest_phone}</td>
-        <td>${pass.host_department_name}</td>
-        <td>${pass.host_name}</td>
-        <td>${dateStr}</td>
-        <td>${timeStr}</td>
-        <td>
-            <span class="status-badge ${pass.status.toLowerCase()}">
-                ${pass.status}
-            </span>
-        </td>
-        <td>
-            ${pass.comments ? `
-                <div class="comment-tooltip">
-                    
-                    <span class="tooltip-text">${pass.comments}</span>
-                </div>
-            ` : '-'}
-        </td>
-        <td class="action-buttons">
-            ${pass.status === 'Pending' ? `
-                <button class="btn btn-success" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
-                    <i class="material-icons">check</i>
-                </button>
-                <button class="btn btn-danger " onclick="updateGuestPassStatus(${pass.request_id}, 'Rejected')">
-                    <i class="material-icons">close</i>
-                </button>
-                <button class="btn btn-warning btn" onclick="openDatetimeModal(${pass.request_id}, '${pass.meeting_date_time}')">
-                    <i class="material-icons">edit</i>
-                </button>
-            ` : ''}
-            <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.id})">
-                <i class="material-icons">visibility</i>
-            </button>
-        </td>
-    </tr>
-`;
-                        tbody.append(row);
-                    });
-                },
-                error: function () {
-                    $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
-                }
-            });
-        }
-
+        $('#guest-stats-cards .card-stats').on('click', function (e) {
+            let status = $(this).find('.card-category').text().trim()
+            loadGuestPasses("" ? status === "TOTAL" : status)
+        })
         // Handle form submission
         $('#guestPassForm').on('submit', function (e) {
             e.preventDefault();
@@ -622,7 +636,6 @@
                         $('#guestPassForm')[0].reset();
                         setDefaultDateTime();
                         loadGuestPasses();
-                        loadGuestPassStats();
                         $('#guestPassFormRow').slideUp();
                     } else {
                         alert(response.error || 'Failed to create guest pass request');
@@ -641,7 +654,6 @@
 
         // Initial load
         loadGuestPasses();
-        loadGuestPassStats();
 
         // Toggle Guest Pass Form
         $('#toggleGuestPassForm').on('click', function () {
@@ -662,10 +674,11 @@
                 'X-CSRFToken': getCookie('csrftoken')
             },
             data: { status: status },
-            success: function (response) {
-                if (response.success) {
-                    loadGuestPasses($('#searchInput').val());
-                    loadGuestPassStats();
+            success: function (response, textStatus, jqXHR) {
+                console.log(jqXHR.status)
+                if (jqXHR.status === 200) {
+                    loadGuestPasses();
+
                 } else {
                     alert(response.error || 'Failed to update guest pass status');
                 }
