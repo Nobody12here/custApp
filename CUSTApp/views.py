@@ -1006,6 +1006,8 @@ def support(request):
 
 def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
+def home(request):
+    return render(request, "CUSTApp/home.html")
 
 
 class SupportTicketAPIView(APIView):
