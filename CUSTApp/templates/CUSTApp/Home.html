@@ -117,7 +117,6 @@
             font-family: 'Poppins', Arial, sans-serif;
             font-weight: 700;
             margin-bottom: 0.7rem;
-            margin-top: 0;
             letter-spacing: 0.5px;
             color: #0A369D;
         }
@@ -285,7 +284,6 @@
                 max-width: 100vw;
                 min-width: 0;
                 height: auto;
-                margin-top: 0;
                 border-radius: 0 0 18px 18px;
             }
             .logo-animate-large { height: 180px; }
@@ -301,11 +299,11 @@
 </head>
 <body>
     <div class="background-animated"></div>
-    <!-- <div class="topbar">
+    <div class="topbar">
         <button class="login-btn" onclick="window.location.href='{% url 'login' %}'">
             <i class="material-icons" style="font-size:1.3em;">login</i> Login
         </button>
-    </div> -->
+    </div>
     <div class="main-layout">
         <div class="hero-section">
             <div class="hero-title">CustApp Campus Portal</div>
@@ -317,7 +315,7 @@
                 <button class="main-btn" onclick="window.location.href='{% url 'login' %}'">
                     <i class="material-icons" style="vertical-align:middle;">login</i> Login
                 </button>
-                <button class="guest-btn" onclick="window.location.href='{% url 'guest_pass' %}'">
+                <button class="guest-btn" onclick="window.location.href='{% url 'public_guest_pass' %}'">
                     <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
                 </button>
             </div>
@@ -336,7 +334,7 @@
         <span class="cta-text">
             Want to visit our campus? Get your digital guest pass now!
         </span>
-        <button class="cta-guest-btn" onclick="window.location.href='{% url 'guest_pass' %}'">
+        <button class="cta-guest-btn" onclick="window.location.href='{% url 'public_guest_pass' %}'">
             <i class="material-icons" style="vertical-align:middle;">person_add</i> Create Guest Pass
         </button>
     </div>
