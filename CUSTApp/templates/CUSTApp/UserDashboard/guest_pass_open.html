@@ -5,6 +5,21 @@
 
 {% block extra_css %}
 <style>
+    .modal-header .close {
+        padding: 1rem 1rem;
+        margin: -1rem -1rem -1rem auto;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: #000;
+        opacity: 0.5;
+        background: transparent;
+        border: 0;
+    }
+
+    .modal-header .close:hover {
+        opacity: 0.75;
+    }
+
     .card-stats {
         cursor: pointer;
         transition: transform 0.2s;
@@ -254,6 +269,26 @@
         </div>
     </div>
 </div>
+<!-- Success/Failure Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Guest Pass Request Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="statusModalBody">
+                <!-- Content will be inserted here dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -394,8 +429,9 @@
                 comments: comment
             }),
             success: function () {
+
                 $('#datetimeModal').modal('hide');
-                
+
                 alert('Visit date/time updated successfully');
             },
             error: function (xhr) {
@@ -521,15 +557,36 @@
                 data: formData,
                 success: function (response, textStatus, jqXHR) {
                     if (jqXHR.status === 201) {
-                        alert('Guest pass request created successfully');
+                        $('#statusModalBody').html(`
+                        <div class="text-center">
+                            <i class="material-icons text-success" style="font-size: 4rem;">check_circle</i>
+                            <h4>Success!</h4>
+                            <p>Guest pass request created successfully.</p>
+                            <p>Request ID: ${response.request_id || 'N/A'}</p>
+                        </div>
+                    `);
                         $('#guestPassForm')[0].reset();
-                        
+
                     } else {
-                        alert(response.error || 'Failed to create guest pass request');
+                        $('#statusModalBody').html(`
+                        <div class="text-center">
+                            <i class="material-icons text-warning" style="font-size: 4rem;">warning</i>
+                            <h4>Request Submitted</h4>
+                            <p>${response.message || 'Guest pass request submitted but with unexpected response.'}</p>
+                        </div>
+                    `);
                     }
+                    $('#statusModal').modal('show');
                 },
                 error: function (xhr) {
-                    alert(xhr.responseJSON?.error || 'An error occurred while creating the guest pass request');
+                    $('#statusModalBody').html(`
+                    <div class="text-center">
+                        <i class="material-icons text-danger" style="font-size: 4rem;">error</i>
+                        <h4>Error!</h4>
+                        <p>${xhr.responseJSON?.error || 'An error occurred while creating the guest pass request'}</p>
+                    </div>
+                `);
+                    $('#statusModal').modal('show');
                 }
             });
         });
