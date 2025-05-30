@@ -28,8 +28,6 @@ class RequestGuestPassView(ModelViewSet):
                 user.dept.dept_name == "Security"
                 and user.dept.dept_head_id == user.user_id
             ):
-                # That means that the user is the head of security department
-                print("head of security")
                 queryset = base_queryset
             else:
                 queryset = base_queryset.filter(host=user.user_id)
