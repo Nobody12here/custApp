@@ -395,7 +395,7 @@
             }),
             success: function () {
                 $('#datetimeModal').modal('hide');
-                loadGuestPasses($('#searchInput').val());
+                
                 alert('Visit date/time updated successfully');
             },
             error: function (xhr) {
@@ -523,9 +523,7 @@
                     if (jqXHR.status === 201) {
                         alert('Guest pass request created successfully');
                         $('#guestPassForm')[0].reset();
-                        setDefaultDateTime();
-                    
-                        $('#guestPassFormRow').slideUp();
+                        
                     } else {
                         alert(response.error || 'Failed to create guest pass request');
                     }

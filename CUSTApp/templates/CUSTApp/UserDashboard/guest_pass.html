@@ -583,7 +583,7 @@
         fetchDepartments();
         setDefaultDateTime();
         $('#filterToday').on('click', () => loadGuestPasses(searchTerm = '', showTodayOnly = true))
-        $('#clearfilter').on('click', loadGuestPasses)
+        $('#clearFilters').on('click', ()=> loadGuestPasses("",false))
         $('#purposeSelect').change(function () {
             if ($(this).val() === 'Other') {
                 $('#otherPurposeGroup').show();
