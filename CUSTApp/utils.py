@@ -93,7 +93,7 @@ def send_comment_notification(user_type, name, text, employee, student):
     #     "body": f"{name} commented: {text}",
     # }
     if user_type == "Student":
-        #notify_user_devices(employee, "New comment on your applicaiton", body="You a new comment in your application!")
+        # notify_user_devices(employee, "New comment on your applicaiton", body="You a new comment in your application!")
         send_alert_email(
             employee.email,
             "New Comment on Your Application",

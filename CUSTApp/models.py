@@ -97,6 +97,10 @@ class Users(AbstractBaseUser, PermissionsMixin):
     designation = models.CharField(max_length=100, null=True, blank=True)
     remark = models.TextField(null=True, blank=True)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
+    auth_method = models.CharField(max_length=10,default='email',choices=[
+        ('email','Email'),
+        ('phone','Phone'),
+    ])
     picture = models.FileField(
         blank=True,
         null=True,

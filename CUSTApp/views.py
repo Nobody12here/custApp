@@ -20,6 +20,7 @@ from .serializers import (
     DepartmentSerializer,
     OTPSendSerializer,
     OTPVerifySerializer,
+    PhoneOTPVerifySerializer
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -96,8 +97,13 @@ def update_request_status(request, id):
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
-            if req.request_type == 'GuestPass' and req.host.user_id != request.user.user_id:
-                return JsonResponse({"error": "Other User cannot change the status"}, status=401)
+            if (
+                req.request_type == "GuestPass"
+                and req.host.user_id != request.user.user_id
+            ):
+                return JsonResponse(
+                    {"error": "Other User cannot change the status"}, status=401
+                )
             student = req.applicant
             req.status = status
             req.approved_at = timezone.now().isoformat()
@@ -669,19 +675,24 @@ class OTPSendView(APIView):
             {"message": "OTP sent to your email."}, status=status.HTTP_200_OK
         )
 
-
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = OTPVerifySerializer
-
+    def get_serializer_class(self):
+        if 'phone_number' in self.request.data:
+            return PhoneOTPVerifySerializer
+        return OTPVerifySerializer
+    
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data["email"]
+        identifier = serializer.validated_data.get('email') or serializer.validated_data.get('phone_number')
+        print(identifier)
         otp = serializer.validated_data["otp"]
-
         try:
-            user = Users.objects.get(email=email)
+            if 'email' in serializer.validated_data:
+                user = Users.objects.get(email=identifier)
+            else:
+                user = Users.objects.get(phone_number=identifier)
             if user.otp == otp:
                 # OTP matched, clear it after successful login
                 user.otp = None
@@ -721,7 +732,7 @@ class OTPVerifyView(APIView):
                 )
         except Users.DoesNotExist:
             return Response(
-                {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -1002,8 +1013,12 @@ def support(request):
 
 def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
+
+
 def public_guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass_open.html")
+
+
 def home(request):
     return render(request, "CUSTApp/home.html")
 
@@ -1012,17 +1027,19 @@ class SupportTicketAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        issue_description = request.data.get('issue_description', '')
+        issue_description = request.data.get("issue_description", "")
         user = request.user
 
         if not issue_description:
-            return Response({'message': 'Issue description is required.'}, status=400)
+            return Response({"message": "Issue description is required."}, status=400)
 
         # Compose the email
-        subject = 'New Support Ticket'
-        message = f"From: {user.email}\nUser: {user.name}\n\nIssue:\n{issue_description}"
-        from_email = 'no-reply@custapp.pk'
-        recipient_list = ['support@custapp.pk']
+        subject = "New Support Ticket"
+        message = (
+            f"From: {user.email}\nUser: {user.name}\n\nIssue:\n{issue_description}"
+        )
+        from_email = "no-reply@custapp.pk"
+        recipient_list = ["support@custapp.pk"]
 
         try:
             send_mail(
@@ -1032,6 +1049,6 @@ class SupportTicketAPIView(APIView):
                 recipient_list=recipient_list,
                 fail_silently=False,
             )
-            return Response({'message': 'Support ticket submitted successfully.'})
+            return Response({"message": "Support ticket submitted successfully."})
         except Exception as e:
-            return Response({'message': f'Failed to send email: {str(e)}'}, status=500)
+            return Response({"message": f"Failed to send email: {str(e)}"}, status=500)

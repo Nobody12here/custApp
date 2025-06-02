@@ -283,6 +283,7 @@ dependencies = [
     { name = "tzdata" },
     { name = "uritemplate" },
     { name = "urllib3" },
+    { name = "whatsapp-api-client-python" },
     { name = "yarl" },
 ]
 
@@ -359,6 +360,7 @@ requires-dist = [
     { name = "tzdata", specifier = "==2025.1" },
     { name = "uritemplate", specifier = "==4.1.1" },
     { name = "urllib3", specifier = "==1.26.6" },
+    { name = "whatsapp-api-client-python", specifier = ">=0.0.49" },
     { name = "yarl", specifier = "==1.20.0" },
 ]
 
@@ -1176,6 +1178,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/4f/5a/597ef5911cb8919ef
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5f/64/43575537846896abac0b15c3e5ac678d787a4021e906703f1766bfb8ea11/urllib3-1.26.6-py2.py3-none-any.whl", hash = "sha256:39fb8672126159acb139a7718dd10806104dec1e2f0f6c88aab05d17df10c8d4", size = 138494, upload-time = "2021-06-25T13:24:15.31Z" },
 ]
+
+[[package]]
+name = "whatsapp-api-client-python"
+version = "0.0.49"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c4/5e/13c130abb0e72c3ef1b03767550d93c72307a123abf5179dd550fe093d93/whatsapp_api_client_python-0.0.49.tar.gz", hash = "sha256:444d474bfeb6c5c407193f72249b0c21ff67763e614b0fdb821dbf5466efd397", size = 23386, upload-time = "2025-02-06T14:54:06.947Z" }
 
 [[package]]
 name = "yarl"

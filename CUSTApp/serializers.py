@@ -60,7 +60,10 @@ class OTPSendSerializer(
             raise serializers.ValidationError("Email is required.")
         return value
 
-
+class PhoneOTPVerifySerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
+    otp = serializers.CharField(max_length=10)
+ 
 class OTPVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=10)
