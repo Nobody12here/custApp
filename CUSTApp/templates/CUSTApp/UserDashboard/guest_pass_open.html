@@ -5,6 +5,48 @@
 
 {% block extra_css %}
 <style>
+    /* Add to your existing CSS */
+    #publicGuestPassView .detail-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    #publicGuestPassView .detail-item h6 {
+        color: #0A369D;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    #publicGuestPassView .detail-item p {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    #publicGuestPassView .btn-lg {
+        padding: 10px 30px;
+        font-size: 18px;
+    }
+
+    .status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
     .modal-header .close {
         padding: 1rem 1rem;
         margin: -1rem -1rem -1rem auto;
@@ -143,7 +185,77 @@
 {% endblock %}
 
 {% block content %}
+<!-- Public Guest Pass View (only shown when viewing a specific pass) -->
+{% if public_pass_view %}
+<div class="row" id="publicGuestPassView">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Guest Pass Request</h4>
+                <p class="card-category">Review this guest pass request</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Guest Information</h6>
+                            <p><strong>Name:</strong> {{ guest_pass.guest.name }}</p>
+                            <p><strong>CNIC:</strong> {{ guest_pass.guest.CNIC }}</p>
+                            <p><strong>Phone:</strong> {{ guest_pass.guest.phone_number }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Host Information</h6>
+                            <p><strong>Name:</strong> {{ guest_pass.host.name }}</p>
+                            <p><strong>Department:</strong> {{ guest_pass.host.dept.dept_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Visit Details</h6>
+                            <p><strong>Date:</strong> {{ guest_pass.meeting_date|date:"F j, Y" }}</p>
+                            <p><strong>Time:</strong> {{ guest_pass.meeting_time }}</p>
+                            <p><strong>Purpose:</strong> {{ guest_pass.reason }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Status Information</h6>
+                            <p><strong>Status:</strong>
+                                <span class="status-badge {{ guest_pass.status|lower }}">
+                                    {{ guest_pass.status }}
+                                </span>
+                            </p>
+                            <p><strong>Requested On:</strong> {{ guest_pass.created_at|date:"F j, Y H:i" }}</p>
+                            <p><strong>Comments:</strong> {{ guest_pass.comments|default:"None" }}</p>
+                        </div>
+                    </div>
+                </div>
 
+                {% if guest_pass.status == "Pending" %}
+                <div class="row mt-4">
+                    <div class="col-md-12 text-center">
+                        <button class="btn btn-success btn-lg mr-3"
+                            onclick="updateGuestPassStatus('{{ guest_pass.request_id }}', 'Approved')">
+                            <i class="material-icons">check</i> Approve
+                        </button>
+                        <button class="btn btn-danger btn-lg"
+                            onclick="updateGuestPassStatus('{{ guest_pass.request_id }}', 'Rejected')">
+                            <i class="material-icons">close</i> Reject
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Your existing content for the admin view -->
+<!-- ... -->
 <!-- Add New Guest Pass Form (hidden by default) -->
 <div class="row" id="guestPassFormRow">
     <div class="col-md-12">
@@ -233,6 +345,7 @@
     </div>
 </div>
 
+{% endif %}
 <!-- Date/Time Modification Modal -->
 <div class="modal fade" id="datetimeModal" tabindex="-1" role="dialog" aria-labelledby="datetimeModalLabel"
     aria-hidden="true">
@@ -290,10 +403,9 @@
     </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <script>
-
+    let departmentData = [];
     function loadGuestPasses(searchTerm = '', showTodayOnly = false) {
         let url = '/guestpass/'
         if (showTodayOnly) {
@@ -389,56 +501,6 @@
             }
         });
     }
-    let departmentData = [];
-    function openDatetimeModal(passId, currentDatetime) {
-        const datetime = new Date(currentDatetime);
-        const dateStr = datetime.toISOString().split('T')[0];
-        const timeStr = datetime.toTimeString().substring(0, 5);
-
-        $('#modifyPassId').val(passId);
-        $('#modifyDate').val(dateStr);
-        $('#modifyTime').val(timeStr);
-        $('#modifyComment').val(''); // Clear any previous comment
-
-        $('#datetimeModal').modal('show');
-    }
-
-    // In the document.ready section, update the saveDatetimeChanges click handler:
-    $('#saveDatetimeChanges').on('click', function () {
-        const passId = $('#modifyPassId').val();
-        const date = $('#modifyDate').val();
-        const time = $('#modifyTime').val();
-        const comment = $('#modifyComment').val();
-
-        if (!comment) {
-            alert('Please provide a reason for changing the visit time');
-            return;
-        }
-
-        const datetime = new Date(`${date}T${time}:00`).toISOString();
-
-        $.ajax({
-            url: `/guestpass/${passId}/`,
-            method: 'PATCH',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                meeting_date_time: datetime,
-                comments: comment
-            }),
-            success: function () {
-
-                $('#datetimeModal').modal('hide');
-
-                alert('Visit date/time updated successfully');
-            },
-            error: function (xhr) {
-                alert(xhr.responseJSON?.error || 'Failed to update visit date/time');
-            }
-        });
-    });
     function populateDepartmentHead() {
         const departmentId = $("#hostDepartment").val();
         $.ajax({
@@ -459,7 +521,6 @@
             }
         })
     }
-
     function setDefaultDateTime() {
         const now = new Date();
 
@@ -473,19 +534,95 @@
         $('#visitDate').val(dateStr);
         $('#visitTime').val(timeStr);
     }
+    function fetchDepartments() {
+        $.ajax({
+            url: "/departments/",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                const $departmentSelect = $("#hostDepartment");
+                // Reset options
+                $departmentSelect.html(`<option value="">Select Department</option>`);
+                data.forEach(department => {
+                    $departmentSelect.append(
+                        `<option value="${department.dept_id}">${department.dept_name}</option>`
+                    );
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching departments:", error);
+                $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+            }
+        });
+    }
+    function updateGuestPassStatus(passId, status) {
+        if (!confirm(`Are you sure you want to ${status.toLowerCase()} this guest pass?`)) {
+            return;
+        }
 
-    function openDatetimeModal(passId, currentDatetime) {
-        const datetime = new Date(currentDatetime);
-        const dateStr = datetime.toISOString().split('T')[0];
-        const timeStr = datetime.toTimeString().substring(0, 5);
+        $.ajax({
+            url: `/update-request-status/${passId}/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: { status: status },
+            success: function (response, textStatus, jqXHR) {
+                if (jqXHR.status === 200) {
+                    // Different behavior for public vs admin view
+                    if (window.location.pathname.startsWith('/public-guestpass/')) {
+                        $('#statusModalPublicBody').html(`
+                            <div class="text-center">
+                                <i class="material-icons text-success" style="font-size: 4rem;">check_circle</i>
+                                <h4>Success!</h4>
+                                <p>Guest pass has been ${status.toLowerCase()} successfully.</p>
+                            </div>
+                        `);
+                        $('#statusModalPublic').modal('show');
 
-        $('#modifyPassId').val(passId);
-        $('#modifyDate').val(dateStr);
-        $('#modifyTime').val(timeStr);
+                        // Update the status display immediately
+                        $('.status-badge')
+                            .removeClass('pending approved rejected')
+                            .addClass(status.toLowerCase())
+                            .text(status);
 
-        $('#datetimeModal').modal('show');
+                        // Hide the action buttons if this was a public view
+                        $('.btn-success, .btn-danger').hide();
+                    } else {
+                        // Admin view behavior
+                        loadGuestPasses();
+                    }
+                } else {
+                    showStatusModal('Error', response.error || 'Failed to update guest pass status', 'error');
+                }
+            },
+            error: function (xhr) {
+                showStatusModal('Error', xhr.responseJSON?.error || 'An error occurred while updating the guest pass status', 'error');
+            }
+        });
     }
 
+    // Helper function to show status modal
+    function showStatusModal(title, message, icon) {
+        const modalBody = window.location.pathname.startsWith('/public-guestpass/')
+            ? $('#statusModalPublicBody')
+            : $('#statusModalBody');
+
+        const modal = window.location.pathname.startsWith('/public-guestpass/')
+            ? $('#statusModalPublic')
+            : $('#statusModal');
+
+        modalBody.html(`
+            <div class="text-center">
+                <i class="material-icons text-${icon === 'error' ? 'danger' : 'success'}" style="font-size: 4rem;">
+                    ${icon === 'error' ? 'error' : 'check_circle'}
+                </i>
+                <h4>${title}</h4>
+                <p>${message}</p>
+            </div>
+        `);
+        modal.modal('show');
+    }
     $(document).ready(function () {
         fetchDepartments();
         setDefaultDateTime();
@@ -500,27 +637,6 @@
             }
         });
 
-        function fetchDepartments() {
-            $.ajax({
-                url: "/departments/",
-                type: "GET",
-                dataType: "json",
-                success: function (data) {
-                    const $departmentSelect = $("#hostDepartment");
-                    // Reset options
-                    $departmentSelect.html(`<option value="">Select Department</option>`);
-                    data.forEach(department => {
-                        $departmentSelect.append(
-                            `<option value="${department.dept_id}">${department.dept_name}</option>`
-                        );
-                    });
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error fetching departments:", error);
-                    $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
-                }
-            });
-        }
 
         // Handle form submission
         $('#guestPassForm').on('submit', function (e) {

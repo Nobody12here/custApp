@@ -4,7 +4,7 @@ from io import BytesIO
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.apps import apps
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status
@@ -20,7 +20,7 @@ from .serializers import (
     DepartmentSerializer,
     OTPSendSerializer,
     OTPVerifySerializer,
-    PhoneOTPVerifySerializer
+    PhoneOTPVerifySerializer,
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -675,21 +675,25 @@ class OTPSendView(APIView):
             {"message": "OTP sent to your email."}, status=status.HTTP_200_OK
         )
 
+
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
+
     def get_serializer_class(self):
-        if 'phone_number' in self.request.data:
+        if "phone_number" in self.request.data:
             return PhoneOTPVerifySerializer
         return OTPVerifySerializer
-    
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
-        identifier = serializer.validated_data.get('email') or serializer.validated_data.get('phone_number')
+        identifier = serializer.validated_data.get(
+            "email"
+        ) or serializer.validated_data.get("phone_number")
         print(identifier)
         otp = serializer.validated_data["otp"]
         try:
-            if 'email' in serializer.validated_data:
+            if "email" in serializer.validated_data:
                 user = Users.objects.get(email=identifier)
             else:
                 user = Users.objects.get(phone_number=identifier)
@@ -1015,8 +1019,19 @@ def guest_pass(request):
     return render(request, "CUSTApp/UserDashboard/guest_pass.html")
 
 
-def public_guest_pass(request):
-    return render(request, "CUSTApp/UserDashboard/guest_pass_open.html")
+def public_guest_pass(request, pass_id=None):
+    if not pass_id:
+        return render(request, "CUSTApp/UserDashboard/guest_pass_open.html")
+    guest_pass = get_object_or_404(Request, request_id=pass_id)
+    if guest_pass.meeting_date_time:
+        guest_pass.meeting_date = guest_pass.meeting_date_time.date()
+        guest_pass.meeting_time = guest_pass.meeting_date_time.time().strftime(
+            "%I:%M %p"
+        )
+    context = {"public_pass_view": True, "guest_pass": guest_pass}
+    return render(
+        request, "CUSTApp/UserDashboard/guest_pass_open.html", context=context
+    )
 
 
 def home(request):
