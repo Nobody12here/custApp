@@ -100,21 +100,22 @@
         font-weight: 500;
         color: #0A369D;
     }
-    /* Add this to your style section */
-.modal-header .close {
-    padding: 1rem 1rem;
-    margin: -1rem -1rem -1rem auto;
-    font-size: 1.5rem;
-    line-height: 1;
-    color: #000;
-    opacity: 0.5;
-    background: transparent;
-    border: 0;
-}
 
-.modal-header .close:hover {
-    opacity: 0.75;
-}
+    /* Add this to your style section */
+    .modal-header .close {
+        padding: 1rem 1rem;
+        margin: -1rem -1rem -1rem auto;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: #000;
+        opacity: 0.5;
+        background: transparent;
+        border: 0;
+    }
+
+    .modal-header .close:hover {
+        opacity: 0.75;
+    }
 
     /* Add to your CSS section */
     #filterToday,
@@ -159,6 +160,47 @@
 
     .purpose-radio {
         margin-bottom: 5px;
+    }
+
+    .detail-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .detail-item h6 {
+        color: #0A369D;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-item p {
+        margin-bottom: 8px;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background-color: #f8d7da;
+        color: #721c24;
     }
 </style>
 {% endblock %}
@@ -358,7 +400,60 @@
         </div>
     </div>
 </div>
-
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDetailsModalLabel">Guest Pass Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Guest Information</h6>
+                            <p><strong>Name:</strong> <span id="detail-guest-name"></span></p>
+                            <p><strong>CNIC:</strong> <span id="detail-guest-cnic"></span></p>
+                            <p><strong>Phone:</strong> <span id="detail-guest-phone"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Host Information</h6>
+                            <p><strong>Name:</strong> <span id="detail-host-name"></span></p>
+                            <p><strong>Department:</strong> <span id="detail-host-dept"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Visit Details</h6>
+                            <p><strong>Date:</strong> <span id="detail-visit-date"></span></p>
+                            <p><strong>Time:</strong> <span id="detail-visit-time"></span></p>
+                            <p><strong>Purpose:</strong> <span id="detail-purpose"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Status Information</h6>
+                            <p><strong>Status:</strong> <span id="detail-status" class="status-badge"></span></p>
+                            <p><strong>Requested On:</strong> <span id="detail-request-date"></span></p>
+                            <p><strong>Comments:</strong> <span id="detail-comments"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Date/Time Modification Modal -->
 <div class="modal fade" id="datetimeModal" tabindex="-1" role="dialog" aria-labelledby="datetimeModalLabel"
     aria-hidden="true">
@@ -390,7 +485,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveDatetimeChanges">Save & Accept with Changes</button>
+                <button type="button" class="btn btn-primary" id="saveDatetimeChanges">Save & Accept with
+                    Changes</button>
             </div>
         </div>
     </div>
@@ -480,7 +576,7 @@
                     <i class="material-icons">edit</i>
                 </button>
             ` : ''}
-            <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.id})">
+            <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.request_id})">
                 <i class="material-icons">visibility</i>
             </button>
         </td>
@@ -534,7 +630,7 @@
                 comments: comment
             }),
             success: function () {
-                updateGuestPassStatus(passId,'Approved')
+                updateGuestPassStatus(passId, 'Approved')
                 $('#datetimeModal').modal('hide');
                 loadGuestPasses($('#searchInput').val());
                 alert('Visit date/time updated successfully');
@@ -726,9 +822,41 @@
 
     // Function to view guest pass details
     function viewGuestPassDetails(passId) {
-        // Implement view details functionality
-        // This could open a modal with detailed information
-        console.log('View details for pass:', passId);
+        $.ajax({
+            url: `/guestpass/${passId}/`,
+            method: 'GET',
+            success: function (pass) {
+                // Format dates and times
+                const visitDateTime = new Date(pass.meeting_date_time);
+                const requestDate = new Date(pass.created_at);
+                console.log(pass)
+                // Set the modal content
+                $('#detail-guest-name').text(pass.guest_name);
+                $('#detail-guest-cnic').text(pass.guest_cnic || 'N/A');
+                $('#detail-guest-phone').text(pass.guest_phone);
+
+                $('#detail-host-name').text(pass.host_name);
+                $('#detail-host-dept').text(pass.host_department_name);
+
+                $('#detail-visit-date').text(visitDateTime.toLocaleDateString());
+                $('#detail-visit-time').text(visitDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                $('#detail-purpose').text(pass.reason);
+
+                $('#detail-status').text(pass.status)
+                    .removeClass('pending approved rejected')
+                    .addClass(pass.status.toLowerCase());
+
+                $('#detail-request-date').text(requestDate.toLocaleString());
+                $('#detail-comments').text(pass.comments || 'None');
+
+                // Show the modal
+                $('#viewDetailsModal').modal('show');
+            },
+            error: function (xhr) {
+                alert('Failed to load guest pass details');
+                console.error(xhr);
+            }
+        });
     }
 </script>
 {% endblock %}
