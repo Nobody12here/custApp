@@ -289,7 +289,53 @@ Dashboard{% endblock %} {% block extra_css %}
     </div>
   </div>
 </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Guest Pass Requests</h4>
+                <p class="card-category">Manage all guest pass requests</p>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <button id="filterToday" class="btn btn-info">
+                            <i class="material-icons">today</i> Today's Visits
+                        </button>
+                        <button id="clearFilters" class="btn btn-secondary ml-2">
+                            <i class="material-icons">clear</i> Clear Filters
+                        </button>
+                    </div>
+                </div>
 
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>Guest Name</th>
+
+                                <th>Phone</th>
+
+                                <th>Visit Date</th>
+                                <th>Visit Time</th>
+                                <th>Status</th>
+                                <th>Comments</th>
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestPassTableBody">
+                            <!-- Guest pass requests will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Comment Modal -->
 <div
   class="modal fade chat-modal"
