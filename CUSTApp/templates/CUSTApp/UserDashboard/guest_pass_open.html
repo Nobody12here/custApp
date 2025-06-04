@@ -385,7 +385,7 @@
 <!-- Success/Failure Modal -->
 <div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="statusModalLabel">Guest Pass Request Status</h5>
@@ -402,6 +402,21 @@
         </div>
     </div>
 </div>
+<style>
+/* Add this for Bootstrap 4 compatibility if modal-fullscreen is not available */
+@media (min-width: 576px) {
+    .modal-fullscreen {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        margin: 0;
+    }
+    .modal-fullscreen .modal-content {
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+</style>
 {% endblock %}
 {% block extra_js %}
 <script>
