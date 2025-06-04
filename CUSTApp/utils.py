@@ -40,7 +40,8 @@ def send_alert_email(
         subject, text_content, "support@custapp.pk", [to_email]
     )
     email.attach_alternative(html_content, "text/html")
-    email.send()
+    email.connection = None
+    email.send(fail_silently=False)
 
 
 def add_comment_to_instance(request, instance, employee=None, student=None):
