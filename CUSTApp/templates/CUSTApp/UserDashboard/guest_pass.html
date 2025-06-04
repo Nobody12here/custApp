@@ -386,7 +386,7 @@
                                 <th>Visit Date</th>
                                 <th>Visit Time</th>
                                 <th>Status</th>
-                                <th>Comments</th>
+                                
 
                                 <th>Actions</th>
                             </tr>
@@ -556,14 +556,7 @@
                 ${pass.status}
             </span>
         </td>
-        <td>
-            ${pass.comments ? `
-                <div class="comment-tooltip">
-                    
-                    <span class="tooltip-text">${pass.comments}</span>
-                </div>
-            ` : '-'}
-        </td>
+        
         <td class="action-buttons">
             ${(pass.status === 'Pending') && (pass.host.toString() === user_id) ? `
                 <button class="btn btn-success" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
