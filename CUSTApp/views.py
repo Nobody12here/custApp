@@ -1,5 +1,6 @@
 # CUSTApp/views.py
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 from io import BytesIO
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.exceptions import ObjectDoesNotExist
@@ -89,7 +90,7 @@ class AddCommentView(APIView):
             )
         return add_comment_to_instance(request, req, student=student, employee=employee)
 
-
+@csrf_exempt
 def update_request_status(request, id):
     if request.method == "POST":
         status = request.POST.get("status")
