@@ -614,7 +614,7 @@ class OTPSendView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
-        platform = request.data.get("platform")
+        # platform = request.data.get("platform")
 
         # Check if user exists
         try:
@@ -623,13 +623,13 @@ class OTPSendView(APIView):
             return Response(
                 {"error": "Email not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        if platform == "mobile" and user.user_type.lower() != "student":
-            return Response(
-                {
-                    "error": "Only students can login through mobile app!",
-                    "status": status.HTTP_403_FORBIDDEN,
-                }
-            )
+        # if platform == "mobile" and user.user_type.lower() != "student":
+        #     return Response(
+        #         {
+        #             "error": "Only students can login through mobile app!",
+        #             "status": status.HTTP_403_FORBIDDEN,
+        #         }
+        #     )
         # Generate a 6-digit OTP
         otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
         user.otp = otp
