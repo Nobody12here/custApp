@@ -34,6 +34,8 @@ class Request(models.Model):
         ('Pending', 'Pending'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+        ('Expired', 'Expired'),
+        ('Visited', 'Visited'),
     ]
     PAYMENT_STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -55,9 +57,10 @@ class Request(models.Model):
     application = models.ForeignKey(Applications, on_delete=models.CASCADE, db_column='application_id',blank=True,null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
     applicant = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='applicant_id',blank=True,null=True)
-    created_at = models.DateTimeField(null=True,blank=True)  # Auto-set on creation
+    created_at = models.DateTimeField(null=True,blank=True,auto_now_add=True)  # Auto-set on creation
     updated_at = models.DateTimeField(auto_now=True)
     approved_at = models.DateTimeField(null=True,blank=True)      # Auto-set on update
+    vistied_at = models.DateTimeField(null=True,blank=True)
     comments = models.TextField(null=True, blank=True)
     payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='Pending')
     payment_date = models.DateTimeField(null=True, blank=True)

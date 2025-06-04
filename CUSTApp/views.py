@@ -93,7 +93,7 @@ class AddCommentView(APIView):
 def update_request_status(request, id):
     if request.method == "POST":
         status = request.POST.get("status")
-        if status not in ["Approved", "Rejected"]:
+        if status not in ["Approved", "Rejected", "Visited"]:
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
