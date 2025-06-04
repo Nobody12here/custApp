@@ -289,7 +289,53 @@ Dashboard{% endblock %} {% block extra_css %}
     </div>
   </div>
 </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Guest Pass Requests</h4>
+                <p class="card-category">Manage all guest pass requests</p>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search guest passes...">
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <button id="filterToday" class="btn btn-info">
+                            <i class="material-icons">today</i> Today's Visits
+                        </button>
+                        <button id="clearFilters" class="btn btn-secondary ml-2">
+                            <i class="material-icons">clear</i> Clear Filters
+                        </button>
+                    </div>
+                </div>
 
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>Guest Name</th>
+
+                                <th>Phone</th>
+
+                                <th>Visit Date</th>
+                                <th>Visit Time</th>
+                                <th>Status</th>
+                                <th>Comments</th>
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestPassTableBody">
+                            <!-- Guest pass requests will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Comment Modal -->
 <div
   class="modal fade chat-modal"
@@ -385,6 +431,7 @@ Dashboard{% endblock %} {% block extra_css %}
 <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
 
 <script>
+  
   $(document).ready(function () {
     if (!checkAuth()) return;
     // Fetch and display requests
@@ -735,5 +782,370 @@ Dashboard{% endblock %} {% block extra_css %}
       }
     });
   });
+</script>
+<script>
+
+    function loadGuestPasses(searchTerm = '', showTodayOnly = false) {
+        let url = '/guestpass/'
+        if (showTodayOnly) {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            url += `?show_today=${showTodayOnly}`
+        }
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function (data) {
+                const tbody = $('#guestPassTableBody');
+                tbody.empty();
+                // Calculate statistics
+                let pending = 0;
+                let approved = 0;
+                let rejected = 0;
+                const total = data.length;
+                console.log()
+                data.forEach(pass => {
+                    console.log(pass)
+                    switch (pass.status) {
+                        case 'Pending': pending++; break;
+                        case 'Approved': approved++; break;
+                        case 'Rejected': rejected++; break;
+                    }
+                });
+                $('#pending-count').text(pending);
+                $('#approved-count').text(approved);
+                $('#rejected-count').text(rejected);
+                $('#total-count').text(total);
+
+                const filteredPasses = searchTerm ? data.filter(pass => {
+                    const searchStr = `${pass.guest_name} ${pass.guest_cnic} ${pass.host_department} ${pass.host_name} ${pass.status}`.toLowerCase();
+                    return searchStr.includes(searchTerm.toLowerCase());
+                }) : data;
+
+                if (filteredPasses.length === 0) {
+                    tbody.html('<tr><td colspan="9" class="text-center">No guest pass requests found</td></tr>');
+                    return;
+                }
+                const user_id = localStorage.getItem('user_id')
+                console.log("User id = ", user_id)
+                filteredPasses.forEach(pass => {
+                    const visitDate = new Date(pass.meeting_date_time);
+                    const dateStr = visitDate.toLocaleDateString();
+                    const timeStr = visitDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    // In the loadGuestPasses function, update the row generation to include comments:
+                    const row = `
+    <tr>
+        <td>${pass.guest_name}</td>
+        <td>${pass.guest_phone}</td>
+        
+        <td>${dateStr}</td>
+        <td>${timeStr}</td>
+        <td>
+            <span class="status-badge ${pass.status.toLowerCase()}">
+                ${pass.status}
+            </span>
+        </td>
+        <td>
+            ${pass.comments ? `
+                <div class="comment-tooltip">
+                    
+                    <span class="tooltip-text">${pass.comments}</span>
+                </div>
+            ` : '-'}
+        </td>
+        <td class="action-buttons">
+            ${(pass.status === 'Pending') && (pass.host.toString() === user_id) ? `
+                <button class="btn btn-success" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
+                    <i class="material-icons">check</i>
+                </button>
+                <button class="btn btn-danger " onclick="updateGuestPassStatus(${pass.request_id}, 'Rejected')">
+                    <i class="material-icons">close</i>
+                </button>
+                <button class="btn btn-warning btn" onclick="openDatetimeModal(${pass.request_id}, '${pass.meeting_date_time}')">
+                    <i class="material-icons">edit</i>
+                </button>
+            ` : ''}
+            <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.request_id})">
+                <i class="material-icons">visibility</i>
+            </button>
+        </td>
+    </tr>
+`;
+                    tbody.append(row);
+                });
+            },
+            error: function () {
+                $('#guestPassTableBody').html('<tr><td colspan="9" class="text-center">Error loading guest pass requests</td></tr>');
+            }
+        });
+    }
+    let departmentData = [];
+    function openDatetimeModal(passId, currentDatetime) {
+        const datetime = new Date(currentDatetime);
+        const dateStr = datetime.toISOString().split('T')[0];
+        const timeStr = datetime.toTimeString().substring(0, 5);
+
+        $('#modifyPassId').val(passId);
+        $('#modifyDate').val(dateStr);
+        $('#modifyTime').val(timeStr);
+        $('#modifyComment').val(''); // Clear any previous comment
+
+        $('#datetimeModal').modal('show');
+    }
+
+    // In the document.ready section, update the saveDatetimeChanges click handler:
+    $('#saveDatetimeChanges').on('click', function () {
+        const passId = $('#modifyPassId').val();
+        const date = $('#modifyDate').val();
+        const time = $('#modifyTime').val();
+        const comment = $('#modifyComment').val();
+
+        if (!comment) {
+            alert('Please provide a reason for changing the visit time');
+            return;
+        }
+
+        const datetime = new Date(`${date}T${time}:00`).toISOString();
+
+        $.ajax({
+            url: `/guestpass/${passId}/`,
+            method: 'PATCH',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                meeting_date_time: datetime,
+                comments: comment
+            }),
+            success: function () {
+                updateGuestPassStatus(passId, 'Approved')
+                $('#datetimeModal').modal('hide');
+                loadGuestPasses($('#searchInput').val());
+                alert('Visit date/time updated successfully');
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.error || 'Failed to update visit date/time');
+            }
+        });
+    });
+    function populateDepartmentHead() {
+        const departmentId = $("#hostDepartment").val();
+        $.ajax({
+            url: `/users/?department=${departmentId}&user_type=Staff`,
+            dataType: 'json',
+            success: function (data) {
+                console.log("data = ", data)
+                const hostSelect = $('#hostName');
+                hostSelect.empty();
+                hostSelect.append('<option value="">Select Host</option>');
+                data.forEach(user => {
+                    console.log(user)
+                    hostSelect.append(`<option value="${user.user_id}">${user.name}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error(error)
+            }
+        })
+    }
+
+    function setDefaultDateTime() {
+        const now = new Date();
+
+        // Format date as YYYY-MM-DD
+        const dateStr = now.toISOString().split('T')[0];
+
+        // Format time as HH:MM (adding 1 hour as default)
+        const hours = (now.getHours() + 1) % 24;
+        const timeStr = `${hours.toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+        $('#visitDate').val(dateStr);
+        $('#visitTime').val(timeStr);
+    }
+
+    function openDatetimeModal(passId, currentDatetime) {
+        const datetime = new Date(currentDatetime);
+        const dateStr = datetime.toISOString().split('T')[0];
+        const timeStr = datetime.toTimeString().substring(0, 5);
+
+        $('#modifyPassId').val(passId);
+        $('#modifyDate').val(dateStr);
+        $('#modifyTime').val(timeStr);
+
+        $('#datetimeModal').modal('show');
+    }
+
+    $(document).ready(function () {
+        if (!checkAuth()) return;
+        fetchDepartments();
+        setDefaultDateTime();
+        $('#filterToday').on('click', () => loadGuestPasses(searchTerm = '', showTodayOnly = true))
+        $('#clearFilters').on('click', () => loadGuestPasses("", false))
+        $('#purposeSelect').change(function () {
+            if ($(this).val() === 'Other') {
+                $('#otherPurposeGroup').show();
+                $('#otherPurpose').prop('required', true);
+            } else {
+                $('#otherPurposeGroup').hide();
+                $('#otherPurpose').prop('required', false);
+            }
+        });
+
+        function fetchDepartments() {
+            $.ajax({
+                url: "/departments/",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    const $departmentSelect = $("#hostDepartment");
+                    // Reset options
+                    $departmentSelect.html(`<option value="">Select Department</option>`);
+                    data.forEach(department => {
+                        $departmentSelect.append(
+                            `<option value="${department.dept_id}">${department.dept_name}</option>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching departments:", error);
+                    $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+                }
+            });
+        }
+        $('#guest-stats-cards .card-stats').on('click', function (e) {
+            let status = $(this).find('.card-category').text().trim()
+            loadGuestPasses("" ? status === "TOTAL" : status)
+        })
+        // Handle form submission
+        $('#guestPassForm').on('submit', function (e) {
+            e.preventDefault();
+
+            // Get purpose value
+            let purpose = $('#purposeSelect').val();
+            if (purpose === 'Other') {
+                purpose = $('#otherPurpose').val();
+            }
+
+            const date = $('#visitDate').val()
+            const time = $('#visitTime').val()
+            let datetimeString = `${date}T${time}:00`
+            const departmentId = $("#hostName").val()
+            const datetime = new Date(datetimeString)
+            datetimeString = datetime.toISOString()
+
+            const formData = {
+                name: $('#guestName').val(),
+                CNIC: $('#guestCNIC').val(),
+                phone_number: $('#guestPhone').val(),
+                host: departmentId,
+                meeting_date_time: datetimeString,
+                reason: purpose
+            };
+
+            $.ajax({
+                url: '/guestpass/',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData,
+                success: function (response, textStatus, jqXHR) {
+                    if (jqXHR.status === 201) {
+                        alert('Guest pass request created successfully');
+                        $('#guestPassForm')[0].reset();
+                        setDefaultDateTime();
+                        loadGuestPasses();
+                        $('#guestPassFormRow').slideUp();
+                    } else {
+                        alert(response.error || 'Failed to create guest pass request');
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON?.error || 'An error occurred while creating the guest pass request');
+                }
+            });
+        });
+
+        // Handle search
+        $('#searchInput').on('input', function () {
+            loadGuestPasses($(this).val());
+        });
+
+        // Initial load
+        loadGuestPasses();
+
+        // Toggle Guest Pass Form
+        $('#toggleGuestPassForm').on('click', function () {
+            $('#guestPassFormRow').slideToggle(200);
+        });
+    });
+
+    // Function to update guest pass status
+    function updateGuestPassStatus(passId, status) {
+        if (!confirm(`Are you sure you want to ${status.toLowerCase()} this guest pass?`)) {
+            return;
+        }
+
+        $.ajax({
+            url: `/update-request-status/${passId}/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: { status: status },
+            success: function (response, textStatus, jqXHR) {
+                console.log(jqXHR.status)
+                if (jqXHR.status === 200) {
+                    loadGuestPasses();
+
+                } else {
+                    alert(response.error || 'Failed to update guest pass status');
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.error || 'An error occurred while updating the guest pass status');
+            }
+        });
+    }
+
+    // Function to view guest pass details
+    function viewGuestPassDetails(passId) {
+        $.ajax({
+            url: `/guestpass/${passId}/`,
+            method: 'GET',
+            success: function (pass) {
+                // Format dates and times
+                const visitDateTime = new Date(pass.meeting_date_time);
+                const requestDate = new Date(pass.created_at);
+                console.log(pass)
+                // Set the modal content
+                $('#detail-guest-name').text(pass.guest_name);
+                $('#detail-guest-cnic').text(pass.guest_cnic || 'N/A');
+                $('#detail-guest-phone').text(pass.guest_phone);
+
+                $('#detail-host-name').text(pass.host_name);
+                $('#detail-host-dept').text(pass.host_department_name);
+
+                $('#detail-visit-date').text(visitDateTime.toLocaleDateString());
+                $('#detail-visit-time').text(visitDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                $('#detail-purpose').text(pass.reason);
+
+                $('#detail-status').text(pass.status)
+                    .removeClass('pending approved rejected')
+                    .addClass(pass.status.toLowerCase());
+
+                $('#detail-request-date').text(requestDate.toLocaleString());
+                $('#detail-comments').text(pass.comments || 'None');
+
+                // Show the modal
+                $('#viewDetailsModal').modal('show');
+            },
+            error: function (xhr) {
+                alert('Failed to load guest pass details');
+                console.error(xhr);
+            }
+        });
+    }
 </script>
 {% endblock %}
