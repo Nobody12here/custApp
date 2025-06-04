@@ -105,16 +105,18 @@ def update_request_status(request, id):
                 return JsonResponse(
                     {"error": "Other User cannot change the status"}, status=401
                 )
+            host = req.host
             student = req.applicant
             req.status = status
             req.approved_at = timezone.now().isoformat()
             req.save()
-            if student:
+            user = host or student
+            if user:
                 send_alert_email(
-                    student.email,
+                    user.email,
                     "Application Status Update",
-                    f"Your application {req.application.application_name} has been {status.lower()}",
-                    recipient_name=student.name,
+                    f"Your application {req.request_type} has been {status.lower()}",
+                    recipient_name=user.name,
                 )
             return JsonResponse({"success": True})
         except Request.DoesNotExist:
