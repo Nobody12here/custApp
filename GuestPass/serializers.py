@@ -2,6 +2,9 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from ApplicationTemplate.models import Request
 from CUSTApp.models import Users
+from CUSTApp.utils import (
+    send_alert_email,
+)  # Import your existing notification functions
 
 
 class GuestPassRequestSerializer(ModelSerializer):
@@ -16,9 +19,7 @@ class GuestPassRequestSerializer(ModelSerializer):
     host_department_name = serializers.CharField(
         source="host.dept.dept_name", read_only=True
     )
-    host_name = serializers.CharField(
-        source="host.name", read_only=True
-    )
+    host_name = serializers.CharField(source="host.name", read_only=True)
 
     class Meta:
         model = Request
@@ -56,6 +57,10 @@ class GuestPassRequestSerializer(ModelSerializer):
         guest_cnic = validated_data.pop("CNIC")
         guest_name = validated_data.pop("name")
         guest_phone_no = validated_data.pop("phone_number")
+
+        # Get host information before creating the request
+        host = validated_data.get("host")
+
         guest, created = Users.objects.get_or_create(
             CNIC=guest_cnic,
             defaults={
@@ -66,4 +71,42 @@ class GuestPassRequestSerializer(ModelSerializer):
         )
         validated_data["guest"] = guest
         validated_data["request_type"] = "GuestPass"
-        return Request.objects.create(**validated_data)
+
+        # Create the request
+        request = Request.objects.create(**validated_data)
+
+        # Send notifications to host
+        self.send_new_request_notifications(request, host)
+
+        return request
+
+    def send_new_request_notifications(self, request, host):
+        """Send both email and push notification for new guest pass request"""
+        try:
+            # Prepare common notification details
+            visit_datetime = request.meeting_date_time
+            formatted_date = visit_datetime.strftime("%B %d, %Y")
+            formatted_time = visit_datetime.strftime("%I:%M %p")
+
+            subject = f"New Guest Pass Request: {request.guest.name}"
+            message = (
+                f"You have a new guest pass request from {request.guest.name}.\n"
+                f"Visit Date: {formatted_date}\n"
+                f"Visit Time: {formatted_time}\n"
+                f"Purpose: {request.reason}"
+            )
+
+            action_url = f"/guest-passes/{request.request_id}/"
+
+            # Send email notification
+            send_alert_email(
+                to_email=host.email,
+                subject=subject,
+                message=message,
+                recipient_name=host.name,
+                action_url=action_url,
+            )
+
+        except Exception as e:
+            # Log the error but don't prevent the request from being created
+            print(f"Failed to send notifications: {str(e)}")

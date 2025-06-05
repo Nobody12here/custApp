@@ -101,7 +101,7 @@ def update_request_status(request, id):
             req = Request.objects.get(pk=id)
             if req.request_type == "GuestPass":
                 if (
-                    request.user.dept.dept_name != "Security"
+                    request.user.user_type != "Security"
                     and req.host.user_id != request.user.user_id
                 ):
                     return JsonResponse(
@@ -121,7 +121,7 @@ def update_request_status(request, id):
                 send_alert_email(
                     user.email,
                     "Application Status Update",
-                    f"Your application {req.request_type} has been {status.lower()}",
+                    f"The status of your application of {req.request_type} Type with Request ID # {req.request_id} has been updated to {status.lower()}",
                     recipient_name=user.name,
                 )
             return JsonResponse({"success": True})
@@ -1044,7 +1044,7 @@ def public_guest_pass(request, pass_id=None):
 
 
 def home(request):
-    return render(request, "CUSTApp/home.html")
+    return render(request, "CUSTApp/Home.html")
 
 
 class SupportTicketAPIView(APIView):
