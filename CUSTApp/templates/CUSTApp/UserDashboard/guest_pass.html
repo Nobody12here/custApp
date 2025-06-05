@@ -538,6 +538,7 @@
                     return;
                 }
                 const user_id = localStorage.getItem('user_id')
+                const userType = localStorage.getItem('user_type')
                 console.log("User id = ", user_id)
                 filteredPasses.forEach(pass => {
                     const visitDate = new Date(pass.meeting_date_time);
@@ -567,6 +568,11 @@
                 </button>
                 <button class="btn btn-warning btn" onclick="openDatetimeModal(${pass.request_id}, '${pass.meeting_date_time}')">
                     <i class="material-icons">edit</i>
+                </button>
+            ` : ''}
+            ${(pass.status === 'Approved' && userType === 'Security') ? `
+                <button class="btn btn-primary" onclick="checkInGuest(${pass.request_id})">
+                    <i class="material-icons">login</i> Check In
                 </button>
             ` : ''}
             <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.request_id})">
@@ -822,7 +828,6 @@
                 // Format dates and times
                 const visitDateTime = new Date(pass.meeting_date_time);
                 const requestDate = new Date(pass.created_at);
-                console.log(pass)
                 // Set the modal content
                 $('#detail-guest-name').text(pass.guest_name);
                 $('#detail-guest-cnic').text(pass.guest_cnic || 'N/A');
