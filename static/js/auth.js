@@ -1,7 +1,10 @@
 
 let isRefreshing = false;
 let refreshQueue = [];
-
+const USER_TYPES = {
+    STAFF: 'Staff',
+    SECURITY: 'Security'
+}
 function addRequestToQueue(callback) {
     refreshQueue.push(callback);
 }
@@ -11,7 +14,7 @@ function processQueue(error, token = null) {
     refreshQueue = [];
 }
 
-function checkAuth(requiredUserType = 'Staff') {
+function checkAuth(requiredUserType = USER_TYPES.STAFF) {
     const token = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
     const userType = localStorage.getItem('user_type');
@@ -21,9 +24,10 @@ function checkAuth(requiredUserType = 'Staff') {
         return false;
     }
 
-    if (userType !== requiredUserType) {
-        window.location.href = '/login/';
-        return false;
+    if ((userType !== requiredUserType) || (userType !== USER_TYPES.SECURITY)) {
+        console.log(userType)
+        // window.location.href = '/login/';
+        // return false;
     }
 
     $.ajaxSetup({
