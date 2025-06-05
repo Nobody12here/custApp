@@ -24,7 +24,7 @@ from .views import (
 router = DefaultRouter()
 router.register(r"program", ProgramView)
 urlpatterns = [
-    path("", views.login, name="login"),
+    path("", views.home, name="home_"),
     path("login/", views.login, name="login"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("students/", views.students, name="students"),
