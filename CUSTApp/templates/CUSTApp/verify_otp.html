@@ -327,9 +327,15 @@
                                 // Redirect based on user type
                                 if (response.user_type === 'admin') {
                                     window.location.href = '/myadmin/dashboard/';
-                                } else {
+                                } 
+                                else if(response.user_type=='Security'){
+                                    window.location.href = '/guest-pass/';
+                                }
+                               
+                                else {
                                     window.location.href = '/user/dashboard/';
                                 }
+                                
 
                             }
                         },
