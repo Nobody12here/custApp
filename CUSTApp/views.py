@@ -101,7 +101,7 @@ def update_request_status(request, id):
             req = Request.objects.get(pk=id)
             if req.request_type == "GuestPass":
                 if (
-                    request.user.dept.dept_name != "Security"
+                    request.user.user_type != "Security"
                     and req.host.user_id != request.user.user_id
                 ):
                     return JsonResponse(
