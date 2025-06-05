@@ -1044,7 +1044,7 @@ def public_guest_pass(request, pass_id=None):
 
 
 def home(request):
-    return render(request, "CUSTApp/home.html")
+    return render(request, "CUSTApp/Home.html")
 
 
 class SupportTicketAPIView(APIView):
