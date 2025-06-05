@@ -278,9 +278,10 @@
                         error: function (xhr, status, error) {
                             let errorMessage = 'Failed to send OTP';
                             if (xhr.responseJSON && xhr.responseJSON.error) {
+                                console.log(xhr.responseJSON)
                                 errorMessage = xhr.responseJSON.error;
+                                alert(`Error: ${errorMessage}`);
                             }
-                            alert('Error', errorMessage, 'error');
                         },
                         complete: function () {
                             $('#sendOtpBtn').html('Send OTP').prop('disabled', false);
