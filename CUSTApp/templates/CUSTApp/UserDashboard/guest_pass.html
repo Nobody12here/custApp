@@ -386,7 +386,7 @@
                                 <th>Visit Date</th>
                                 <th>Visit Time</th>
                                 <th>Status</th>
-                                
+
 
                                 <th>Actions</th>
                             </tr>
@@ -570,11 +570,12 @@
                     <i class="material-icons">edit</i>
                 </button>
             ` : ''}
-            ${(pass.status === 'Approved' && userType === 'Security') ? `
-                <button class="btn btn-primary" onclick="checkInGuest(${pass.request_id})">
-                    <i class="material-icons">login</i> Check In
+                        ${(pass.status === 'Approved' && userType === 'Security') ? `
+                <button class="btn btn-primary" onclick="updateGuestPassStatus(${pass.request_id}, 'Visited')">
+                    Mark as Visited
                 </button>
             ` : ''}
+
             <button class="btn btn-info btn" onclick="viewGuestPassDetails(${pass.request_id})">
                 <i class="material-icons">visibility</i>
             </button>
@@ -701,6 +702,7 @@
                 $('#otherPurpose').prop('required', false);
             }
         });
+        $('#visited').on('click', () => updateGuestPassStatus(showTodayOnly = true))
 
         function fetchDepartments() {
             $.ajax({

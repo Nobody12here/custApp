@@ -121,7 +121,7 @@ def update_request_status(request, id):
                 send_alert_email(
                     user.email,
                     "Application Status Update",
-                    f"Your application {req.request_type} has been {status.lower()}",
+                    f"The status of your application of {req.request_type} Type with Request ID # {req.request_id} has been updated to {status.lower()}",
                     recipient_name=user.name,
                 )
             return JsonResponse({"success": True})
