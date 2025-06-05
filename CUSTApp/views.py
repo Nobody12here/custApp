@@ -90,6 +90,7 @@ class AddCommentView(APIView):
             )
         return add_comment_to_instance(request, req, student=student, employee=employee)
 
+
 @csrf_exempt
 def update_request_status(request, id):
     if request.method == "POST":
@@ -98,13 +99,18 @@ def update_request_status(request, id):
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
-            if (
-                req.request_type == "GuestPass"
-                and req.host.user_id != request.user.user_id
-            ):
-                return JsonResponse(
-                    {"error": "Other User cannot change the status"}, status=401
-                )
+            if req.request_type == "GuestPass":
+                if (
+                    request.user.dept.dept_name != "Security"
+                    and req.host.user_id != request.user.user_id
+                ):
+                    return JsonResponse(
+                        {
+                            "error": "Only the host or Security department can change the status"
+                        },
+                        status=401,
+                    )
+
             host = req.host
             student = req.applicant
             req.status = status
