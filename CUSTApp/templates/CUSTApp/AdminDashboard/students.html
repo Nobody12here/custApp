@@ -17,6 +17,8 @@
     <link href="{% static 'assets/css/material-dashboard.css' %}?v=2.2.2" rel="stylesheet" />
     <link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <!-- SheetJS for Excel processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body class="">
@@ -36,12 +38,25 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <button class="btn btn-info" onclick="downloadStudentTemplate()">Download CSV
-                                            Template</button>
-                                        <input type="file" id="studentCsvUpload" accept=".csv"
-                                            style="display: inline-block;" />
-                                        <button class="btn btn-primary" onclick="uploadStudentCsv()">Upload Students
-                                            CSV</button>
+                                        <button class="btn btn-info" onclick="downloadStudentTemplate()">
+                                            <i class="material-icons">download</i> Download Template
+                                        </button>
+                                        <input type="file" id="studentFileUpload" accept=".xlsx,.xls,.csv"
+                                            style="display: none;" />
+                                        <button class="btn btn-primary"
+                                            onclick="document.getElementById('studentFileUpload').click()">
+                                            <i class="material-icons">upload</i> Upload Students
+                                        </button>
+                                        <!-- Add this new upload button (initially disabled) -->
+                                        <button id="uploadToApiBtn" class="btn btn-success" disabled
+                                            onclick="uploadStudentsToApi()">
+                                            <i class="material-icons">cloud_upload</i> Save to Database
+                                        </button>
+                                        <span id="fileName" class="ml-2" style="vertical-align: middle;"></span>
+                                    </div>
+                                    <div class="progress" id="uploadProgress" style="display: none; height: 5px;">
+                                        <div class="progress-bar progress-bar-primary" role="progressbar"
+                                            style="width: 0%"></div>
                                     </div>
                                     <table id="studentsTable" class="table table-striped table-bordered"
                                         style="width:100%">
@@ -49,11 +64,12 @@
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Name</th>
-                                                <th>Program</th>
-                                                <th>Department</th>
+                                                <th>Father Name</th>
+                                                <th>Registration #</th>
                                                 <th>CGPA</th>
                                                 <th>Term</th>
                                                 <th>Email</th>
+                                                <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -92,130 +108,198 @@
 
     <script>
         $(document).ready(function () {
-            // Load Sidebar and Navbar
-            $("#sidebar-placeholder").load("./sidebar.html", function () {
-                // Highlight the active page
-                $('.nav-link[href="students.html"]').parent().addClass('active');
-                // Reinitialize sidebar styles
-                if (typeof md !== 'undefined' && md.initSidebarsCheck) {
-                    md.initSidebarsCheck();
-                }
-            });
-
-            $("#navbar-placeholder").load(".AdminDashboard/navbar.html", function () {
-                // Set navbar title
-                $("#navbarTitle").text("Students Dashboard");
-                // Reinitialize Material Dashboard components and Bootstrap dropdowns
-                if (typeof md !== 'undefined' && md.initDashboardPageCharts) {
-                    md.initDashboardPageCharts();
-                }
-                $('.dropdown-toggle').dropdown();
-            });
-
-            // Initialize DataTable
-            if (!$.fn.DataTable) {
-                console.error('DataTables not loaded');
-                return;
-            }
-
-            $('#studentsTable').DataTable({
-
-                columns: [
-                    { data: 'user_id' },
-                    { data: 'name' },
-                    { data: 'program_name' },
-                    { data: 'dept_name' },
-                    { data: 'cgpa' },
-                    { data: 'term' },
-                    { data: 'email' }
+            // Initialize DataTable with more options
+            const studentsTable = $('#studentsTable').DataTable({
+                dom: '<"top"lf>rt<"bottom"ip>',
+                responsive: true,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search students...",
+                },
+                columnDefs: [
+                    { targets: [0], visible: false }, // Hide ID column
+                    { targets: [1, 2], width: "20%" },
+                    { targets: [3, 4, 5, 6, 7], width: "12%" }
                 ]
             });
+
+            // File upload handler
+            document.getElementById('studentFileUpload').addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    document.getElementById('fileName').textContent = file.name;
+                    processStudentFile(file);
+                }
+            });
         });
-        document.getElementById('studentCsvUpload').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Automatically load the data when a file is selected
-                loadStudentDataFromCsv();
-            }
-        });
-        function loadStudentDataFromCsv() {
-            const fileInput = document.getElementById('studentCsvUpload');
-            const file = fileInput.files[0];
-            if (!file) {
-                Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
-                return;
-            }
+
+        // Add this global variable to store the processed students
+        let currentStudentsData = [];
+
+        function processStudentFile(file) {
+            const progress = document.getElementById('uploadProgress');
+            progress.style.display = 'block';
+
             const reader = new FileReader();
             reader.onload = function (e) {
-                const csvData = e.target.result;
-                const rows = csvData.split('\n').slice(1); // Skip header row
-                const students = rows.filter(row => row.trim() !== '').map(row => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                    const columns = row.split(',');
-                    return {
-                        user_id: columns[0],
-                        name: columns[1],
-                        program_name: columns[4],
-                        dept_name: columns[5],
-                        cgpa: columns[13],
-                        term: columns[14],
-                        email: columns[8]
-                    };
+                    const headers = jsonData[1];
+                    const rows = jsonData.slice(2);
 
-                });
-                $('#studentsTable').DataTable().clear().rows.add(students).draw();
+                    currentStudentsData = rows
+                        .filter(row => row && row[headers.indexOf('Reg #')])
+                        .map(row => {
+                            const regNo = row[headers.indexOf('Reg #')] || '';
+                            const email = (row[headers.indexOf('Official Email')] ||
+                                `${regNo.toLowerCase()}@cust.pk`).toLowerCase();
+
+                            return {
+                                id: regNo,
+                                name: row[headers.indexOf('Name')] || '',
+                                father_name: row[headers.indexOf('Father Name')] || '',
+                                reg_no: regNo,
+                                cgpa: parseFloat(row[headers.indexOf('CGPA')]) || 0.0,
+                                term: row[headers.indexOf('Academic Term')] || '',
+                                email: email,
+                                status: row[headers.indexOf('Student Status')] || 'enroll'
+                            };
+                        });
+
+                    // Update DataTable display
+                    const table = $('#studentsTable').DataTable();
+                    table.clear();
+
+                    if (currentStudentsData.length > 0) {
+                        // Convert to array format for DataTables
+                        const displayData = currentStudentsData.map(student => [
+                            student.id,
+                            student.name,
+                            student.father_name,
+                            student.reg_no,
+                            student.cgpa,
+                            student.term,
+                            student.email,
+                            student.status
+                        ]);
+
+                        table.rows.add(displayData).draw();
+                        // Enable the upload button
+                        $('#uploadToApiBtn').prop('disabled', false);
+
+                        // Show preview alert
+                        alert(`Found ${currentStudentsData.length} students. Click "Save to Database" to upload them.`);
+                    } else {
+                        alert('Warning: No valid student records found in the file.');
+                        $('#uploadToApiBtn').prop('disabled', true);
+                    }
+
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    alert('Error: Failed to process the file. Please check the format.');
+                    $('#uploadToApiBtn').prop('disabled', true);
+                } finally {
+                    progress.style.display = 'none';
+                }
             };
-            reader.readAsText(file);
+
+            reader.readAsArrayBuffer(file);
+        }
+        function uploadStudentsToApi() {
+            if (!currentStudentsData.length) {
+                alert('Error: No student data to upload');
+                return;
+            }
+
+            const fileInput = document.getElementById('studentFileUpload');
+            if (!fileInput.files.length) {
+                alert('Error: Please select a file first');
+                return;
+            }
+
+            const progress = document.getElementById('uploadProgress');
+            progress.style.display = 'block';
+
+            const confirmed = confirm(`Are you sure you want to upload ${currentStudentsData.length} students to the database?`);
+            if (confirmed) {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                // Simulate progress (replace with actual upload progress)
+                let progressPercent = 0;
+                const progressInterval = setInterval(() => {
+                    progressPercent += 10;
+                    document.querySelector('.progress-bar').style.width = progressPercent + '%';
+
+                    if (progressPercent >= 100) {
+                        clearInterval(progressInterval);
+
+                        // Actual AJAX request to your API
+                        $.ajax({
+                            url: '/api/upload-users/',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            success: function (response) {
+                                progress.style.display = 'none';
+                                if (response.message) {
+                                    alert(response.message);
+                                    $('#uploadToApiBtn').prop('disabled', true);
+                                } else if (response.error) {
+                                    alert('Error: ' + response.error);
+                                }
+                            },
+                            error: function (xhr) {
+                                progress.style.display = 'none';
+                                const errorMsg = xhr.responseJSON?.error || 'Server error';
+                                alert('Error: ' + errorMsg);
+                            }
+                        });
+                    }
+                }, 200);
+            } else {
+                progress.style.display = 'none';
+            }
+        }
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
 
         function downloadStudentTemplate() {
-            const csvContent = [
-                'uu_id,name,father_name,address,program_name,dept_name,gender,status,email,otp,remark,phone_number,picture,cgpa,term,DoB,CNIC',
-                'U008,John Doe,Mr. Doe,123 Street,Computer Science,CS Department,Male,Active,john.doe@example.com,123456,Sample student,0312-3456789,profile.jpg,3.20,Fall 2023,1995-01-01,12345-6789012-8'
-            ].join('\n');
+            // Create Excel template that matches your format
+            const templateData = [
+                ['Name', 'Father Name', 'Reg #', 'Gender', 'Personal Email', 'Official Email', 'CGPA', 'Academic Program/Active', 'Academic Term', 'Student Status'],
+                ['John Doe', 'John Doe Sr.', 'BSE203110', 'Male', 'john@example.com', 'bse203110@cust.pk', '3.5', 'True', 'Spring 2025', 'enroll'],
+                ['Jane Smith', 'James Smith', 'BSE203111', 'Female', 'jane@example.com', 'bse203111@cust.pk', '3.8', 'True', 'Spring 2025', 'enroll']
+            ];
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'student_template.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            XLSX.utils.book_append_sheet(wb, ws, "Students");
 
-        function uploadStudentCsv() {
-            const fileInput = document.getElementById('studentCsvUpload');
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            if (!file) {
-                Swal.fire('Error', 'Please select a CSV file to upload.', 'error');
-                return;
-            }
-            formData.append('file', file);
-            formData.append('user_type', 'student');
-            $.ajax({
-                url: '/api/upload-users/',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.message) {
-                        Swal.fire('Success', 'Students uploaded successfully.', 'success');
-
-                    } else {
-                        Swal.fire('Error', response.error, 'error');
-                        console.error(response.error)
-                    }
-                },
-
-                error: function (xhr, status, error) {
-                    Swal.fire('Error', 'Failed to upload students: ' + xhr.responseJSON.error, 'error');
-                    console.log(xhr.responseJSON)
-                }
-            })
+            // Generate and download the file
+            XLSX.writeFile(wb, 'student_template.xlsx');
         }
     </script>
 </body>

@@ -4,7 +4,6 @@ from .models import Users, Department, TemplateAttributes, Program
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    DoB = serializers.DateField(input_formats=["%d/%m/%Y", "%Y-%m-%d", "%m-%d-%Y"])
 
     class Meta:
         model = Users
@@ -15,6 +14,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ["name", "picture", "signature"]
+class UserStudentDataUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ["name", "father_name", "term","CGPA","uu_id","gender"]
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

@@ -114,7 +114,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         validators=[validate_image_file_extension],
     )
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
-    term = models.CharField(max_length=10, null=True, blank=True)
+    term = models.CharField(max_length=20, null=True, blank=True)
     DoB = models.DateField(null=True, blank=True)
     CNIC = models.CharField(max_length=15, null=True, blank=True)
     otp = models.CharField(max_length=10, null=True, blank=True)

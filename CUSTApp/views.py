@@ -1,16 +1,21 @@
 # CUSTApp/views.py
 from datetime import datetime
+import pandas as pd
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from io import BytesIO
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import render, get_object_or_404
 from django.apps import apps
 from django.http import HttpResponse, JsonResponse
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import generics
 from ApplicationTemplate.models import Applications, Request
 from .models import Program, Users, Department
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
@@ -25,10 +30,7 @@ from .serializers import (
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.parsers import MultiPartParser
 from .utils import send_alert_email, add_comment_to_instance
-import csv
-import io
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
@@ -436,42 +438,117 @@ class UserCSVUploadAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        csv_file = request.FILES.get("file")
-        user_type = request.data.get("user_type")
-        if not csv_file or not csv_file.name.endswith(".csv"):
+        excel_file = request.FILES.get("file")
+
+        # Validate file
+        if not excel_file:
             return Response(
-                {"error": "Please upload a valid CSV file."},
+                {"error": "Please upload a file."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not (excel_file.name.endswith(".xlsx") or excel_file.name.endswith(".xls")):
+            return Response(
+                {"error": "Please upload a valid Excel file (xlsx or xls)."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            decoded_file = csv_file.read().decode("utf-8")
-            io_string = io.StringIO(decoded_file)
-            reader = csv.DictReader(io_string)
+            # Use pandas for faster Excel reading
+            df = pd.read_excel(excel_file, engine="openpyxl")
+
+            # Convert all column names to string and strip whitespace
+            df.columns = df.columns.astype(str).str.strip()
+
+            # Check required columns
+            required_columns = ["Name", "Father Name", "Reg #", "CGPA", "Academic Term"]
+            missing_columns = [col for col in required_columns if col not in df.columns]
+
+            if missing_columns:
+                return Response(
+                    {
+                        "error": f"Required columns not found in the Excel file: {', '.join(missing_columns)}"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             created_users = []
-            for row in reader:
-                serializer = UsersSerializer(data=row)
-                if serializer.is_valid():
-                    if user_type == "student":
-                        serializer.validated_data["user_type"] = "Student"
-                        serializer.validated_data["role"] = "Undergraduate"
-                        serializer.validated_data["designation"] = "N/A"
-                    elif user_type == "staff":
-                        serializer.validated_data["user_type"] = "Faculty"
-                    serializer.save()
-                    created_users.append(serializer.data)
-                else:
-                    return Response(
-                        {
-                            "error": f"Invalid data {serializer.errors}",
-                            "details": serializer.errors,
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            errors = []
+
+            # Preprocess the dataframe
+            df = df.replace({pd.NA: None})
+
+            # Process in bulk using transaction for better performance
+            with transaction.atomic():
+                for index, row in df.iterrows():
+                    try:
+                        # Skip empty rows
+                        if pd.isna(row["Reg #"]):
+                            continue
+
+                        reg_no = str(row["Reg #"]).strip()
+                        if not reg_no:
+                            errors.append(
+                                f"Row {index + 2}: Registration number is required"
+                            )
+                            continue
+
+                        student_data = {
+                            "name": str(row["Name"]).strip() if row["Name"] else "",
+                            "father_name": str(row["Father Name"]).strip().capitalize()
+                            if row["Father Name"]
+                            else "",
+                            "uu_id": reg_no,
+                            "cgpa": float(row["CGPA"])
+                            if row["CGPA"] is not None
+                            else 0.0,
+                            "term": str(row["Academic Term"]).strip()
+                            if row["Academic Term"]
+                            else "",
+                            "email": (
+                                str(row["Official Email"]).lower().strip()
+                                if "Official Email" in df.columns
+                                and row["Official Email"]
+                                else f"{reg_no.lower()}@cust.pk"
+                            ),
+                            "gender": (
+                                str(row["Gender"]).strip().capitalize()
+                                if "Gender" in df.columns and row["Gender"]
+                                else "Male"
+                            ),
+                            "user_type": "Student",
+                            "role": "Undergraduate",
+                            "designation": "N/A",
+                        }
+
+                        # Validate and save
+                        serializer = UsersSerializer(data=student_data)
+                        if serializer.is_valid():
+                            serializer.save()
+                            created_users.append(serializer.data)
+                        else:
+                            errors.append(f"Row {index + 2}: {str(serializer.errors)}")
+
+                    except Exception as e:
+                        errors.append(f"Row {index + 2}: Error processing - {str(e)}")
+                        continue
+
+            if errors:
+                return Response(
+                    {
+                        "message": f"Upload completed with {len(errors)} errors",
+                        "created_count": len(created_users),
+                        "errors": errors,
+                        "data": created_users,
+                    },
+                    status=status.HTTP_207_MULTI_STATUS,
+                )
 
             return Response(
-                {"message": "Users uploaded successfully.", "data": created_users},
+                {
+                    "message": f"Successfully uploaded {len(created_users)} students.",
+                    "data": created_users,
+                },
                 status=status.HTTP_201_CREATED,
             )
 
