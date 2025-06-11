@@ -341,6 +341,13 @@ class ApplicationRequestAPIView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+class AllUsersListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = Users.objects.all()
+        serializer = UsersSerializer(users, many=True)
+        return Response(serializer.data)
 
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):

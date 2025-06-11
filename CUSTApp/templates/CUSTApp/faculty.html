@@ -164,13 +164,12 @@
 
             $('#facultyTable').DataTable({
                 ajax: {
-                    url: 'api/get_users.php?user_type=Staff',
+                    url: '/api/all-users/', // Use your Django API endpoint
                     dataSrc: function(json) {
-                        if (json.error) {
-                            Swal.fire('Error', json.error, 'error');
-                            return [];
-                        }
-                        return json;
+                        // Filter out users where user_type is 'Student'
+                        return json.filter(function(user) {
+                            return user.user_type !== 'Student';
+                        });
                     },
                     error: function(xhr, error, thrown) {
                         Swal.fire('Error', 'Failed to load faculty: ' + error, 'error');
