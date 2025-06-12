@@ -417,8 +417,7 @@ class UserUpdateView(generics.UpdateAPIView):
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-        user_type = str(user.user_type)
-        if user_type.lower() == "student" and instance.user_id != user.user_id:
+        if instance.user_id != user.user_id:
             return Response(
                 {"error": "The user can only update his profile!"},
                 status=status.HTTP_403_FORBIDDEN,

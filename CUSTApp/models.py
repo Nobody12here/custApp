@@ -101,6 +101,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         ('email','Email'),
         ('phone','Phone'),
     ])
+    profile_completed = models.BooleanField(default=False)
     picture = models.FileField(
         blank=True,
         null=True,

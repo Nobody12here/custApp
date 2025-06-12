@@ -4,7 +4,6 @@ from .models import Users, Department, TemplateAttributes, Program
 
 
 class UsersSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Users
         exclude = ["password"]  # Exclude password field from serialization
@@ -13,11 +12,22 @@ class UsersSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ["name", "picture", "signature"]
+        fields = [
+            "name",
+            "picture",
+            "signature",
+            "CNIC",
+            "phone_number",
+            "dept",
+            "program_name",
+            "DoB",
+        ]
+
+
 class UserStudentDataUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ["name", "father_name", "term","CGPA","uu_id","gender"]
+        fields = ["name", "father_name", "term", "CGPA", "uu_id", "gender"]
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -63,10 +73,12 @@ class OTPSendSerializer(
             raise serializers.ValidationError("Email is required.")
         return value
 
+
 class PhoneOTPVerifySerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
     otp = serializers.CharField(max_length=10)
- 
+
+
 class OTPVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=10)
