@@ -108,8 +108,33 @@
 
     <script>
         $(document).ready(function () {
-            // Initialize DataTable with more options
-            const studentsTable = $('#studentsTable').DataTable({
+            // Initialize DataTable with AJAX source and filter for Students only
+            $('#studentsTable').DataTable({
+                ajax: {
+                    url: '/api/all-users/',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    },
+                    dataSrc: function (json) {
+                        // Only include users where user_type is 'Student'
+                        return json.filter(function (user) {
+                            return user.user_type === 'Student';
+                        });
+                    },
+                    error: function (xhr, error, thrown) {
+                        alert('Failed to load students: ' + error);
+                    }
+                },
+                columns: [
+                    { data: 'user_id', title: 'ID' },
+                    { data: 'name', title: 'Name' },
+                    { data: 'father_name', title: 'Father Name' },
+                    { data: 'uu_id', title: 'Registration #' },
+                    { data: 'cgpa', title: 'CGPA' },
+                    { data: 'term', title: 'Term' },
+                    { data: 'email', title: 'Email' },
+                    { data: 'status', title: 'Status' }
+                ],
                 dom: '<"top"lf>rt<"bottom"ip>',
                 responsive: true,
                 language: {
@@ -122,6 +147,11 @@
                     { targets: [3, 4, 5, 6, 7], width: "12%" }
                 ]
             });
+        });
+    </script>
+
+    <script>
+        
 
             // File upload handler
             document.getElementById('studentFileUpload').addEventListener('change', function (event) {
@@ -131,7 +161,7 @@
                     processStudentFile(file);
                 }
             });
-        });
+        
 
         // Add this global variable to store the processed students
         let currentStudentsData = [];
@@ -173,6 +203,7 @@
                     // Update DataTable display
                     const table = $('#studentsTable').DataTable();
                     table.clear();
+                    table.rows.add(displayData).draw();
 
                     if (currentStudentsData.length > 0) {
                         // Convert to array format for DataTables

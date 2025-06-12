@@ -4,6 +4,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    AllUsersListAPIView,
     DepartmentRetrieveUpdateDestroyAPI,
     GeneratePDFWithLetterheadAPIView,
     GetAttributesAPIView,
@@ -100,5 +101,6 @@ urlpatterns = [
 
     path("home/", views.home, name="home"),
     path('api/support-ticket/', SupportTicketAPIView.as_view(), name='support_ticket_api'),
+    path('api/all-users/', AllUsersListAPIView.as_view(), name='all_users_list'),
 ]
 urlpatterns.extend(router.urls)

@@ -114,14 +114,23 @@
                 $('.dropdown-toggle').dropdown();
             });
 
-            // Initialize DataTable
-            if (!$.fn.DataTable) {
-                console.error('DataTables not loaded');
-                return;
-            }
-
-            $('#facultyTable').DataTable({
-
+            // Initialize DataTable with AJAX source and filter out Students
+            var facultyTable = $('#facultyTable').DataTable({
+                ajax: {
+                    url: '/api/all-users/',
+                     headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    },
+                    dataSrc: function (json) {
+                        // Filter out users where user_type is 'Student'
+                        return json.filter(function (user) {
+                            return user.user_type !== 'Student';
+                        });
+                    },
+                    error: function (xhr, error, thrown) {
+                        Swal.fire('Error', 'Failed to load faculty: ' + error, 'error');
+                    }
+                },
                 columns: [
                     { data: 'user_id' },
                     { data: 'name' },
