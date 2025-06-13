@@ -12,6 +12,12 @@ class GuestPassRequestSerializer(ModelSerializer):
     CNIC = serializers.CharField(write_only=True)
     name = serializers.CharField(write_only=True)
     phone_number = serializers.CharField(write_only=True)
+    guest_fcm_token = serializers.CharField(
+        write_only=True, required=False, allow_null=True, allow_blank=True
+    )
+
+    # For reading the token (if needed)
+    guest_token = serializers.CharField(source="guest.fcm_token", read_only=True)
 
     # For GET (read-only from related guest)
     guest_cnic = serializers.CharField(source="guest.CNIC", read_only=True)
@@ -42,6 +48,8 @@ class GuestPassRequestSerializer(ModelSerializer):
             "host_department_name",
             "guest_phone",
             "guest_name",
+            "guest_fcm_token",
+            "guest_token",
             "guest_cnic",
         ]
         read_only_fields = ["guest", "created_at"]
@@ -58,6 +66,7 @@ class GuestPassRequestSerializer(ModelSerializer):
         guest_cnic = validated_data.pop("CNIC")
         guest_name = validated_data.pop("name")
         guest_phone_no = validated_data.pop("phone_number")
+        guest_fcm_token = validated_data.pop("guest_fcm_token", None)
 
         # Get host information before creating the request
         host = validated_data.get("host")
@@ -67,8 +76,15 @@ class GuestPassRequestSerializer(ModelSerializer):
                 "name": guest_name,
                 "user_type": "Guest",
                 "phone_number": guest_phone_no,
+                "fcm_token": guest_fcm_token if guest_fcm_token else None,
             },
         )
+        print(guest_fcm_token, guest.guest_fcm_token)
+        # Update FCM token if provided (even for existing guests)
+        if (guest_fcm_token) and (guest.guest_fcm_token != guest_fcm_token):
+            guest.guest_fcm_token = guest_fcm_token
+            guest.save(update_fields=["guest_fcm_token"])
+            print("FCM token updated for guest:", guest.name)
         validated_data["guest"] = guest
         validated_data["request_type"] = "GuestPass"
 
@@ -76,11 +92,11 @@ class GuestPassRequestSerializer(ModelSerializer):
         request = Request.objects.create(**validated_data)
 
         # Send notifications to host
-        self.send_new_request_notifications(request, host,guest)
+        self.send_new_request_notifications(request, host, guest)
 
         return request
 
-    def send_new_request_notifications(self, request, host,guest=None):
+    def send_new_request_notifications(self, request, host, guest=None):
         """Send both email and push notification for new guest pass request"""
         try:
             # Prepare common notification details
@@ -108,7 +124,7 @@ class GuestPassRequestSerializer(ModelSerializer):
             )
             # Send push notification
             notify_user_devices(
-                user= host,
+                user=host,
                 title="New Guest Pass Request",
                 body=f"{request.guest.name} has requested a guest pass.",
                 url=action_url,
