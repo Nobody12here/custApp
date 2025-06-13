@@ -80,6 +80,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     father_name = models.CharField(max_length=255, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     program_name = models.CharField(max_length=255, null=True, blank=True)
+    guest_fcm_token = models.TextField(blank=True, null=True)  # Store guest's FCM token
     dept = models.ForeignKey(
         Department,
         null=True,

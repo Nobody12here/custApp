@@ -61,8 +61,6 @@ class Request(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     approved_at = models.DateTimeField(null=True,blank=True)      # Auto-set on update
     vistied_at = models.DateTimeField(null=True,blank=True)
-    guest_fcm_token = models.TextField(blank=True, null=True)  # Store guest's FCM token
-
     expired_at = models.DateTimeField(null=True,blank=True)
     comments = models.TextField(null=True, blank=True)
     payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='Pending')
