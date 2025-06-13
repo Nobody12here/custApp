@@ -33,20 +33,24 @@ class RequestGuestPassView(ModelViewSet):
                 queryset = base_queryset.filter(host=user.user_id)
         else:
             queryset = base_queryset
-        queryset = queryset.annotate(
-            is_today=Case(
-                When(
-                    meeting_date_time__gte=start_of_day,
-                    meeting_date_time__lt=end_of_day,
-                    then=Value(True),
-                ),
-                default=Value(False),
-                output_field=BooleanField(),
+        queryset = (
+            queryset.annotate(
+                is_today=Case(
+                    When(
+                        meeting_date_time__gte=start_of_day,
+                        meeting_date_time__lt=end_of_day,
+                        then=Value(True),
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
             )
-        ).order_by(
-            "-is_today",  # Today's meetings first
-            "meeting_date_time",  # Then by meeting time (earliest first)
-            "-created_at",  # Finally by creation time (newest first)
+            .order_by(
+                "-is_today",  # Today's meetings first
+                "meeting_date_time",  # Then by meeting time (earliest first)
+                "-created_at",  # Finally by creation time (newest first)
+            )
+            .exclude(status="Expired")
         )
         if show_today:
             queryset = queryset.filter(is_today=True)

@@ -6,7 +6,6 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from io import BytesIO
 from django.core.mail import EmailMultiAlternatives, send_mail
@@ -116,6 +115,8 @@ def update_request_status(request, id):
             host = req.host
             student = req.applicant
             req.status = status
+            if status == "Visited":
+                req.vistied_at = timezone.now().isoformat
             req.approved_at = timezone.now().isoformat()
             req.save()
             user = host or student
@@ -407,7 +408,7 @@ class UsersList(generics.ListCreateAPIView):
             queryset = queryset.filter(user_type=user_type)
 
         if department or user_type:
-            return queryset
+            return queryset.order_by("name")
 
         try:
             return Users.objects.filter(user_id=self.request.user.user_id)
@@ -479,66 +480,70 @@ class UserCSVUploadAPIView(APIView):
                 )
 
             created_users = []
+            users_to_create = []
+
             errors = []
 
             # Preprocess the dataframe
             df = df.replace({pd.NA: None})
 
             # Process in bulk using transaction for better performance
-            with transaction.atomic():
-                for index, row in df.iterrows():
-                    try:
-                        # Skip empty rows
-                        if pd.isna(row["Reg #"]):
-                            continue
-
-                        reg_no = str(row["Reg #"]).strip()
-                        if not reg_no:
-                            errors.append(
-                                f"Row {index + 2}: Registration number is required"
-                            )
-                            continue
-
-                        student_data = {
-                            "name": str(row["Name"]).strip() if row["Name"] else "",
-                            "father_name": str(row["Father Name"]).strip().capitalize()
-                            if row["Father Name"]
-                            else "",
-                            "uu_id": reg_no,
-                            "cgpa": float(row["CGPA"])
-                            if row["CGPA"] is not None
-                            else 0.0,
-                            "term": str(row["Academic Term"]).strip()
-                            if row["Academic Term"]
-                            else "",
-                            "email": (
-                                str(row["Official Email"]).lower().strip()
-                                if "Official Email" in df.columns
-                                and row["Official Email"]
-                                else f"{reg_no.lower()}@cust.pk"
-                            ),
-                            "gender": (
-                                str(row["Gender"]).strip().capitalize()
-                                if "Gender" in df.columns and row["Gender"]
-                                else "Male"
-                            ),
-                            "user_type": "Student",
-                            "role": "Undergraduate",
-                            "designation": "N/A",
-                        }
-
-                        # Validate and save
-                        serializer = UsersSerializer(data=student_data)
-                        if serializer.is_valid():
-                            serializer.save()
-                            created_users.append(serializer.data)
-                        else:
-                            errors.append(f"Row {index + 2}: {str(serializer.errors)}")
-
-                    except Exception as e:
-                        errors.append(f"Row {index + 2}: Error processing - {str(e)}")
+            for index, row in df.iterrows():
+                try:
+                    # Skip empty rows
+                    if pd.isna(row["Reg #"]):
                         continue
 
+                    reg_no = str(row["Reg #"]).strip()
+                    if not reg_no:
+                        errors.append(
+                            f"Row {index + 2}: Registration number is required"
+                        )
+                        continue
+
+                    student_data = {
+                        "name": str(row["Name"]).strip() if row["Name"] else "",
+                        "father_name": str(row["Father Name"]).strip().capitalize()
+                        if row["Father Name"]
+                        else "",
+                        "uu_id": reg_no,
+                        "cgpa": float(row["CGPA"])
+                        if row["CGPA"] is not None
+                        else 0.0,
+                        "term": str(row["Academic Term"]).strip()
+                        if row["Academic Term"]
+                        else "",
+                        "email": (
+                            str(row["Official Email"]).lower().strip()
+                            if "Official Email" in df.columns
+                            and row["Official Email"]
+                            else f"{reg_no.lower()}@cust.pk"
+                        ),
+                        "gender": (
+                            str(row["Gender"]).strip().capitalize()
+                            if "Gender" in df.columns and row["Gender"]
+                            else "Male"
+                        ),
+                        "user_type": "Student",
+                        "role": "Undergraduate",
+                        "designation": "N/A",
+                    }
+
+                    # Validate and save
+                    serializer = UsersSerializer(data=student_data)
+                    if serializer.is_valid():
+                        users_to_create.append(serializer.validated_data)
+                    else:
+                        errors.append(f"Row {index + 2}: {str(serializer.errors)}")
+
+                except Exception as e:
+                    errors.append(f"Row {index + 2}: Error processing - {str(e)}")
+                    continue
+            if users_to_create:
+                try:
+                    created_users = UsersSerializer.bulk_create(users_to_create)
+                except Exception as e:
+                    errors.append(f"Bulk create failed: {str(e)}")
             if errors:
                 return Response(
                     {
@@ -566,7 +571,7 @@ class UserCSVUploadAPIView(APIView):
 
 class DepartmentList(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
-    queryset = Department.objects.all()
+    queryset = Department.objects.all().order_by("dept_name")
     serializer_class = DepartmentSerializer
 
 
