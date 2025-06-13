@@ -116,7 +116,7 @@ def update_request_status(request, id):
             student = req.applicant
             req.status = status
             if status == "Visited":
-                req.vistied_at = timezone.now().isoformat
+                req.vistied_at = timezone.now().isoformat()
             req.approved_at = timezone.now().isoformat()
             req.save()
             user = host or student
