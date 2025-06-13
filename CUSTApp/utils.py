@@ -8,13 +8,63 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-def notify_user_devices(user, title, body):
-    devices = GCMDevice.objects.filter(user=user)
-    payload = {
-        "title": title,
-        "body": body,
-    }
-    devices.send_message(messaging.Message(data=payload))
+def notify_user_devices(user, title, body, url=None):
+    devices = GCMDevice.objects.filter(user=user, active=True)
+
+    if not devices.exists():
+        return False  # or you might want to raise an exception
+
+    # Default URL if none provided
+    url = url or "/"
+
+    # Create a full-featured FCM message
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=title,
+            body=body,
+        ),
+        data={
+            "title": title,
+            "body": body,
+            "url": url,
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",  # Remove if not using Flutter
+        },
+        android=messaging.AndroidConfig(
+            priority="high",
+            notification=messaging.AndroidNotification(
+                channel_id="your_default_channel",  # Required for Android 8+
+                click_action="FLUTTER_NOTIFICATION_CLICK",  # Remove if not using Flutter
+                sound="default",
+                icon="notification_icon",  # Your app's notification icon
+            ),
+        ),
+        apns=messaging.APNSConfig(
+            payload=messaging.APNSPayload(
+                aps=messaging.Aps(
+                    sound="default",
+                    badge=1,
+                ),
+                headers={
+                    "apns-priority": "10"  # Immediate delivery for iOS
+                },
+            ),
+        ),
+        webpush=messaging.WebpushConfig(
+            notification=messaging.WebpushNotification(
+                icon="https://yoursite.com/icon.png",
+                badge="https://yoursite.com/badge.png",
+            ),
+            fcm_options=messaging.WebpushFCMOptions(link=url),
+        ),
+    )
+
+    try:
+        response = devices.send_message(message)
+        return True
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Failed to send notification: {str(e)}")
+        return False
 
 
 def send_alert_email(

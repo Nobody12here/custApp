@@ -18,31 +18,51 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         title = str(kwargs.get("title") or "")
         body = str(kwargs.get("body") or "")
-        url = kwargs.get("url")
-        payload = {
-            "title":title,
-            "body":body,
-            "url": "/"
-        }
+        url = kwargs.get("url") or "/"
+        
         if not title or not body:
             self.stdout.write(self.style.ERROR("Both --title and --body are required."))
             return
+            
         devices = GCMDevice.objects.filter(active=True)
         if not devices.exists():
             self.stdout.write(self.style.WARNING("No devices found."))
             return
 
-        # result = devices.send_message(
-        #     None,  # Leave this None to avoid creating a notification message
-        #     extra={"title": title, "body": body, "click_action": url},
-        #     content_available=True,
-        # )
-        result = devices.send_message(
-            messaging.Message(
-                data=payload,
-            )
+        # Create a proper FCM message with both notification and data payloads
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            data={
+                "title": title,
+                "body": body,
+                "url": url,
+                "click_action": "FLUTTER_NOTIFICATION_CLICK"  # For Flutter apps
+            },
+            # For Android specific configurations
+            android=messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    channel_id='your_channel_id',  # Required for Android 8+
+                    click_action="FLUTTER_NOTIFICATION_CLICK",
+                    sound='default'
+                ),
+            ),
+            # For iOS specific configurations
+            apns=messaging.APNSConfig(
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(
+                        sound='default',
+                        badge=1,
+                    ),
+                ),
+            ),
         )
-        print(result)
-        self.stdout.write(
-            self.style.SUCCESS(f"Notification sent to {devices.count()} device(s).")
-        )
+
+        try:
+            result = devices.send_message(message)
+            self.stdout.write(self.style.SUCCESS(f"Notification sent to {devices.count()} device(s)."))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Failed to send notification: {str(e)}"))

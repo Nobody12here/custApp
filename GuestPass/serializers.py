@@ -4,6 +4,7 @@ from ApplicationTemplate.models import Request
 from CUSTApp.models import Users
 from CUSTApp.utils import (
     send_alert_email,
+    notify_user_devices,
 )  # Import your existing notification functions
 
 
@@ -60,7 +61,6 @@ class GuestPassRequestSerializer(ModelSerializer):
 
         # Get host information before creating the request
         host = validated_data.get("host")
-
         guest, created = Users.objects.get_or_create(
             CNIC=guest_cnic,
             defaults={
@@ -76,11 +76,11 @@ class GuestPassRequestSerializer(ModelSerializer):
         request = Request.objects.create(**validated_data)
 
         # Send notifications to host
-        self.send_new_request_notifications(request, host)
+        self.send_new_request_notifications(request, host,guest)
 
         return request
 
-    def send_new_request_notifications(self, request, host):
+    def send_new_request_notifications(self, request, host,guest=None):
         """Send both email and push notification for new guest pass request"""
         try:
             # Prepare common notification details
@@ -96,7 +96,7 @@ class GuestPassRequestSerializer(ModelSerializer):
                 f"Purpose: {request.reason}"
             )
 
-            action_url = f"/guest-passes/{request.request_id}/"
+            action_url = f"https://custapp.pk/guest-passes/{request.request_id}/"
 
             # Send email notification
             send_alert_email(
@@ -105,6 +105,13 @@ class GuestPassRequestSerializer(ModelSerializer):
                 message=message,
                 recipient_name=host.name,
                 action_url=action_url,
+            )
+            # Send push notification
+            notify_user_devices(
+                user= host,
+                title="New Guest Pass Request",
+                body=f"{request.guest.name} has requested a guest pass.",
+                url=action_url,
             )
 
         except Exception as e:
