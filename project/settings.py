@@ -137,9 +137,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.environ.get("DB_NAME", "custappp_custapp"),
-        "USER": os.environ.get("DB_USER", "root"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "USER": os.environ.get("DB_USER", "custappp_admin1"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "root@sql"),
+        "HOST": os.environ.get("DB_HOST", "custapp.pk"),
         "PORT": os.environ.get("DB_PORT", "3306"),
     }
 }

@@ -19,7 +19,7 @@ class Command(BaseCommand):
                 meeting_date_time__lt=end_of_day,
             )
             .exclude(status="Expired")
-            .update(status="Expired")
+            .update(status="Expired", expired_at=timezone.now().isoformat())
         )
 
         self.stdout.write(
