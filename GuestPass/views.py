@@ -49,7 +49,7 @@ class RequestGuestPassView(ModelViewSet):
             )
             .order_by(
                 "-is_today",  # Today's meetings first
-                "meeting_date_time",  # Then by meeting time (earliest first)
+                "-meeting_date_time",  # Then by meeting time (earliest first)
                 "-created_at",  # Finally by creation time (newest first)
             )
             .exclude(status="Expired")
