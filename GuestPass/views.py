@@ -1,6 +1,7 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 from ApplicationTemplate.models import Request
+from CUSTApp.models import Users
 from .serializers import GuestPassRequestSerializer
 from django.db.models import Case, When, Value, BooleanField
 from django.utils import timezone
@@ -74,9 +75,10 @@ class RequestGuestPassView(ModelViewSet):
 
     def send_update_notification(self, request_instance):
         # Get the guest's mobile device
-        guest_device = GCMDevice.objects.filter(user=request_instance.host).first()
-
-        if not guest_device:
+        guest_user = Users.objects.filter(user_id=request_instance.guest.user_id).first()
+        guest_token = guest_user.guest_fcm_token
+        print(guest_token)
+        if not guest_token:
             return False
 
         # Format the meeting time for display
@@ -86,6 +88,7 @@ class RequestGuestPassView(ModelViewSet):
 
         # Create the notification message
         message = messaging.Message(
+            token = guest_token,
             notification=messaging.Notification(
                 title="Meeting Time Updated",
                 body=f"Your meeting time has been changed to {meeting_time}",
@@ -115,7 +118,7 @@ class RequestGuestPassView(ModelViewSet):
         )
 
         try:
-            guest_device.send_message(message)
+            messaging.send(message)
             return True
         except Exception as e:
             # You might want to log this error

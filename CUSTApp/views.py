@@ -29,7 +29,7 @@ from .serializers import (
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .utils import send_alert_email, add_comment_to_instance
+from .utils import send_alert_email, add_comment_to_instance,notify_user_devices
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
@@ -113,6 +113,7 @@ def update_request_status(request, id):
                     )
 
             host = req.host
+            guest = req.guest
             student = req.applicant
             req.status = status
             if status == "Visited":
@@ -120,6 +121,9 @@ def update_request_status(request, id):
             req.approved_at = timezone.now().isoformat()
             req.save()
             user = host or student
+            print(guest.guest_fcm_token)
+            if guest.guest_fcm_token:
+                notify_user_devices(guest,title="Application Status Update",body=f"The status of your application of {req.request_type} Type with Request ID # {req.request_id} has been updated to {status.lower()}",url="")
             if user:
                 send_alert_email(
                     user.email,

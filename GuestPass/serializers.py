@@ -122,13 +122,7 @@ class GuestPassRequestSerializer(ModelSerializer):
                 recipient_name=host.name,
                 action_url=action_url,
             )
-            # Send push notification
-            notify_user_devices(
-                user=host,
-                title="New Guest Pass Request",
-                body=f"{request.guest.name} has requested a guest pass.",
-                url=action_url,
-            )
+            
 
         except Exception as e:
             # Log the error but don't prevent the request from being created
