@@ -3,15 +3,15 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from firebase_admin import messaging
 import json
+from .models import Users
 from push_notifications.models import GCMDevice
 from rest_framework.response import Response
 from rest_framework import status
 
 
-def notify_user_devices(user, title, body, url=None):
-    devices = GCMDevice.objects.filter(user=user, active=True)
-
-    if not devices.exists():
+def notify_user_devices(user:Users, title, body, url=None):
+    guest_fcm_token = user.guest_fcm_token
+    if not guest_fcm_token:
         return False  # or you might want to raise an exception
 
     # Default URL if none provided
@@ -19,6 +19,7 @@ def notify_user_devices(user, title, body, url=None):
 
     # Create a full-featured FCM message
     message = messaging.Message(
+        token=guest_fcm_token,
         notification=messaging.Notification(
             title=title,
             body=body,
@@ -26,7 +27,6 @@ def notify_user_devices(user, title, body, url=None):
         data={
             "title": title,
             "body": body,
-            "url": url,
             "click_action": "FLUTTER_NOTIFICATION_CLICK",  # Remove if not using Flutter
         },
         android=messaging.AndroidConfig(
@@ -49,17 +49,10 @@ def notify_user_devices(user, title, body, url=None):
                 },
             ),
         ),
-        webpush=messaging.WebpushConfig(
-            notification=messaging.WebpushNotification(
-                icon="https://yoursite.com/icon.png",
-                badge="https://yoursite.com/badge.png",
-            ),
-            fcm_options=messaging.WebpushFCMOptions(link=url),
-        ),
     )
 
     try:
-        response = devices.send_message(message)
+        response = messaging.send(message)
         return True
     except Exception as e:
         # Log the error for debugging
