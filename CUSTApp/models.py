@@ -88,6 +88,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         on_delete=models.SET_NULL,
         related_name="members",
     )
+    program = models.ForeignKey(Program,null=True,blank=True,on_delete=models.SET_NULL,related_name="program")
     gender = models.CharField(max_length=50, null=True, blank=True)
     status = models.CharField(max_length=50, null=True, blank=True)
     email = models.CharField(max_length=255, unique=True, null=True, blank=True)
