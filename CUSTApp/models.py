@@ -121,7 +121,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     DoB = models.DateField(null=True, blank=True)
     CNIC = models.CharField(max_length=15, null=True, blank=True)
     otp = models.CharField(max_length=10, null=True, blank=True)
-
+    passport_number = models.CharField(max_length=50, null=True, blank=True)
     # Required for AbstractBaseUser
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

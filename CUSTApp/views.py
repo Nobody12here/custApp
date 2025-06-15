@@ -29,7 +29,7 @@ from .serializers import (
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .utils import send_alert_email, add_comment_to_instance,notify_user_devices
+from .utils import send_alert_email, add_comment_to_instance, notify_user_devices
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
@@ -123,7 +123,12 @@ def update_request_status(request, id):
             user = host or student
             print(guest.guest_fcm_token)
             if guest.guest_fcm_token:
-                notify_user_devices(guest,title="Application Status Update",body=f"The status of your application of {req.request_type} Type with Request ID # {req.request_id} has been updated to {status.lower()}",url="")
+                notify_user_devices(
+                    guest,
+                    title="Request Update",
+                    body=f"Your {req.request_type} request (ID: {req.request_id}) is now {status.lower()}. Please arrive early and bring required documents.",
+                    url="",
+                )
             if user:
                 send_alert_email(
                     user.email,
@@ -248,7 +253,7 @@ class ApplicationRequestAPIView(APIView):
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
                 "department": applicant.dept.dept_name,
-                "program": applicant.program_name,
+                "program": applicant.program.program_name if applicant.program else "",
                 "date": timezone.now().date(),
                 "issuer_name": application.default_responsible_employee,
                 "father_name": applicant.father_name,
@@ -346,6 +351,7 @@ class ApplicationRequestAPIView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
 class AllUsersListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -353,6 +359,7 @@ class AllUsersListAPIView(APIView):
         users = Users.objects.all()
         serializer = UsersSerializer(users, many=True)
         return Response(serializer.data)
+
 
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
@@ -507,20 +514,21 @@ class UserCSVUploadAPIView(APIView):
 
                     student_data = {
                         "name": str(row["Name"]).strip() if row["Name"] else "",
-                        "father_name": str(row["Father Name"]).strip().capitalize()
-                        if row["Father Name"]
-                        else "",
+                        "father_name": (
+                            str(row["Father Name"]).strip().capitalize()
+                            if row["Father Name"]
+                            else ""
+                        ),
                         "uu_id": reg_no,
-                        "cgpa": float(row["CGPA"])
-                        if row["CGPA"] is not None
-                        else 0.0,
-                        "term": str(row["Academic Term"]).strip()
-                        if row["Academic Term"]
-                        else "",
+                        "cgpa": float(row["CGPA"]) if row["CGPA"] is not None else 0.0,
+                        "term": (
+                            str(row["Academic Term"]).strip()
+                            if row["Academic Term"]
+                            else ""
+                        ),
                         "email": (
                             str(row["Official Email"]).lower().strip()
-                            if "Official Email" in df.columns
-                            and row["Official Email"]
+                            if "Official Email" in df.columns and row["Official Email"]
                             else f"{reg_no.lower()}@cust.pk"
                         ),
                         "gender": (
@@ -823,6 +831,11 @@ class OTPVerifyView(APIView):
                         "uu_id": user.uu_id,
                         "name": user.name,
                         "email": user.email,
+                        "phone_no": user.phone_number,
+                        "father_name": user.father_name,
+                        "cnic": user.CNIC,
+                        "dob": user.DoB,
+                        "passport_number": user.passport_number,
                         "user_type": user.user_type,
                         "access": access_token,
                         "refresh": refresh_token,
