@@ -76,7 +76,7 @@ class GuestPassRequestSerializer(ModelSerializer):
                 "name": guest_name,
                 "user_type": "Guest",
                 "phone_number": guest_phone_no,
-                "fcm_token": guest_fcm_token if guest_fcm_token else None,
+                "guest_fcm_token": guest_fcm_token if guest_fcm_token else None,
             },
         )
         print(guest_fcm_token, guest.guest_fcm_token)
