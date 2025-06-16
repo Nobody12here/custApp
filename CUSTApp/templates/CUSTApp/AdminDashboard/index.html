@@ -17,52 +17,389 @@
     <link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
     <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
     <style>
-        /* Only updating form control visibility */
+        :root {
+            --primary-color: #0A369D;
+            --primary-hover: #082d7d;
+            --secondary-color: #4472CA;
+            --accent-color: #5E7CE2;
+            --light-color: #92B4F4;
+            --background-color: #F8F9FA;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 6px 20px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+        }
+
+        /* Card Styling */
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            border: none;
+            overflow: hidden;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .card-header-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 24px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .card-title {
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-category {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .card-body {
+            padding: 32px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: block;
+        }
+
         .form-control {
-            border: 1px solid #ced4da;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius-sm);
+            padding: 8px 12px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background-color: white;
+            width: 100%;
+            box-shadow: none;
         }
 
         .form-control:focus {
-            border-color: #1E88E5;
-            box-shadow: 0 0 0 0.2rem rgba(10, 54, 157, 0.25);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(94, 124, 226, 0.15);
+            outline: none;
         }
 
+        .form-control:hover {
+            border-color: #ced4da;
+        }
+
+        .form-control::placeholder {
+            color: #6c757d;
+            opacity: 0.8;
+        }
+
+        /* Select Controls - Remove specific border color */
         select.form-control {
-            border: 2px solid #0A369D;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            appearance: none;
+        }
+
+        select.form-control:focus {
+            border-color: var(--accent-color);
         }
 
         select.form-control:disabled {
             background-color: #f8f9fa;
-            border-color: #6c757d;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Editor Container */
+        .editor-container {
+            margin-bottom: 32px;
         }
 
         #templateContent {
-            border: 2px solid #0A369D;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius-sm);
+            min-height: 500px;
+            background-color: white;
+            transition: var(--transition);
         }
 
-        .form-floating>.form-control {
-            padding-top: 1.625rem;
-            padding-bottom: 0.625rem;
+        #templateContent:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(94, 124, 226, 0.15);
         }
 
-        .form-floating>.form-control:focus~label,
-        .form-floating>.form-control:not(:placeholder-shown)~label {
-            opacity: 0.65;
-            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        /* Placeholder Controls */
+        .placeholder-controls {
+            background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            margin-top: 24px;
+            border: 1px solid #dee2e6;
         }
 
-        .dropdown-group {
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
             margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .action-button {
-            margin-top: 15px;
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+
+        /* Approval Section */
+        .approval-section {
+            background: white;
+            padding: 24px;
+            border-radius: var(--border-radius);
+            border: 1px solid #dee2e6;
+            margin-top: 32px;
+        }
+
+        /* Button Styling */
+        .btn {
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            text-transform: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(10, 54, 157, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 54, 157, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(10, 54, 157, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info-color) 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496 0%, var(--info-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, var(--success-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn i.material-icons {
+            font-size: 18px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .placeholder-controls {
+                padding: 16px;
+            }
+        }
+
+        /* Navigation Improvements */
+        .nav-item.active {
+            background-color: rgba(10, 54, 157, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+        }
+
+        .navbar {
+            box-shadow: var(--shadow-light);
+            background: white;
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Enhanced CKEditor Styling */
+        .ck-editor__editable {
+            min-height: 500px !important;
+            border-radius: var(--border-radius-sm) !important;
+            padding: 20px !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+
+        .ck-toolbar {
+            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0 !important;
+            border-color: #e9ecef !important;
+        }
+
+        /* Form Row Improvements */
+        .row {
+            margin-left: -12px;
+            margin-right: -12px;
+        }
+
+        .row > [class*="col-"] {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: var(--success-color);
+        }
+
+        .status-inactive {
+            background-color: var(--danger-color);
+        }
+
+        /* Utility Classes */
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .bg-light-primary {
+            background-color: rgba(10, 54, 157, 0.1) !important;
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
         }
     </style>
 </head>
@@ -78,80 +415,128 @@
                         <div class="col-md-12">
                             <div class="card">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Create New Application</h4>
+                                    <h4 class="card-title">
+                                        <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">create</i>
+                                        Create New Application
+                                    </h4>
                                     <p class="card-category">Define the format with placeholders and generate PDF</p>
                                 </div>
                                 <div class="card-body">
                                     <form id="templateForm">
-                                        <div class="form-group">
-                                            <label for="templateName">Application Name</label>
-                                            <input type="text" class="form-control" id="templateName"
-                                                placeholder="Enter application name">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="applicationFee">Application Fee (PKR)</label>
-                                            <input type="number" class="form-control" id="applicationFee" placeholder="Enter fee amount" min="0" step="any">
-                                        </div>
-
-                                    
-                                        
-                                        <div class="form-group">
-                                            <label for="templateContent">Application Content</label>
-                                            <div id="templateContent" class="form-control" style="min-height: 500px;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="templateName">
+                                                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</i>
+                                                        Application Name
+                                                    </label>
+                                                    <input type="text" class="form-control" id="templateName"
+                                                        placeholder="Enter application name" required>
+                                                </div>
                                             </div>
-                                            <div class="mt-2">
-                                                <div class="row">
-                                                    <div class="col-md-4 dropdown-section">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="applicationFee">
+                                                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">attach_money</i>
+                                                        Application Fee (PKR)
+                                                    </label>
+                                                    <input type="number" class="form-control" id="applicationFee" 
+                                                        placeholder="Enter fee amount" min="0" step="any">
+                                                </div>
+                                            </div>
+                                        </div>
 
+                                        <div class="editor-container">
+                                            <div class="form-group">
+                                                <label for="templateContent">
+                                                    <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">edit</i>
+                                                    Application Content
+                                                </label>
+                                                <div id="templateContent" class="form-control"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="placeholder-controls">
+                                            <h6 class="section-title">
+                                                <i class="material-icons" style="font-size: 20px;">code</i>
+                                                Insert Placeholders
+                                            </h6>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label>Table</label>
                                                         <select class="form-control" id="tableSelect">
                                                             <option value="">Select Table</option>
                                                             <option value="users">Users</option>
                                                             <option value="Misc">Misc</option>
-                                                            
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
-
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label>User Type</label>
                                                         <select class="form-control" id="userTypeSelect" disabled>
                                                             <option value="">Select User Type</option>
                                                             <option value="student">Student</option>
                                                             <option value="staff">Staff</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
-
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label>Attribute</label>
                                                         <select class="form-control" id="attributeSelect" disabled>
                                                             <option value="">Select Attribute</option>
                                                         </select>
                                                     </div>
-                                                    <br>
-
                                                 </div>
-
-                                                <button type="button" class="btn btn-sm btn-info mt-4"
-                                                    onclick="insertPlaceholder()">Insert Placeholder</button>
                                             </div>
+                                            <button type="button" class="btn btn-info" onclick="insertPlaceholder()">
+                                                <i class="material-icons">add_circle</i> 
+                                                Insert Placeholder
+                                            </button>
                                         </div>
-                                        <div class="mt-2">
 
+                                        <div class="approval-section">
+                                            <h6 class="section-title">
+                                                <i class="material-icons" style="font-size: 20px;">verified_user</i>
+                                                Approval Workflow
+                                            </h6>
                                             <div class="row">
-                                                <div class="col-md-4">
-
-                                                    <select class="form-control" id="departmentSelect"
-                                                        onchange="populateDepartmentHead()">
-                                                    <option value="">Loading departments...</option>
-                                                </select>
-                                            </div>
-                                            <div class=" col-md-4">
-
-                                                        <select class="form-control" id="employeeSelect">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Department</label>
+                                                        <select class="form-control" id="departmentSelect"
+                                                            onchange="populateDepartmentHead()" required>
+                                                            <option value="">Loading departments...</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Responsible Employee</label>
+                                                        <select class="form-control" id="employeeSelect" required>
                                                             <option value="">Loading Employees...</option>
                                                         </select>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save
-                                                Application</button>
-                                            
+                                        </div>
+
+                                        <div class="action-buttons">
+                                            <button type="button" class="btn btn-primary" onclick="saveTemplate()">
+                                                <i class="material-icons">save</i> 
+                                                Save Application
+                                            </button>
+                                            <button type="button" class="btn btn-info" onclick="previewTemplate()">
+                                                <i class="material-icons">preview</i> 
+                                                Preview
+                                            </button>
+                                            <button type="reset" class="btn btn-secondary" onclick="resetForm()">
+                                                <i class="material-icons">refresh</i> 
+                                                Reset Form
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -161,6 +546,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Scripts remain unchanged -->
     <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
     <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
     <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
@@ -182,8 +569,8 @@
     <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
     <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
     <script src="{% static 'js/auth.js'%}" type="text/javascript"></script>
-
     <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+
     <script>
         
         let departmentData = [];
