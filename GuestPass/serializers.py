@@ -4,7 +4,6 @@ from ApplicationTemplate.models import Request
 from CUSTApp.models import Users
 from CUSTApp.utils import (
     send_alert_email,
-    notify_user_devices,
 )  # Import your existing notification functions
 
 
@@ -70,7 +69,7 @@ class GuestPassRequestSerializer(ModelSerializer):
 
         # Get host information before creating the request
         host = validated_data.get("host")
-        guest, created = Users.objects.get_or_create(
+        guest, created = Users.objects.update_or_create(
             CNIC=guest_cnic,
             defaults={
                 "name": guest_name,
