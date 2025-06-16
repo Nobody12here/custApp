@@ -117,7 +117,7 @@
             // Initialize DataTable with AJAX source and filter out Students
             var facultyTable = $('#facultyTable').DataTable({
                 ajax: {
-                    url: '/api/all-users/',
+                    url: '/users?user_type=Staff',
                      headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('access_token')
                     },

@@ -212,44 +212,234 @@
                     dataType: 'json',
                     success: function (data) {
                         const deptSelect = $('#deptSelect');
-                        console.log("data ", data)
-                        const table = $('#departmentsTable').DataTable({
-                            data: data,
+                        console.log("data ", data);
+
+                        // Clear existing DataTable if it exists
+                        if ($.fn.DataTable.isDataTable('#departmentsTable')) {
+                            $('#departmentsTable').DataTable().destroy();
+                        }
+
+                        // Process data to keep departments as single rows with programs in one column
+                        const tableData = [];
+                        data.forEach(dept => {
+                            let programsList = '';
+
+                            if (dept.programs && dept.programs.length > 0) {
+                                // Create a formatted list of programs
+                                programsList = dept.programs.map(program =>
+                                    `<div class="program-item">${program.program_name}</div>`
+                                ).join('');
+                            } else {
+                                programsList = '<div class="no-programs">No Programs Available</div>';
+                            }
+
+                            tableData.push({
+                                dept_id: dept.dept_id,
+                                dept_name: dept.dept_name,
+                                programs: programsList,
+                                programs_count: dept.programs ? dept.programs.length : 0
+                            });
+                        });
+
+                        // Initialize DataTable with proper column configuration
+                        dataTable = $('#departmentsTable').DataTable({
+                            data: tableData,
                             columns: [
-                                { data: 'dept_id' },
-                                { data: 'dept_name' },
+                                {
+                                    data: 'dept_id',
+                                    title: 'Department ID',
+                                    width: '15%',
+                                    className: 'text-center'
+                                },
+                                {
+                                    data: 'dept_name',
+                                    title: 'Department Name',
+                                    width: '35%',
+                                    className: 'font-weight-bold'
+                                },
                                 {
                                     data: 'programs',
+                                    title: 'Programs',
+                                    width: '50%',
+                                    className: 'programs-column',
+                                    orderable: false, // Disable sorting for HTML content
                                     render: function (data, type, row) {
-                                        // Convert array of program names to a string
-                                        if (Array.isArray(data) && data.length > 0) {
-                                            return data.map(p => p.program_name).join(', ');
+                                        if (type === 'display') {
+                                            return `<div class="programs-container">${data}</div>`;
                                         }
-                                        return 'No Programs';
+                                        return data;
                                     }
                                 }
+                            ],
+                            pageLength: 10,
+                            responsive: true,
+                            autoWidth: false,
+                            order: [[0, 'asc']], // Sort by Department ID by default
+                            language: {
+                                emptyTable: "No departments found",
+                                info: "Showing _START_ to _END_ of _TOTAL_ departments",
+                                infoEmpty: "Showing 0 to 0 of 0 departments",
+                                lengthMenu: "Show _MENU_ departments per page",
+                                search: "Search departments:",
+                                paginate: {
+                                    first: "First",
+                                    last: "Last",
+                                    next: "Next",
+                                    previous: "Previous"
+                                }
+                            },
+                            createdRow: function (row, data, dataIndex) {
+                                // Add classes for styling
+                                $(row).addClass('department-row');
 
-                            ]
-                        })
+                                // Add data attributes for potential future use
+                                $(row).attr('data-dept-id', data.dept_id);
+                                $(row).attr('data-programs-count', data.programs_count);
+
+                                // Style rows based on program count
+                                if (data.programs_count === 0) {
+                                    $(row).addClass('no-programs-row');
+                                } else {
+                                    $(row).addClass('has-programs-row');
+                                }
+                            }
+                        });
+
+                        // Populate department select dropdown
                         deptSelect.empty();
                         deptSelect.append('<option value="">Select Department</option>');
                         data.forEach(dept => {
                             deptSelect.append(`<option value="${dept.dept_id}">${dept.dept_name}</option>`);
                         });
+
+                        // Add custom CSS for better program display
+                        if (!$('#departmentTableStyles').length) {
+                            $('head').append(`
+                    <style id="departmentTableStyles">
+                        .programs-container {
+                            max-height: 200px;
+                            overflow-y: auto;
+                        }
+                        
+                        .program-item {
+                            padding: 4px 8px;
+                            margin: 2px 0;
+                            background-color: #f8f9fa;
+                            border-left: 3px solid #0A369D;
+                            border-radius: 4px;
+                            font-size: 0.9rem;
+                        }
+                        
+                        .program-item:hover {
+                            background-color: #e9ecef;
+                        }
+                        
+                        .no-programs {
+                            padding: 8px;
+                            color: #6c757d;
+                            font-style: italic;
+                            text-align: center;
+                            background-color: #f8f9fa;
+                            border-radius: 4px;
+                        }
+                        
+                        .department-row.has-programs-row {
+                            background-color: #ffffff;
+                        }
+                        
+                        .department-row.no-programs-row {
+                            background-color: #fff3cd;
+                        }
+                        
+                        .programs-column {
+                            vertical-align: top !important;
+                        }
+                        
+                        /* Custom scrollbar for programs container */
+                        .programs-container::-webkit-scrollbar {
+                            width: 6px;
+                        }
+                        
+                        .programs-container::-webkit-scrollbar-track {
+                            background: #f1f1f1;
+                            border-radius: 3px;
+                        }
+                        
+                        .programs-container::-webkit-scrollbar-thumb {
+                            background: #0A369D;
+                            border-radius: 3px;
+                        }
+                        
+                        .programs-container::-webkit-scrollbar-thumb:hover {
+                            background: #082d7d;
+                        }
+                        
+                        /* Responsive adjustments */
+                        @media (max-width: 768px) {
+                            .program-item {
+                                font-size: 0.8rem;
+                                padding: 3px 6px;
+                            }
+                            
+                            .programs-container {
+                                max-height: 150px;
+                            }
+                        }
+                    </style>
+                `);
+                        }
                     },
                     error: function (xhr, status, error) {
-                        
                         console.error("Error fetching departments:", error);
-                        $("#departmentSelect").html(`<option value="">Failed to load departments</option>`);
+
+                        // Show error in table
+                        if ($.fn.DataTable.isDataTable('#departmentsTable')) {
+                            $('#departmentsTable').DataTable().destroy();
+                        }
+
+                        $('#departmentsTable tbody').html(`
+                <tr>
+                    <td colspan="3" class="text-center text-danger">
+                        <i class="material-icons">error</i>
+                        Failed to load departments: ${error}
+                    </td>
+                </tr>
+            `);
+
+                        // Update select dropdown
+                        const deptSelect = $('#deptSelect');
+                        deptSelect.empty();
+                        deptSelect.append('<option value="">Failed to load departments</option>');
                     }
                 });
             }
+
+            // Additional helper function to refresh departments data
+            function refreshDepartments() {
+                fetchDepartments();
+            }
+
+            // Function to get department by ID (utility function)
+            function getDepartmentById(deptId) {
+                if (dataTable) {
+                    const rowData = dataTable.rows().data().toArray();
+                    return rowData.find(dept => dept.dept_id == deptId);
+                }
+                return null;
+            }
+
+            // Function to search departments by name
+            function searchDepartments(searchTerm) {
+                if (dataTable) {
+                    dataTable.search(searchTerm).draw();
+                }
+            }
             function fetchUsers() {
                 $.ajax({
-                    url: '/users/?all=true',
+                    url: '/users/?user_type=Staff',
                     dataType: 'json',
                     success: function (data) {
-                        console.log("data = ",data)
+                        console.log("data = ", data)
                         const headSelect = $('#headSelect');
                         headSelect.empty();
                         headSelect.append('<option value="">Select Department Head</option>');
@@ -259,7 +449,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Error fetching users:", error);
-                        
+
                     }
                 });
             }
@@ -298,7 +488,7 @@
                     }
                 },
                 error: function (xhr, status, error) {
-                   
+
                 }
             });
         }
