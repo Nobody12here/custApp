@@ -121,8 +121,7 @@ def update_request_status(request, id):
             req.approved_at = timezone.now().isoformat()
             req.save()
             user = host or student
-            print(guest.guest_fcm_token)
-            if guest.guest_fcm_token:
+            if guest and guest.guest_fcm_token:
                 notify_user_devices(
                     guest,
                     title="Request Update",
@@ -249,6 +248,7 @@ class ApplicationRequestAPIView(APIView):
             template_text = application.application_desc
 
             # Prepare data to replace the placeholders in the template
+            print('applicant program',applicant.program)
             template_data = {
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
