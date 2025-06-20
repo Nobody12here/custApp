@@ -89,6 +89,7 @@ class AddCommentView(APIView):
                 {"error": "Comment text is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
         return add_comment_to_instance(request, req, student=student, employee=employee)
 
 
@@ -125,7 +126,7 @@ def update_request_status(request, id):
                 notify_user_devices(
                     guest,
                     title="Request Update",
-                    body=f"Your {req.request_type} request (ID: {req.request_id}) is now {status.lower()}. Please arrive early and bring required documents.",
+                    body=f"Your {req.request_type} request (ID: {req.request_id}) is now {status.lower()}. Please arrive early and bring your original CNIC with you.",
                     url="",
                 )
             if user:

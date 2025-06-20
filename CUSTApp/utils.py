@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-def notify_user_devices(user:Users, title, body, url=None):
+def notify_user_devices(user: Users, title, body, url=None):
     guest_fcm_token = user.guest_fcm_token
     if not guest_fcm_token:
         return False  # or you might want to raise an exception
@@ -145,10 +145,17 @@ def send_comment_notification(user_type, name, text, employee, student):
             recipient_name=employee.name,
             action_url="/user/dashboard/",
         )
+        notify_user_devices(
+            employee, "New comment on your Application", f"{name} commented: {text}"
+        )
+
     elif user_type == "Staff":
         send_alert_email(
             student.email,
             "New Comment on Your Application",
             f"{name} commented: {text}",
             recipient_name=student.name,
+        )
+        notify_user_devices(
+            student, "New comment on your Application", f"{name} commented: {text}"
         )
