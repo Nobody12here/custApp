@@ -322,7 +322,7 @@ Dashboard{% endblock %} {% block extra_css %}
                                 <th>Visit Date</th>
                                 <th>Visit Time</th>
                                 <th>Status</th>
-
+                                <th>Comments</th>
 
                                 <th>Actions</th>
                             </tr>
@@ -604,7 +604,10 @@ Dashboard{% endblock %} {% block extra_css %}
           }
         </td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="openGuestCommentModal({{ pass.request_id }}, '{{ pass.comments|escapejs }}')">
+          <button class="btn btn-secondary btn-sm comment-btn" 
+                  data-toggle="modal" data-target="#commentModal"
+                  data-request-id="${request.request_id}"
+                  data-comments="${comments}">
             <i class="material-icons">comment</i>
           </button>
         </td>
@@ -842,7 +845,14 @@ Dashboard{% endblock %} {% block extra_css %}
                 ${pass.status}
             </span>
         </td>
-        
+        <td>
+            ${pass.comments ? `
+                <div class="comment-tooltip">
+                    
+                    <span class="tooltip-text">${pass.comments}</span>
+                </div>
+            ` : '-'}
+        </td>
         <td class="action-buttons">
             ${(pass.status === 'Pending') && (pass.host.toString() === user_id) ? `
                 <button class="btn btn-success" onclick="updateGuestPassStatus(${pass.request_id}, 'Approved')">
