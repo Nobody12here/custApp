@@ -4,7 +4,6 @@ from django.template.loader import render_to_string
 from firebase_admin import messaging
 import json
 from .models import Users
-from push_notifications.models import GCMDevice
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -159,3 +158,13 @@ def send_comment_notification(user_type, name, text, employee, student):
         notify_user_devices(
             student, "New comment on your Application", f"{name} commented: {text}"
         )
+
+
+def extract_year_term(reg_no: str) -> str:
+    year_prefix = reg_no[:2]
+    term_code = reg_no[2]
+    term_map = {"1": "Spring", "3": "Fall"}
+    year = f"20{year_prefix}"
+    term = term_map.get(term_code, "Undefined Term Code")
+
+    return f"{term} {year}"

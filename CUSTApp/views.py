@@ -1,6 +1,7 @@
 # CUSTApp/views.py
 from datetime import datetime
 import pandas as pd
+import re
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
@@ -29,7 +30,12 @@ from .serializers import (
 )
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .utils import send_alert_email, add_comment_to_instance, notify_user_devices
+from .utils import (
+    send_alert_email,
+    add_comment_to_instance,
+    notify_user_devices,
+    extract_year_term,
+)
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
@@ -89,7 +95,7 @@ class AddCommentView(APIView):
                 {"error": "Comment text is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         return add_comment_to_instance(request, req, student=student, employee=employee)
 
 
@@ -249,7 +255,7 @@ class ApplicationRequestAPIView(APIView):
             template_text = application.application_desc
 
             # Prepare data to replace the placeholders in the template
-            print('applicant program',applicant.program)
+            pattern = re.match(r"([A-Za-z]+)([0-9]+)", applicant.uu_id)
             template_data = {
                 "student_name": applicant.name,
                 "registration_no": applicant.uu_id,
@@ -272,6 +278,7 @@ class ApplicationRequestAPIView(APIView):
                 "picture": applicant.picture,
                 "cgpa": applicant.cgpa,
                 "term": applicant.term,
+                "current_term": extract_year_term(pattern.group(2)),
                 "dob": applicant.DoB,
                 "cnic": applicant.CNIC,
                 "He/She": "He" if applicant.gender.lower() == "male" else "She",

@@ -6,7 +6,6 @@ from .serializers import GuestPassRequestSerializer
 from django.db.models import Case, When, Value, BooleanField
 from django.utils import timezone
 from datetime import datetime, timedelta
-from push_notifications.models import GCMDevice
 from firebase_admin import messaging
 
 
