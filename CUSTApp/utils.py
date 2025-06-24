@@ -6,19 +6,44 @@ import json
 from .models import Users
 from rest_framework.response import Response
 from rest_framework import status
+from push_notifications.models import GCMDevice
 
 
-def notify_user_devices(user: Users, title, body, url=None):
-    guest_fcm_token = user.guest_fcm_token
-    if not guest_fcm_token:
-        return False  # or you might want to raise an exception
+def notify_user_devices(user: Users, title: str, body: str, url: str = None) -> bool:
+    """
+    Send a notification to a user's devices using Firebase Cloud Messaging.
 
-    # Default URL if none provided
+    Args:
+        user: The user to notify
+        title: Notification title
+        body: Notification body
+        url: Optional URL to include in the notification data
+
+    Returns:
+        bool: True if notification was sent successfully, False otherwise
+    """
+    # Set default URL if none provided
     url = url or "/"
 
-    # Create a full-featured FCM message
+    # Get the FCM token - prioritize guest token if available
+    fcm_token = user.guest_fcm_token
+
+    # If no guest token, try to get registered devices
+    if not fcm_token:
+        try:
+            device = GCMDevice.objects.filter(user=user).order_by('-date_created').first()
+            fcm_token = device.registration_id  # Assuming this is the field name
+            print(fcm_token)
+        except GCMDevice.DoesNotExist:
+            print("No FCM token available for user")
+            return False
+        except Exception as e:
+            print(f"Error getting user device: {str(e)}")
+            return False
+
+    # Create the FCM message
     message = messaging.Message(
-        token=guest_fcm_token,
+        token=fcm_token,
         notification=messaging.Notification(
             title=title,
             body=body,
@@ -26,15 +51,16 @@ def notify_user_devices(user: Users, title, body, url=None):
         data={
             "title": title,
             "body": body,
-            "click_action": "FLUTTER_NOTIFICATION_CLICK",  # Remove if not using Flutter
+            "url": url,  # Include the URL in the data payload
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
         },
         android=messaging.AndroidConfig(
             priority="high",
             notification=messaging.AndroidNotification(
-                channel_id="your_default_channel",  # Required for Android 8+
-                click_action="FLUTTER_NOTIFICATION_CLICK",  # Remove if not using Flutter
+                channel_id="your_default_channel",
+                click_action="FLUTTER_NOTIFICATION_CLICK",
                 sound="default",
-                icon="notification_icon",  # Your app's notification icon
+                icon="notification_icon",
             ),
         ),
         apns=messaging.APNSConfig(
@@ -43,18 +69,18 @@ def notify_user_devices(user: Users, title, body, url=None):
                     sound="default",
                     badge=1,
                 ),
-                headers={
-                    "apns-priority": "10"  # Immediate delivery for iOS
-                },
             ),
+            headers={
+                "apns-priority": "10"  # Immediate delivery for iOS
+            },
         ),
     )
 
     try:
         response = messaging.send(message)
+        print(f"Notification sent successfully: {response}")
         return True
     except Exception as e:
-        # Log the error for debugging
         print(f"Failed to send notification: {str(e)}")
         return False
 
