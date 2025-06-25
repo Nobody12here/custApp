@@ -1,6 +1,7 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 from ApplicationTemplate.models import Request
+from CUSTApp.utils import send_sms
 from CUSTApp.models import Users
 from .serializers import GuestPassRequestSerializer
 from django.db.models import Case, When, Value, BooleanField
@@ -69,6 +70,7 @@ class RequestGuestPassView(ModelViewSet):
         instance.refresh_from_db()
         if instance.meeting_date_time != old_meeting_time:
             self.send_update_notification(instance)
+            
 
         return response
 
@@ -76,14 +78,15 @@ class RequestGuestPassView(ModelViewSet):
         # Get the guest's mobile device
         guest_user = Users.objects.filter(user_id=request_instance.guest.user_id).first()
         guest_token = guest_user.guest_fcm_token
-        print(guest_token)
-        if not guest_token:
-            return False
-
-        # Format the meeting time for display
         meeting_time = request_instance.meeting_date_time.astimezone(
             timezone.get_current_timezone()
         ).strftime("%B %d, %Y at %I:%M %p")
+        print(guest_token)
+        if not guest_token:
+            sent = send_sms(guest_user,"Your meeting time has been changed to {meeting_time}")
+            return False
+
+        # Format the meeting time for display
 
         # Create the notification message
         message = messaging.Message(

@@ -20,6 +20,7 @@ dependencies = [
     "cryptography==44.0.2",
     "django==4.1.13",
     "django-push-notifications==3.2.1",
+    "django-unfold>=0.50.0",
     "djangorestframework==3.14.0",
     "djangorestframework-simplejwt==5.3.1",
     "drf-yasg==1.21.7",

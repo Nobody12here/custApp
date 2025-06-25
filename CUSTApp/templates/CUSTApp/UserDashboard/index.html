@@ -204,6 +204,24 @@ Dashboard{% endblock %} {% block extra_css %}
     overflow-y: auto;
     padding-bottom: 10px;
   }
+  .modal-header .close {
+  padding: 0.5rem 1rem;
+  margin: -1rem -1rem -1rem auto;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  opacity: 0.8;
+  background: none;
+  border: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-header .close:hover {
+  opacity: 1;
+  color: #000;
+  cursor: pointer;
+}
+
   .modal-body {
     width: 100%;
   }
