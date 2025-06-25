@@ -76,15 +76,17 @@ class RequestGuestPassView(ModelViewSet):
 
     def send_update_notification(self, request_instance):
         # Get the guest's mobile device
-        guest_user = Users.objects.filter(user_id=request_instance.guest.user_id).first()
+        guest_user = Users.objects.get(user_id=request_instance.guest.user_id)
         guest_token = guest_user.guest_fcm_token
         meeting_time = request_instance.meeting_date_time.astimezone(
             timezone.get_current_timezone()
         ).strftime("%B %d, %Y at %I:%M %p")
         print(guest_token)
+        print(guest_user.name)
         if not guest_token:
-            sent = send_sms(guest_user,"Your meeting time has been changed to {meeting_time}")
-            return False
+            print("sending sms ")
+            sent = send_sms(guest_user,"Your meeting time has been changed.Please check in you app for more information")
+            return sent
 
         # Format the meeting time for display
 
