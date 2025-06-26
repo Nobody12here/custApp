@@ -85,7 +85,7 @@ class RequestGuestPassView(ModelViewSet):
         print(guest_user.name)
         if not guest_token:
             print("sending sms ")
-            sent = send_sms(guest_user,"Your meeting time has been changed.Please check in you app for more information")
+            sent = send_sms(guest_user,f"Your meeting time has been changed to {meeting_time}")
             return sent
 
         # Format the meeting time for display
