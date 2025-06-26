@@ -273,6 +273,402 @@ Dashboard{% endblock %} {% block extra_css %}
     padding: 10px;
   }
 </style>
+<style>
+    .modal-header .close {
+        padding: 0.5rem 1rem;
+        margin: -1rem -1rem -1rem auto;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        opacity: 0.8;
+        background: none;
+        border: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-header .close:hover {
+        opacity: 1;
+        color: #000;
+        cursor: pointer;
+    }
+
+    /* Base Styles */
+    .card-stats {
+        cursor: pointer;
+        transition: transform 0.2s;
+        min-width: 220px;
+        max-width: 300px;
+    }
+
+    /* Statistics Cards */
+    #guest-stats-cards .card-stats {
+        background: linear-gradient(90deg, #0A369D 0%, #1E88E5 100%);
+        color: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14),
+            0 7px 10px -5px rgba(10, 54, 157, 0.4);
+        margin-bottom: 20px;
+        text-align: center;
+        min-width: 220px;
+        max-width: 300px;
+    }
+
+    #guest-stats-cards .card-icon {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    #guest-stats-cards .card-icon i.material-icons {
+        color: white;
+        font-size: 30px;
+    }
+
+    #guest-stats-cards .card-category {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        margin: 0 0 5px 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    #guest-stats-cards .card-title {
+        color: white;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    /* Form Styles */
+    .guest-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.14);
+        margin-bottom: 30px;
+    }
+
+    .guest-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .guest-form label {
+        color: #555;
+        font-weight: 500;
+    }
+
+    .guest-form .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+        height: auto;
+    }
+
+    .guest-form .form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 0.2rem rgba(10, 54, 157, 0.25);
+    }
+
+    /* Table Styles */
+    .table th {
+        font-weight: 500;
+        color: #0A369D;
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .btn i.material-icons {
+        font-size: 18px;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: capitalize;
+        font-size: 13px;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-badge.visited {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #eee;
+        padding: 20px;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        color: #0A369D;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #eee;
+        padding: 15px 20px;
+    }
+
+    /* Detail Items */
+    .detail-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #0A369D;
+    }
+
+    .detail-item h6 {
+        color: #0A369D;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-item p {
+        margin-bottom: 10px;
+        display: flex;
+    }
+
+    .detail-item p strong {
+        min-width: 120px;
+        display: inline-block;
+    }
+
+    /* Datetime Modification Section */
+    .datetime-modification {
+        margin-top: 25px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #0A369D;
+    }
+
+    .datetime-modification h6 {
+        color: #0A369D;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: space-around;
+        
+    }
+
+    #originalDatetime {
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Form Group Improvements */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    /* Enhanced Input Fields */
+    .guest-form .form-control {
+        border-radius: 6px;
+        border: 2px solid #ddd;
+        padding: 8px 12px;
+        height: auto;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .guest-form .form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+        outline: none;
+    }
+
+    /* Select Dropdown Styling */
+    .guest-form select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%230A369D' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px 12px;
+        padding-right: 35px;
+    }
+
+    /* Date and Time Inputs */
+    .guest-form input[type="date"],
+    .guest-form input[type="time"] {
+        position: relative;
+    }
+
+    .guest-form input[type="date"]::-webkit-calendar-picker-indicator,
+    .guest-form input[type="time"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        bottom: 0;
+        color: transparent;
+        cursor: pointer;
+        height: auto;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+    }
+
+    /* Form Group Enhancements */
+    .guest-form .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .guest-form label {
+        color: #555;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Focus State for Form Groups */
+    .guest-form .form-group:focus-within label {
+        color: #0A369D;
+    }
+
+    /* Input Field Placeholder Styling */
+    .guest-form .form-control::placeholder {
+        color: #aaa;
+        opacity: 1;
+    }
+
+    /* Required Field Indicators */
+    .guest-form .form-control:required+label::after {
+        content: " *";
+        color: #e74c3c;
+    }
+
+    /* Modal Input Enhancements (for datetime modification) */
+    .datetime-modification .form-control {
+        border-radius: 6px;
+        border: 2px solid #ddd;
+        padding: 10px 12px;
+        height: auto;
+        font-size: 15px;
+    }
+
+    .datetime-modification .form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+    }
+
+    /* Textarea Styling */
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Search Input Enhancement */
+    #searchInput {
+        border-radius: 30px;
+        border: 2px solid #ddd;
+        padding: 10px 10px; 
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+        outline: none;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .detail-item p {
+            flex-direction: column;
+        }
+
+        .detail-item p strong {
+            min-width: auto;
+            margin-bottom: 5px;
+        }
+    }
+
+    /* Animation for form toggle */
+    #guestPassFormRow {
+        transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* Other Purpose Group */
+    #otherPurposeGroup {
+        display: none;
+        margin-top: 10px;
+    }
+</style>
 {% endblock %} {% block content %}
 <div class="row" id="application-cards">
   <!-- Cards will be injected here by JavaScript -->

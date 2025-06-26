@@ -392,7 +392,8 @@ def students(request):
 def dashboard(request):
     return render(request, "CUSTApp/dashboard.html")
 
-
+def privacy_policy(request):
+    return render(request,"CUSTApp/UserDashboard/privacy-policy.html")
 def verify_otp_page(request):
     return render(request, "CUSTApp/verify_otp.html")
 

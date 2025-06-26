@@ -64,6 +64,7 @@ urlpatterns = [
     path(
         "api/upload-users/", views.UserCSVUploadAPIView.as_view(), name="upload_users"
     ),
+    path("privacy-policy/",views.privacy_policy,name='privacy-policy'),
     path(
         "api/applications/",
         views.ApplicationListView.as_view(),
