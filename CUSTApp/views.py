@@ -135,7 +135,7 @@ def update_request_status(request, id):
                 notify_user_devices(
                     guest,
                     title="Request Update",
-                    body=f"Your {req.request_type} request (ID: {req.request_id}) is now {status.lower()}. {'' if status.lower()=='rejected' else  "Please arrive early and bring your original CNIC with you."}",
+                    body=f"Your {req.request_type} request (ID: {req.request_id}) is now {status.lower()}. {'' if status.lower()=='rejected' else 'Please arrive early and bring your original CNIC with you.'}",
                     url="",
                 )
             if user:
