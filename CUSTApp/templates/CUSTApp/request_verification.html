@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letter Verification - {{ req.request_id }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'assets/img/apple-icon.png' %}">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            /* Remove flex centering to allow scrolling */
+            /* display: flex;
+            align-items: center;
+            justify-content: center; */
+            background: linear-gradient(-45deg, #0A369D, #1E88E5, #43cea2, #185a9d, #f7971e, #ffd200);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            position: relative;
+            overflow-x: hidden;
+        }
+        @keyframes gradientBG {
+            0% {background-position: 0% 50%;}
+            25% {background-position: 50% 100%;}
+            50% {background-position: 100% 50%;}
+            75% {background-position: 50% 0%;}
+            100% {background-position: 0% 50%;}
+        }
+        /* Optional: animated floating circles for extra modern effect */
+        .bg-circles {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-circles span {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.18;
+            animation: float 18s linear infinite;
+        }
+        .bg-circles span:nth-child(1) {
+            width: 180px; height: 180px; left: 10vw; top: 12vh; background: #fff;
+            animation-delay: 0s;
+        }
+        .bg-circles span:nth-child(2) {
+            width: 120px; height: 120px; left: 70vw; top: 20vh; background: #ffd200;
+            animation-delay: 4s;
+        }
+        .bg-circles span:nth-child(3) {
+            width: 90px; height: 90px; left: 60vw; top: 70vh; background: #43cea2;
+            animation-delay: 8s;
+        }
+        .bg-circles span:nth-child(4) {
+            width: 140px; height: 140px; left: 30vw; top: 80vh; background: #fff;
+            animation-delay: 12s;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) scale(1);}
+            50% { transform: translateY(-40px) scale(1.1);}
+            100% { transform: translateY(0) scale(1);}
+        }
+        .verify-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(10,54,157,0.18), 0 1.5px 8px rgba(30,136,229,0.10);
+            max-width: 650px; /* Increased width */
+            width: 95vw;
+            padding: 48px 48px 36px 48px; /* More padding for larger screens */
+            margin: 40px auto; /* Center horizontally, add vertical margin for spacing */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .header img {
+            width: 60px;
+            margin-bottom: 6px;
+        }
+        .header h2 {
+            margin: 0;
+            color: #0A369D;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            margin: 0;
+            color: #555;
+            font-size: 0.98rem;
+        }
+        .verified {
+            text-align: center;
+            margin: 10px 0 0 0;
+        }
+        .verified img {
+            width: 90px;
+            height: 90px;
+            margin-bottom: -8px;
+        }
+        .verified span {
+            display: block;
+            color: #43a047;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+        .verify-title {
+            text-align: center;
+            color: #1E88E5;
+            font-size: 1.18rem;
+            font-weight: 600;
+            margin: 18px 0 10px 0;
+            letter-spacing: 0.5px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 16px 0;
+            font-size: 0.99rem;
+        }
+        .info-table th, .info-table td {
+            text-align: left;
+            padding: 7px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-table th {
+            color: #1E88E5;
+            width: 44%;
+            font-weight: 600;
+            padding-right: 10px;
+        }
+        .info-table td {
+            color: #222;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 12px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #fff;
+            background: {% if req.status == "Approved" %}#43a047{% elif req.status == "Rejected" %}#e53935{% else %}#fbc02d{% endif %};
+        }
+        .letter-content {
+            background: #f7f9fa;
+            border-radius: 8px;
+            padding: 13px 14px;
+            margin-top: 7px;
+            color: #333;
+            font-size: 0.98rem;
+            min-height: 40px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 22px;
+            color: #888;
+            font-size: 0.93rem;
+        }
+        @media (max-width: 900px) {
+            .verify-card {
+                max-width: 98vw;
+                padding: 24px 8px 18px 8px;
+            }
+        }
+        @media (max-width: 600px) {
+            .verify-card {
+                max-width: 100vw;
+                padding: 10vw 2vw 8vw 2vw;
+            }
+            .header img { width: 38px; }
+            .info-table th, .info-table td {
+                font-size: 0.95rem;
+            }
+            .letter-content {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-circles">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="verify-card">
+        <div class="header">
+            <img src="{% static 'assets/img/apple-icon.png' %}" alt="University Logo">
+            <h2>Capital University of Science & Technology</h2>
+            <p>Islamabad, Pakistan<br>
+            Phone: +92-51-111-555-666<br>
+            Email: support@custapp.pk</p>
+        </div>
+        <div class="verified">
+            <img src="{% static 'assets/img/tck.gif' %}" alt="Verified">
+            <span>Verified &amp; Live</span>
+        </div>
+        <div class="verify-title">Letter Verification</div>
+        <table class="info-table">
+            <tr>
+                <th>Request ID</th>
+                <td>{{ req.request_id }}</td>
+            </tr>
+            <tr>
+                <th>Applicant Name</th>
+                <td>{{ req.applicant.name }}</td>
+            </tr>
+            <tr>
+                <th>Registration No.</th>
+                <td>{{ req.applicant.uu_id }}</td>
+            </tr>
+            <tr>
+                <th>Department</th>
+                <td>{{ req.applicant.dept.dept_name }}</td>
+            </tr>
+            <tr>
+                <th>Program</th>
+                <td>{{ req.applicant.program.program_name }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td><span class="status">{{ req.status }}</span></td>
+            </tr>
+            <tr>
+                <th>Issued On</th>
+                <td>{{ req.created_at|date:"F d, Y" }}</td>
+            </tr>
+            <tr>
+                <th>Issued By</th>
+                <td>{{ req.responsible_employee_name }}</td>
+            </tr>
+            <tr>
+                <th>Letter Type</th>
+                <td>{{ req.application.application_name }}</td>
+            </tr>
+        </table>
+        <div style="margin-top:10px;">
+            <strong>Letter Content:</strong>
+            <div class="letter-content">
+                {{ req.renderedtemplate|linebreaks }}
+            </div>
+        </div>
+        <div class="footer">
+            This is a computer generated letter. For any queries, contact <a href="mailto:support@custapp.pk">support@custapp.pk</a>.
+        </div>
+    </div>
+</body>
+</html>

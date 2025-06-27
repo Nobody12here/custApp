@@ -8,12 +8,14 @@ from .views import (
     DepartmentRetrieveUpdateDestroyAPI,
     GeneratePDFWithLetterheadAPIView,
     GetAttributesAPIView,
+    RequestRetrieveAPIView,
     SupportTicketAPIView,
     UserUpdateView,
     UsersList,
     DepartmentList,
     RequestList,
     index_page,
+    request_verification_page,
     test_api_view,
     OTPSendView,
     OTPVerifyView,
@@ -103,5 +105,7 @@ urlpatterns = [
     path("home/", views.home, name="home"),
     path('api/support-ticket/', SupportTicketAPIView.as_view(), name='support_ticket_api'),
     path('api/all-users/', AllUsersListAPIView.as_view(), name='all_users_list'),
+    path('api/requests/<int:request_id>/', RequestRetrieveAPIView.as_view(), name='request-detail'),
+    path('verify/request/<int:request_id>/', request_verification_page, name='request-verification'),
 ]
 urlpatterns.extend(router.urls)

@@ -1,6 +1,9 @@
 # CUSTApp/views.py
 from datetime import datetime
+from django.urls import reverse
 import pandas as pd
+import qrcode
+from reportlab.platypus import Image as RLImage
 import re
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
@@ -1041,6 +1044,28 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             )
         )
 
+        # --- QR Code Footer Section ---
+        
+
+        # Generate verification URL (adjust 'request-detail' to your actual url name)
+        verify_url = request.build_absolute_uri(
+            reverse('request-verification', args=[request_obj.request_id])
+        )
+
+        qr = qrcode.QRCode(box_size=3, border=2)
+        qr.add_data(verify_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        qr_buffer = BytesIO()
+        qr_img.save(qr_buffer, format='PNG')
+        qr_buffer.seek(0)
+
+        
+        elements.append(Spacer(1, 30))
+        
+        # elements.append(Spacer(1, 5))
+        elements.append(RLImage(qr_buffer, width=60, height=60))
+
         # Build the PDF
         doc.build(elements)
         content_buffer.seek(0)
@@ -1190,3 +1215,13 @@ class SupportTicketAPIView(APIView):
             return Response({"message": "Support ticket submitted successfully."})
         except Exception as e:
             return Response({"message": f"Failed to send email: {str(e)}"}, status=500)
+
+
+class RequestRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+    lookup_field = 'request_id'
+def request_verification_page(request, request_id):
+    req = get_object_or_404(Request, request_id=request_id)
+    return render(request, "CUSTApp/request_verification.html", {"req": req})
