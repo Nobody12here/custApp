@@ -1007,51 +1007,16 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         for line in content.split("\n"):
             elements.append(Paragraph(line, body_style))
 
-        # 3. Add signature (indented left)
-        elements.append(Spacer(1, 70))
-        elements.append(Paragraph("Issued on request", signature_style))
-        elements.append(Spacer(1, 10))
-        signature_table = Table([[signature_image]], colWidths=[550])
-        signature_table.setStyle(
-            TableStyle(
-                [
-                    ("LEFTPADDING", (0, 0), (0, 0), 12),  # ~0.75 inch indent
-                    ("RIGHTPADDING", (0, 0), (0, 0), 0),
-                    ("TOPPADDING", (0, 0), (0, 0), 0),
-                    ("BOTTOMPADDING", (0, 0), (0, 0), 0),
-                    ("VALIGN", (0, 0), (0, 0), "TOP"),
-                ]
-            )
-        )
-
-        # Add to elements
-        elements.append(signature_table)
-        elements.append(Spacer(1, 10))
-        elements.append(
-            Paragraph(serializer.data.get("responsible_employee_name"), signature_style)
-        )
-        elements.append(Spacer(1, 7))
-        elements.append(
-            Paragraph(
-                f"{serializer.data.get('responsible_employee_designation')} ",
-                signature_style,
-            )
-        )
-        elements.append(Spacer(1, 7))
-        elements.append(
-            Paragraph(
-                f"{serializer.data.get('responsible_dept_name')} ", signature_style
-            )
-        )
-
-        # --- QR Code Footer Section ---
         
 
-        # Generate verification URL (adjust 'request-detail' to your actual url name)
+        # --- QR Code Footer Section ---
+
+        # Generate verification URL (adjust 'request-verification' to your actual URL name)
         verify_url = request.build_absolute_uri(
             reverse('request-verification', args=[request_obj.request_id])
         )
 
+        # Generate QR code
         qr = qrcode.QRCode(box_size=3, border=2)
         qr.add_data(verify_url)
         qr.make(fit=True)
@@ -1059,13 +1024,63 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         qr_buffer = BytesIO()
         qr_img.save(qr_buffer, format='PNG')
         qr_buffer.seek(0)
+        qr_image = RLImage(qr_buffer, width=60, height=60)
+        # QR code text and URL paragraph
+        from reportlab.lib import colors
+        verify_note_style = ParagraphStyle(
+            name="VerifyNote",
+            parent=styles["Normal"],
+            fontSize=8,
+            leading=10,
+            alignment=0,  # Left align
+            textColor=colors.grey,
+        )
+    
+        qr_note = Paragraph("Scan the QR code to verify this document.", verify_note_style)
+        qr_link = Paragraph(f"<a href='{verify_url}' color='blue'>{verify_url}</a>", verify_note_style)
 
-        
+        # Signature section (image + name + designation + department)
+        signature_data = [
+            signature_image,
+            Paragraph(serializer.data.get("responsible_employee_name"), signature_style),
+            Paragraph(serializer.data.get("responsible_employee_designation"), signature_style),
+            Paragraph(serializer.data.get("responsible_dept_name"), signature_style),
+        ]
+
+        signature_table = Table([[s] for s in signature_data], colWidths=[270])
+        signature_table.setStyle(
+            TableStyle([
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ])
+        )
+
+        # QR section (QR image + small note + link)
+        qr_table = Table([[qr_image], [qr_note], [qr_link]], colWidths=[200])
+        qr_table.setStyle(
+            TableStyle([
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+            ])
+        )
+
+        # Combine signature and QR into one horizontal row
+        final_footer_table = Table(
+            [[signature_table, qr_table]],
+            colWidths=[300, 200]  # Adjust width as needed
+        )
+        final_footer_table.setStyle(
+            TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ])
+        )
+
         elements.append(Spacer(1, 30))
-        
-        # elements.append(Spacer(1, 5))
-        elements.append(RLImage(qr_buffer, width=60, height=60))
-
+        elements.append(final_footer_table)
         # Build the PDF
         doc.build(elements)
         content_buffer.seek(0)
