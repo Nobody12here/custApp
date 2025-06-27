@@ -713,8 +713,8 @@
                 showValidationFeedback('visitTime', false, dateTimeValidation.message);
                 isFormValid = false;
             } else {
-                showValidationFeedback('visitDate', true, 'Valid date');
-                showValidationFeedback('visitTime', true, 'Valid time');
+                showValidationFeedback('visitDate', true, '');
+                showValidationFeedback('visitTime', true, '');
             }
         }
 
@@ -726,7 +726,7 @@
                 showValidationFeedback(fieldId, false, 'This field is required');
                 isFormValid = false;
             } else {
-                showValidationFeedback(fieldId, true, 'Valid');
+                showValidationFeedback(fieldId, true, '');
             }
         });
 
@@ -749,7 +749,7 @@
                 showValidationFeedback('otherPurpose', false, 'Please specify the purpose');
                 isFormValid = false;
             } else {
-                showValidationFeedback('otherPurpose', true, 'Valid');
+                showValidationFeedback('otherPurpose', true, '');
             }
         }
 
@@ -804,7 +804,7 @@
             if (!value || value.trim() === '') {
                 showValidationFeedback(fieldId, false, 'This field is required');
             } else {
-                showValidationFeedback(fieldId, true, 'Valid');
+                showValidationFeedback(fieldId, true, '');
             }
         });
 
@@ -824,13 +824,13 @@
             // Validate date and time together if both are available
             if (dateValue && timeValue) {
                 const validation = validateDateTime(dateValue, timeValue);
-                showValidationFeedback('visitDate', validation.isValid, validation.isValid ? 'Valid date' : validation.message);
+                showValidationFeedback('visitDate', validation.isValid, validation.isValid ? '' : validation.message);
 
                 // Also update time validation
                 if (!validation.isValid) {
                     showValidationFeedback('visitTime', false, validation.message);
                 } else {
-                    showValidationFeedback('visitTime', true, 'Valid time');
+                    showValidationFeedback('visitTime', true, '');
                 }
             } else {
                 // Just validate the date
@@ -841,7 +841,7 @@
                 if (selectedDate < today) {
                     showValidationFeedback('visitDate', false, 'Cannot select past dates');
                 } else {
-                    showValidationFeedback('visitDate', true, 'Valid date');
+                    showValidationFeedback('visitDate', true, '');
                 }
             }
         });
@@ -859,16 +859,16 @@
             // Validate date and time together if both are available
             if (dateValue && timeValue) {
                 const validation = validateDateTime(dateValue, timeValue);
-                showValidationFeedback('visitTime', validation.isValid, validation.isValid ? 'Valid time' : validation.message);
+                showValidationFeedback('visitTime', validation.isValid, validation.isValid ? '' : validation.message);
 
                 // Also update date validation if needed
                 if (!validation.isValid) {
                     showValidationFeedback('visitDate', false, validation.message);
                 } else {
-                    showValidationFeedback('visitDate', true, 'Valid date');
+                    showValidationFeedback('visitDate', true, '');
                 }
             } else {
-                showValidationFeedback('visitTime', true, 'Valid time');
+                showValidationFeedback('visitTime', true, '');
             }
         });
 
