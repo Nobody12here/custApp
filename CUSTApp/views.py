@@ -984,7 +984,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             fontSize=12,
             leading=14,
             alignment=0,  # Left align
-            leftIndent=52,  # ~1.5 inch indent
+            leftIndent=0,  # ~1.5 inch indent
             rightIndent=0,
         )
 
@@ -1047,10 +1047,10 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             Paragraph(serializer.data.get("responsible_dept_name"), signature_style),
         ]
 
-        signature_table = Table([[s] for s in signature_data], colWidths=[270])
+        signature_table = Table([[s] for s in signature_data], colWidths=[150])
         signature_table.setStyle(
             TableStyle([
-                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ])
         )
