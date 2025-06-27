@@ -327,7 +327,7 @@
                                 <label for="purposeSelect">Purpose of Visit</label>
                                 <select class="form-control" id="purposeSelect" required>
                                     <option value="Meeting" selected>Meeting</option>
-                                    <option value="Delivery">Delivery</option>
+                                    <option value="Delivery">Admission Office</option>
                                     <option value="Interview">Interview</option>
                                     <option value="Other">Other</option>
                                 </select>
@@ -403,22 +403,628 @@
     </div>
 </div>
 <style>
-/* Add this for Bootstrap 4 compatibility if modal-fullscreen is not available */
-@media (min-width: 576px) {
-    .modal-fullscreen {
-        width: 100vw;
-        max-width: 100vw;
-        height: 100vh;
-        margin: 0;
+    /* Add this for Bootstrap 4 compatibility if modal-fullscreen is not available */
+    @media (min-width: 576px) {
+        .modal-fullscreen {
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .modal-fullscreen .modal-content {
+            height: 100vh;
+            border-radius: 0;
+        }
     }
-    .modal-fullscreen .modal-content {
-        height: 100vh;
-        border-radius: 0;
-    }
-}
 </style>
 {% endblock %}
 {% block extra_js %}
+<script>
+    // Add this CSS to your existing styles
+    const additionalCSS = `
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .form-control.is-valid {
+        border-color: #28a745;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73l.4-.38L4.1 5.4l-.4-.38-1.3.94L1.1 4.7l-.4.38 1.6 1.65z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .invalid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+        display: block;
+    }
+
+    .valid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #28a745;
+        display: block;
+    }
+`;
+
+    // CNIC Validation Functions
+    function formatCNIC(value) {
+        // Remove all non-digits
+        const digits = value.replace(/\D/g, '');
+
+        // Format as XXXXX-XXXXXXX-X
+        if (digits.length <= 5) {
+            return digits;
+        } else if (digits.length <= 12) {
+            return digits.slice(0, 5) + '-' + digits.slice(5);
+        } else {
+            return digits.slice(0, 5) + '-' + digits.slice(5, 12) + '-' + digits.slice(12, 13);
+        }
+    }
+
+    function validateCNIC(cnic) {
+        // Remove dashes and spaces
+        const cleanCNIC = cnic.replace(/[-\s]/g, '');
+
+        // Check if it's exactly 13 digits
+        if (!/^\d{13}$/.test(cleanCNIC)) {
+            return {
+                isValid: false,
+                message: 'CNIC must be exactly 13 digits (XXXXX-XXXXXXX-X format)'
+            };
+        }
+
+        // Basic format validation (Pakistani CNIC structure)
+        const firstFive = cleanCNIC.slice(0, 5);
+        const middleSeven = cleanCNIC.slice(5, 12);
+        const lastDigit = cleanCNIC.slice(12, 13);
+
+        // Check if first 5 digits represent a valid region (basic check)
+        const regionCode = parseInt(firstFive);
+        if (regionCode < 10000 || regionCode > 99999) {
+            return {
+                isValid: false,
+                message: 'Invalid CNIC format - invalid region code'
+            };
+        }
+
+        // Validate last digit using modulo 10 algorithm (basic checksum)
+        const digits = cleanCNIC.split('').map(Number);
+        let sum = 0;
+        for (let i = 0; i < 12; i++) {
+            sum += digits[i] * (i % 2 === 0 ? 1 : 2);
+            if (digits[i] * (i % 2 === 0 ? 1 : 2) > 9) {
+                sum -= 9;
+            }
+        }
+        const checkDigit = (10 - (sum % 10)) % 10;
+
+       
+
+        return {
+            isValid: true,
+            message: 'Valid CNIC format'
+        };
+    }
+
+    // Phone Number Validation Functions
+    function formatPhoneNumber(value) {
+        // Remove all non-digits except +
+        let digits = value.replace(/[^\d+]/g, '');
+
+        // Handle Pakistani phone numbers
+        if (digits.startsWith('+92')) {
+            // Format: +92 XXX XXXXXXX
+            digits = digits.slice(0, 13); // Limit to 13 characters
+            if (digits.length > 3) {
+                if (digits.length <= 6) {
+                    return digits.slice(0, 3) + ' ' + digits.slice(3);
+                } else {
+                    return digits.slice(0, 3) + ' ' + digits.slice(3, 6) + ' ' + digits.slice(6);
+                }
+            }
+            return digits;
+        } else if (digits.startsWith('92')) {
+            // Format: 92 XXX XXXXXXX
+            digits = digits.slice(0, 12); // Limit to 12 characters
+            if (digits.length > 2) {
+                if (digits.length <= 5) {
+                    return digits.slice(0, 2) + ' ' + digits.slice(2);
+                } else {
+                    return digits.slice(0, 2) + ' ' + digits.slice(2, 5) + ' ' + digits.slice(5);
+                }
+            }
+            return digits;
+        } else if (digits.startsWith('0')) {
+            // Format: 0XXX XXXXXXX
+            digits = digits.slice(0, 11); // Limit to 11 characters
+            if (digits.length > 4) {
+                return digits.slice(0, 4) + ' ' + digits.slice(4);
+            }
+            return digits;
+        } else {
+            // Format: XXX XXXXXXX (assume local number)
+            digits = digits.slice(0, 10); // Limit to 10 characters
+            if (digits.length > 3) {
+                return digits.slice(0, 3) + ' ' + digits.slice(3);
+            }
+            return digits;
+        }
+    }
+
+    function validatePhoneNumber(phone) {
+        // Remove all spaces and non-digits except +
+        const cleanPhone = phone.replace(/[^\d+]/g, '');
+
+        // Pakistani phone number patterns
+        const patterns = [
+            /^\+92[0-9]{10}$/,  // +92XXXXXXXXXX
+            /^92[0-9]{10}$/,    // 92XXXXXXXXXX
+            /^0[0-9]{10}$/,     // 0XXXXXXXXXX
+            /^[0-9]{10}$/       // XXXXXXXXXX (local)
+        ];
+
+        const isValid = patterns.some(pattern => pattern.test(cleanPhone));
+
+        if (!isValid) {
+            return {
+                isValid: false,
+                message: 'Invalid phone number format. Expected: +92XXXXXXXXXX, 92XXXXXXXXXX, 0XXXXXXXXXX, or XXXXXXXXXX'
+            };
+        }
+
+        // Additional validation for Pakistani mobile numbers
+        if (cleanPhone.startsWith('+92') || cleanPhone.startsWith('92')) {
+            const mobilePrefix = cleanPhone.startsWith('+92') ? cleanPhone.slice(3, 6) : cleanPhone.slice(2, 5);
+            const validPrefixes = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '330', '331', '332', '333', '334', '335', '336', '337', '338', '339', '340', '341', '342', '343', '344', '345', '346', '347', '348', '349'];
+
+            if (!validPrefixes.includes(mobilePrefix)) {
+                return {
+                    isValid: false,
+                    message: 'Invalid Pakistani mobile number prefix'
+                };
+            }
+        }
+
+        return {
+            isValid: true,
+            message: 'Valid phone number format'
+        };
+    }
+
+    // Validation feedback functions
+    function showValidationFeedback(inputId, isValid, message) {
+        const input = $(`#${inputId}`);
+        const feedbackElement = input.siblings('.invalid-feedback, .valid-feedback');
+
+        // Remove existing classes
+        input.removeClass('is-valid is-invalid');
+        feedbackElement.remove();
+
+        if (isValid) {
+            input.addClass('is-valid');
+            input.after(`<div class="valid-feedback">${message}</div>`);
+        } else {
+            input.addClass('is-invalid');
+            input.after(`<div class="invalid-feedback">${message}</div>`);
+        }
+    }
+
+    // Date and Time validation functions
+    function validateDateTime(date, time) {
+        const now = new Date();
+        const selectedDateTime = new Date(`${date}T${time}`);
+        const minAllowedTime = new Date(now.getTime() + 10 * 60 * 1000); // Current time + 10 minutes
+
+        // Check if selected date is in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(date);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            return {
+                isValid: false,
+                message: 'Cannot select past dates. Please choose today or a future date.'
+            };
+        }
+
+        // Check if selected datetime is at least 10 minutes from now
+        if (selectedDateTime < minAllowedTime) {
+            const minTimeStr = minAllowedTime.toLocaleTimeString('en-US', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            return {
+                isValid: false,
+                message: `Please select a time at least 10 minutes from now. Minimum time: ${minTimeStr}`
+            };
+        }
+
+        return {
+            isValid: true,
+            message: 'Valid date and time'
+        };
+    }
+
+    function setMinDateTime() {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+
+        // Set minimum date to today
+        $('#visitDate').attr('min', today);
+
+        // If today is selected, set minimum time
+        updateMinTime();
+    }
+
+    function updateMinTime() {
+        const selectedDate = $('#visitDate').val();
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+
+        if (selectedDate === today) {
+            // If today is selected, set minimum time to current time + 10 minutes
+            const minTime = new Date(now.getTime() + 10 * 60 * 1000);
+            const minTimeStr = minTime.toTimeString().slice(0, 5); // HH:MM format
+            $('#visitTime').attr('min', minTimeStr);
+        } else {
+            // If future date is selected, remove time restriction
+            $('#visitTime').removeAttr('min');
+        }
+    }
+
+    // Enhanced form validation
+    function validateForm() {
+        let isFormValid = true;
+
+        // Validate CNIC
+        const cnicValue = $('#guestCNIC').val();
+        const cnicValidation = validateCNIC(cnicValue);
+        showValidationFeedback('guestCNIC', cnicValidation.isValid, cnicValidation.message);
+        if (!cnicValidation.isValid) isFormValid = false;
+
+        // Validate Phone Number
+        const phoneValue = $('#guestPhone').val();
+        const phoneValidation = validatePhoneNumber(phoneValue);
+        showValidationFeedback('guestPhone', phoneValidation.isValid, phoneValidation.message);
+        if (!phoneValidation.isValid) isFormValid = false;
+
+        // Validate Date and Time
+        const dateValue = $('#visitDate').val();
+        const timeValue = $('#visitTime').val();
+
+        if (dateValue && timeValue) {
+            const dateTimeValidation = validateDateTime(dateValue, timeValue);
+            if (!dateTimeValidation.isValid) {
+                showValidationFeedback('visitDate', false, dateTimeValidation.message);
+                showValidationFeedback('visitTime', false, dateTimeValidation.message);
+                isFormValid = false;
+            } else {
+                showValidationFeedback('visitDate', true, 'Valid date');
+                showValidationFeedback('visitTime', true, 'Valid time');
+            }
+        }
+
+        // Validate other required fields
+        const requiredFields = ['guestName', 'hostDepartment', 'hostName'];
+        requiredFields.forEach(fieldId => {
+            const value = $(`#${fieldId}`).val();
+            if (!value || value.trim() === '') {
+                showValidationFeedback(fieldId, false, 'This field is required');
+                isFormValid = false;
+            } else {
+                showValidationFeedback(fieldId, true, 'Valid');
+            }
+        });
+
+        // Validate date and time separately if not provided
+        if (!dateValue) {
+            showValidationFeedback('visitDate', false, 'Visit date is required');
+            isFormValid = false;
+        }
+
+        if (!timeValue) {
+            showValidationFeedback('visitTime', false, 'Visit time is required');
+            isFormValid = false;
+        }
+
+        // Validate purpose
+        const purpose = $('#purposeSelect').val();
+        if (purpose === 'Other') {
+            const otherPurpose = $('#otherPurpose').val();
+            if (!otherPurpose || otherPurpose.trim() === '') {
+                showValidationFeedback('otherPurpose', false, 'Please specify the purpose');
+                isFormValid = false;
+            } else {
+                showValidationFeedback('otherPurpose', true, 'Valid');
+            }
+        }
+
+        return isFormValid;
+    }
+
+    // Updated jQuery document ready function
+    $(document).ready(function () {
+        // Add the additional CSS
+        $('<style>').text(additionalCSS).appendTo('head');
+
+        // Existing initialization
+        fetchDepartments();
+        setDefaultDateTime();
+        setMinDateTime();
+
+        // CNIC input formatting and validation
+        $('#guestCNIC').on('input', function () {
+            const formatted = formatCNIC(this.value);
+            this.value = formatted;
+
+            // Only validate if user has entered some digits
+            if (formatted.replace(/[-\s]/g, '').length > 0) {
+                const validation = validateCNIC(formatted);
+                showValidationFeedback('guestCNIC', validation.isValid, validation.message);
+            } else {
+                $(this).removeClass('is-valid is-invalid');
+                $(this).siblings('.invalid-feedback, .valid-feedback').remove();
+            }
+        });
+
+        // Phone number input formatting and validation
+        $('#guestPhone').on('input', function () {
+            const formatted = formatPhoneNumber(this.value);
+            this.value = formatted;
+
+            // Only validate if user has entered some digits
+            if (formatted.replace(/[^\d+]/g, '').length > 0) {
+                const validation = validatePhoneNumber(formatted);
+                showValidationFeedback('guestPhone', validation.isValid, validation.message);
+            } else {
+                $(this).removeClass('is-valid is-invalid');
+                $(this).siblings('.invalid-feedback, .valid-feedback').remove();
+            }
+        });
+
+        // Real-time validation for other fields
+        $('#guestName, #hostDepartment, #hostName').on('blur', function () {
+            const value = $(this).val();
+            const fieldId = $(this).attr('id');
+
+            if (!value || value.trim() === '') {
+                showValidationFeedback(fieldId, false, 'This field is required');
+            } else {
+                showValidationFeedback(fieldId, true, 'Valid');
+            }
+        });
+
+        // Date validation with real-time feedback
+        $('#visitDate').on('change blur', function () {
+            const dateValue = $(this).val();
+            const timeValue = $('#visitTime').val();
+
+            if (!dateValue) {
+                showValidationFeedback('visitDate', false, 'Visit date is required');
+                return;
+            }
+
+            // Update minimum time when date changes
+            updateMinTime();
+
+            // Validate date and time together if both are available
+            if (dateValue && timeValue) {
+                const validation = validateDateTime(dateValue, timeValue);
+                showValidationFeedback('visitDate', validation.isValid, validation.isValid ? 'Valid date' : validation.message);
+
+                // Also update time validation
+                if (!validation.isValid) {
+                    showValidationFeedback('visitTime', false, validation.message);
+                } else {
+                    showValidationFeedback('visitTime', true, 'Valid time');
+                }
+            } else {
+                // Just validate the date
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                const selectedDate = dateValue;
+
+                if (selectedDate < today) {
+                    showValidationFeedback('visitDate', false, 'Cannot select past dates');
+                } else {
+                    showValidationFeedback('visitDate', true, 'Valid date');
+                }
+            }
+        });
+
+        // Time validation with real-time feedback
+        $('#visitTime').on('change blur', function () {
+            const timeValue = $(this).val();
+            const dateValue = $('#visitDate').val();
+
+            if (!timeValue) {
+                showValidationFeedback('visitTime', false, 'Visit time is required');
+                return;
+            }
+
+            // Validate date and time together if both are available
+            if (dateValue && timeValue) {
+                const validation = validateDateTime(dateValue, timeValue);
+                showValidationFeedback('visitTime', validation.isValid, validation.isValid ? 'Valid time' : validation.message);
+
+                // Also update date validation if needed
+                if (!validation.isValid) {
+                    showValidationFeedback('visitDate', false, validation.message);
+                } else {
+                    showValidationFeedback('visitDate', true, 'Valid date');
+                }
+            } else {
+                showValidationFeedback('visitTime', true, 'Valid time');
+            }
+        });
+
+        // Purpose validation
+        $('#purposeSelect').change(function () {
+            if ($(this).val() === 'Other') {
+                $('#otherPurposeGroup').show();
+                $('#otherPurpose').prop('required', true);
+            } else {
+                $('#otherPurposeGroup').hide();
+                $('#otherPurpose').prop('required', false);
+                $(this).removeClass('is-valid is-invalid');
+                $(this).siblings('.invalid-feedback, .valid-feedback').remove();
+            }
+        });
+
+        $('#otherPurpose').on('blur', function () {
+            if ($('#purposeSelect').val() === 'Other') {
+                const value = $(this).val();
+                if (!value || value.trim() === '') {
+                    showValidationFeedback('otherPurpose', false, 'Please specify the purpose');
+                } else {
+                    showValidationFeedback('otherPurpose', true, 'Valid');
+                }
+            }
+        });
+
+        // Enhanced form submission with validation
+        $('#guestPassForm').on('submit', function (e) {
+            e.preventDefault();
+
+            // Validate the entire form
+            if (!validateForm()) {
+                // Scroll to first invalid field
+                const firstInvalid = $('.is-invalid').first();
+                if (firstInvalid.length) {
+                    $('html, body').animate({
+                        scrollTop: firstInvalid.offset().top - 100
+                    }, 300);
+                    firstInvalid.focus();
+                }
+                return false;
+            }
+
+            // Get purpose value
+            let purpose = $('#purposeSelect').val();
+            if (purpose === 'Other') {
+                purpose = $('#otherPurpose').val();
+            }
+
+            const date = $('#visitDate').val();
+            const time = $('#visitTime').val();
+            let datetimeString = `${date}T${time}:00`;
+            const departmentId = $("#hostName").val();
+            const datetime = new Date(datetimeString);
+            datetimeString = datetime.toISOString();
+
+            // Clean CNIC and phone for submission
+            const cleanCNIC = $('#guestCNIC').val().replace(/[-\s]/g, '');
+            const cleanPhone = $('#guestPhone').val().replace(/[^\d+]/g, '');
+
+            const formData = {
+                name: $('#guestName').val(),
+                CNIC: cleanCNIC,
+                phone_number: cleanPhone,
+                host: departmentId,
+                meeting_date_time: datetimeString,
+                reason: purpose
+            };
+
+            // Disable submit button to prevent double submission
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Submitting...');
+
+            $.ajax({
+                url: '/guestpass/',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData,
+                success: function (response, textStatus, jqXHR) {
+                    if (jqXHR.status === 201) {
+                        $('#statusModalBody').html(`
+                        <div class="text-center">
+                            <i class="material-icons text-success" style="font-size: 4rem;">check_circle</i>
+                            <h4>Success!</h4>
+                            <p>Guest pass request created successfully. An SMS will be sent after approval.</p>
+                            <p><strong>Request ID:</strong> ${response.request_id || 'N/A'}</p>
+                        </div>
+                    `);
+
+                        // Reset form and validation states
+                        $('#guestPassForm')[0].reset();
+                        $('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+                        $('.invalid-feedback, .valid-feedback').remove();
+                        setDefaultDateTime();
+                    } else {
+                        $('#statusModalBody').html(`
+                        <div class="text-center">
+                            <i class="material-icons text-warning" style="font-size: 4rem;">warning</i>
+                            <h4>Request Submitted</h4>
+                            <p>${response.message || 'Guest pass request submitted but with unexpected response.'}</p>
+                        </div>
+                    `);
+                    }
+                    $('#statusModal').modal('show');
+                },
+                error: function (xhr) {
+                    let errorMessage = 'An error occurred while creating the guest pass request';
+
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseText) {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            errorMessage = errorResponse.error || errorMessage;
+                        } catch (e) {
+                            // Use default message
+                        }
+                    }
+
+                    $('#statusModalBody').html(`
+                    <div class="text-center">
+                        <i class="material-icons text-danger" style="font-size: 4rem;">error</i>
+                        <h4>Error!</h4>
+                        <p>${errorMessage}</p>
+                    </div>
+                `);
+                    $('#statusModal').modal('show');
+                },
+                complete: function () {
+                    // Re-enable submit button
+                    submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+    });
+
+    // Helper function to get CSRF token (if not already present)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 <script>
     let departmentData = [];
     function loadGuestPasses(searchTerm = '', showTodayOnly = false) {
