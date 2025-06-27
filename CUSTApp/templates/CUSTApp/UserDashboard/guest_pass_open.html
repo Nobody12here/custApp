@@ -927,7 +927,7 @@
             datetimeString = datetime.toISOString();
 
             // Clean CNIC and phone for submission
-            const cleanCNIC = $('#guestCNIC').val().replace(/[-\s]/g, '');
+            const cleanCNIC = $('#guestCNIC').val();
             const cleanPhone = $('#guestPhone').val().replace(/[^\d+]/g, '');
 
             const formData = {
