@@ -1059,7 +1059,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         qr_table = Table([[qr_image], [qr_note], [qr_link]], colWidths=[200])
         qr_table.setStyle(
             TableStyle([
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 5),
                 ("TOPPADDING", (0, 0), (-1, -1), 2),
@@ -1115,7 +1115,7 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Return PDF response
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="letter.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="{request_obj.applicant.uu_id} - {request_obj.application.application_name}"'
         response.write(pdf)
         return response
 

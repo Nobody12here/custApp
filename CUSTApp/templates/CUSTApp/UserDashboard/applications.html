@@ -5,9 +5,17 @@
 
 {% block extra_css %}
 <style>
-  .text-success { color: #28a745; }
-  .text-danger { color: #dc3545; }
-  .text-warning { color: #ffc107; }
+  .text-success {
+    color: #28a745;
+  }
+
+  .text-danger {
+    color: #dc3545;
+  }
+
+  .text-warning {
+    color: #ffc107;
+  }
 
   /* Modal Styling - Updated to match project theme */
   #viewApplicationModal .modal-content {
@@ -43,6 +51,7 @@
     transition: color 0.2s;
     margin-top: -6px;
   }
+
   #viewApplicationModal .close:hover {
     color: #e3e3e3;
   }
@@ -68,10 +77,12 @@
     border: 1px solid #e0e0e0;
     transition: box-shadow 0.2s, transform 0.2s;
   }
+
   #viewApplicationModal .detail-item:hover {
     box-shadow: 0 4px 16px rgba(30, 136, 229, 0.10);
     transform: translateY(-2px) scale(1.01);
   }
+
   #viewApplicationModal .detail-item strong {
     display: block;
     font-family: 'Roboto', sans-serif;
@@ -82,6 +93,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+
   #viewApplicationModal .detail-item span {
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
@@ -111,6 +123,7 @@
     transition: background 0.3s, color 0.3s;
     box-shadow: 0 2px 8px rgba(10, 54, 157, 0.08);
   }
+
   #viewApplicationModal .btn-secondary:hover {
     background: linear-gradient(90deg, #1E88E5 0%, #0A369D 100%);
     color: #fff;
@@ -118,17 +131,20 @@
 
   /* Responsive Adjustments */
   @media (max-width: 768px) {
+
     #viewApplicationModal .modal-header,
     #viewApplicationModal .modal-body,
     #viewApplicationModal .modal-footer {
       padding-left: 16px;
       padding-right: 16px;
     }
+
     #viewApplicationModal .application-details {
       grid-template-columns: 1fr;
     }
   }
-  .card{
+
+  .card {
     margin-top: 30px;
   }
 </style>
@@ -216,28 +232,28 @@
 
     // Render applications to table
     function renderApplications(data) {
-  const tbody = $('#applications-table');
-  tbody.empty();
+      const tbody = $('#applications-table');
+      tbody.empty();
 
-  // Sort by status priority and then by created_at (descending)
-  const statusOrder = { 'Approved': 0, 'Pending': 1, 'Rejected': 2 };
-  data.sort((a, b) => {
-    const statusCompare = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
-    if (statusCompare !== 0) return statusCompare;
-    return new Date(b.created_at) - new Date(a.created_at);
-  });
+      // Sort by status priority and then by created_at (descending)
+      const statusOrder = { 'Approved': 0, 'Pending': 1, 'Rejected': 2 };
+      data.sort((a, b) => {
+        const statusCompare = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+        if (statusCompare !== 0) return statusCompare;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
 
-  data.forEach(function (app) {
-    const statusClass = {
-      'Approved': 'text-success',
-      'Rejected': 'text-danger',
-      'Pending': 'text-warning'
-    }[app.status] || '';
+      data.forEach(function (app) {
+        const statusClass = {
+          'Approved': 'text-success',
+          'Rejected': 'text-danger',
+          'Pending': 'text-warning'
+        }[app.status] || '';
 
-    const appName = app.application_name || `Application #${app.application_name}`;
-    const latestComment = app.comments?.[app.comments.length - 1]?.text || '-';
+        const appName = app.application_name || `Application #${app.application_name}`;
+        const latestComment = app.comments?.[app.comments.length - 1]?.text || '-';
 
-    const row = `
+        const row = `
       <tr>
         <td>${app.request_id}</td>
         <td>${appName}</td>
@@ -250,22 +266,10 @@
           <button class="btn btn-primary btn-sm download-btn" data-request-id="${app.request_id}">Download</button>
         </td>
       </tr>`;
-    tbody.append(row);
-  });
+        tbody.append(row);
+      });
 
-  // Attach event listeners
-  $('.view-btn').off('click').on('click', function () {
-    const requestId = parseInt($(this).data('request-id'));
-    viewApplication(requestId);
-  });
-
-  $('.download-btn').off('click').on('click', function () {
-    const requestId = parseInt($(this).data('request-id'));
-    downloadApplication(requestId);
-  });
-}
-
-      // Attach event listeners for view and download buttons
+      // Attach event listeners
       $('.view-btn').off('click').on('click', function () {
         const requestId = parseInt($(this).data('request-id'));
         viewApplication(requestId);
@@ -275,7 +279,19 @@
         const requestId = parseInt($(this).data('request-id'));
         downloadApplication(requestId);
       });
-    
+    }
+
+    // Attach event listeners for view and download buttons
+    $('.view-btn').off('click').on('click', function () {
+      const requestId = parseInt($(this).data('request-id'));
+      viewApplication(requestId);
+    });
+
+    $('.download-btn').off('click').on('click', function () {
+      const requestId = parseInt($(this).data('request-id'));
+      downloadApplication(requestId);
+    });
+
 
     // View application details in modal
     function viewApplication(requestId) {
@@ -283,8 +299,8 @@
       if (!app) {
         alert('Application not found');
         return;
-      }console.log(app.comments)
-      
+      } console.log(app.comments)
+
       const detailsHtml = `
         <div class="detail-item">
           <strong>Request ID</strong>
@@ -313,7 +329,7 @@
         <div class="detail-item">
           <strong>Comments</strong>
           
-          <span>${app.comments.map((comment)=>comment.text) || '-'}</span>
+          <span>${app.comments.map((comment) => comment.text) || '-'}</span>
         </div>
         <div class="detail-item">
           <strong>Payment Status</strong>
@@ -354,12 +370,29 @@
         success: function (data, textStatus, jqXHR) {
           console.log('Response received:', { status: jqXHR.status, contentType: jqXHR.getResponseHeader('Content-Type') });
           var contentType = jqXHR.getResponseHeader('Content-Type');
+          var contentDisposition = jqXHR.getResponseHeader('Content-Disposition')
+          console.log('Content deposition:', contentDisposition);
+
           if (contentType && contentType.includes('application/pdf')) {
+            var filename = 'document.pdf'; // default fallback
+
+            if (contentDisposition) {
+              var filenameMatch = contentDisposition.match(/filename="(.+)"/);
+              if (filenameMatch && filenameMatch.length > 1) {
+                filename = filenameMatch[1];
+              } else {
+                // Handle case where filename is not in quotes
+                filenameMatch = contentDisposition.match(/filename=([^;]+)/);
+                if (filenameMatch && filenameMatch.length > 1) {
+                  filename = filenameMatch[1].trim();
+                }
+              }
+            }
             var blob = new Blob([data], { type: 'application/pdf' });
             var url = window.URL.createObjectURL(blob);
             var link = document.createElement('a');
             link.href = url;
-            link.download = 'letter.pdf';
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
