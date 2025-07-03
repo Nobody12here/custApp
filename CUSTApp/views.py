@@ -131,7 +131,8 @@ def update_request_status(request, id):
             req.approved_at = timezone.now().isoformat()
             req.save()
             user = host or student
-            if guest and guest.guest_fcm_token:
+            if guest:
+                print("Sending notification to guest")
                 notify_user_devices(
                     guest,
                     title="Request Update",

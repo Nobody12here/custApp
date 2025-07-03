@@ -13,49 +13,51 @@ import re
 from requests.exceptions import RequestException
 from typing import Optional
 
+
 def format_phone_number(phone_number: str) -> Optional[str]:
     """
     Format phone number to ensure it starts with +92 country code.
-    
+
     Args:
         phone_number: Raw phone number string
-        
+
     Returns:
         Formatted phone number with +92 prefix or None if invalid
     """
     if not phone_number:
         return None
-    
+
     # Remove all non-digit characters
-    cleaned = re.sub(r'[^\d]', '', phone_number)
-    
+    cleaned = re.sub(r"[^\d]", "", phone_number)
+
     # Handle numbers that start with 0 (common in Pakistan)
-    if cleaned.startswith('0'):
-        return '+92' + cleaned[1:]
-    
+    if cleaned.startswith("0"):
+        return "+92" + cleaned[1:]
+
     # Handle numbers that start with 92 but missing +
-    elif cleaned.startswith('92'):
-        return '+' + cleaned
-    
+    elif cleaned.startswith("92"):
+        return "+" + cleaned
+
     # Handle numbers that already have +92
-    elif cleaned.startswith('9292'):
-        return '+' + cleaned[2:]
-    
+    elif cleaned.startswith("9292"):
+        return "+" + cleaned[2:]
+
     # Handle numbers with no country code
     elif len(cleaned) == 10:  # Assuming 10-digit local numbers
-        return '+92' + cleaned
-    
+        return "+92" + cleaned
+
     # Return None for invalid formats
     return None
+
 
 def send_sms(user: Users, text: str) -> bool:
     """
     Send SMS to user's phone number using Veevotech API.
-    
+
     Args:
         user: User object with phone_number attribute
         text: Message content to send
-        
+
     Returns:
         bool: True if SMS was sent successfully, False otherwise
     """
@@ -65,11 +67,11 @@ def send_sms(user: Users, text: str) -> bool:
         return False
 
     # Get and validate phone number
-    raw_number = getattr(user, 'phone_number', None)
+    raw_number = getattr(user, "phone_number", None)
     if not raw_number:
         print("No phone number available for user")
         return False
-    
+
     phone_number = format_phone_number(raw_number)
     if not phone_number:
         print(f"Invalid phone number format: {raw_number}")
@@ -80,39 +82,40 @@ def send_sms(user: Users, text: str) -> bool:
             "hash": key,
             "receivernum": phone_number,
             "textmessage": text,
-            "sendernum": "Default"
+            "sendernum": "Default",
         }
-        
+
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
         }
-        
+
         response = requests.post(
             "https://api.veevotech.com/v3/sendsms",
             data=body,
             headers=headers,
-            timeout=10
+            timeout=10,
         )
-        
+
         response.raise_for_status()
         response_data = response.json()
-        
-        if response_data.get('STATUS') != 'SUCCESSFUL':
+
+        if response_data.get("STATUS") != "SUCCESSFUL":
             print(f"SMS API reported failure: {response_data}")
             return False
-            
+
         return True
 
     except RequestException as e:
         print(f"Failed to send SMS: {str(e)}")
-        if hasattr(e, 'response') and e.response:
+        if hasattr(e, "response") and e.response:
             print(f"API response: {e.response.text}")
         return False
     except Exception as e:
         print(f"Unexpected error sending SMS: {str(e)}")
         return False
-    
+
+
 def notify_user_devices(user: Users, title: str, body: str, url: str = None) -> bool:
     """
     Send a notification to a user's devices using Firebase Cloud Messaging.
@@ -134,15 +137,15 @@ def notify_user_devices(user: Users, title: str, body: str, url: str = None) -> 
 
     # If no guest token, try to get registered devices
     if not fcm_token:
+        print("No FCM token ")
         try:
             device = (
                 GCMDevice.objects.filter(user=user).order_by("-date_created").first()
             )
+            if not device:
+                print("No FCM token available for user sending sms instead")
+                return send_sms(user, body)
             fcm_token = device.registration_id  # Assuming this is the field name
-            print(fcm_token)
-        except GCMDevice.DoesNotExist:
-            print("No FCM token available for user sending sms instead")
-            return send_sms(user,body)
         except Exception as e:
             print(f"Error getting user device: {str(e)}")
             return False
