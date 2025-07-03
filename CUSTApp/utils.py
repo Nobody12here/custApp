@@ -141,8 +141,8 @@ def notify_user_devices(user: Users, title: str, body: str, url: str = None) -> 
             fcm_token = device.registration_id  # Assuming this is the field name
             print(fcm_token)
         except GCMDevice.DoesNotExist:
-            print("No FCM token available for user")
-            return False
+            print("No FCM token available for user sending sms instead")
+            return send_sms(user,body)
         except Exception as e:
             print(f"Error getting user device: {str(e)}")
             return False
