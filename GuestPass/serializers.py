@@ -62,7 +62,7 @@ class GuestPassRequestSerializer(ModelSerializer):
 
     def create(self, validated_data):
         # First check if the user with the given CNIC exists or not
-        guest_cnic = validated_data.pop("CNIC")
+        guest_cnic = validated_data.pop("CNIC").replace("-", "")  # Remove hyphens from CNIC
         guest_name = validated_data.pop("name")
         guest_phone_no = validated_data.pop("phone_number")
         guest_fcm_token = validated_data.pop("guest_fcm_token", None)
