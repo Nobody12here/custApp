@@ -5,6 +5,14 @@
 
 {% block extra_css %}
 <style>
+    #otherReasonText {
+        transition: all 0.3s ease;
+    }
+
+    .datetime-modification select.form-control {
+        margin-bottom: 0;
+    }
+
     .modal-header .close {
         padding: 0.5rem 1rem;
         margin: -1rem -1rem -1rem auto;
@@ -653,10 +661,16 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="modifyComment">Reason for Change</label>
-                            <textarea class="form-control" id="modifyComment" rows="3"
-                                placeholder="Please provide a reason for changing the visit time..."
-                                required></textarea>
+                            <label for="modifyComment">Reason for Change (Optional)</label>
+                            <select class="form-control" id="modifyComment">
+                                <option value="">Select a reason (optional)</option>
+                                <option value="Not available">Not available</option>
+                                <option value="In a meeting">In a meeting</option>
+                                <option value="Out of office">Out of office</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <textarea class="form-control mt-2" id="otherReasonText" rows="2"
+                                placeholder="Please specify reason..." style="display: none;"></textarea>
                         </div>
                     </form>
                 </div>
@@ -1512,7 +1526,13 @@
 
         fetchDepartments();
         setDefaultDateTime();
-
+        $('#modifyComment').change(function () {
+            if ($(this).val() === 'Other') {
+                $('#otherReasonText').show();
+            } else {
+                $('#otherReasonText').hide();
+            }
+        });
         $('#filterToday').on('click', () => loadGuestPasses('', true));
         $('#clearFilters').on('click', () => loadGuestPasses('', false));
 
@@ -1646,12 +1666,9 @@
             const date = $('#modifyDate').val();
             const time = $('#modifyTime').val();
             const comment = $('#modifyComment').val();
-
-            if (!comment) {
-                alert('Please provide a reason for changing the visit time');
-                return;
+            if (comment === 'Other') {
+                comment = $('#otherReasonText').val();
             }
-
             const datetime = new Date(`${date}T${time}:00`).toISOString();
 
             $.ajax({
@@ -1663,7 +1680,7 @@
                 },
                 data: JSON.stringify({
                     meeting_date_time: datetime,
-                    comments: comment,
+                    comments: comment || '',
                     status: 'Approved' // Also update the status to Approved
                 }),
                 success: function () {
