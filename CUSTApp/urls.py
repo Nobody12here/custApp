@@ -57,7 +57,7 @@ urlpatterns = [
     path("api/get_attributes/", GetAttributesAPIView.as_view(), name="get_attributes"),
     path("myadmin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("user/dashboard/", views.user_dashboard, name="user_dashboard"),
-    path("profile/",views.user_profile,name="profile"),
+    path("profile/", views.user_profile, name="profile"),
     path("myapplications/", views.view_applications, name="view_applications"),
     path("categories/", views.categories, name="categories"),
     path("new-application/", views.new_application, name="new_application"),
@@ -66,7 +66,7 @@ urlpatterns = [
     path(
         "api/upload-users/", views.UserCSVUploadAPIView.as_view(), name="upload_users"
     ),
-    path("privacy-policy/",views.privacy_policy,name='privacy-policy'),
+    path("privacy-policy/", views.privacy_policy, name="privacy-policy"),
     path(
         "api/applications/",
         views.ApplicationListView.as_view(),
@@ -77,9 +77,11 @@ urlpatterns = [
         ApplicationRequestAPIView.as_view(),
         name="application_request",
     ),
-    path("api/delete-request/<int:pk>/",
-         views.RequestDelete.as_view(),
-         name='delete_request'),
+    path(
+        "api/delete-request/<int:pk>/",
+        views.RequestDelete.as_view(),
+        name="delete_request",
+    ),
     path(
         "update-rendered-template/<int:id>/",
         views.update_rendered_template,
@@ -96,16 +98,33 @@ urlpatterns = [
         GeneratePDFWithLetterheadAPIView.as_view(),
         name="generate_pdf_with_letterhead",
     ),
-    path("api/logout/",views.LogoutAPIView.as_view(),name='logout_view'),
-    path("api/upload-signature/",views.UploadEmployeeSignature.as_view(),name="upload-signature"),
-    path("guest-pass/",views.guest_pass,name="guest_pass"),
-    path("public-guestpass/",views.public_guest_pass,name='public_guest_pass'),
-    path("public-guestpass/<int:pass_id>/",views.public_guest_pass,name='public_guest_pass'),
-
+    path("api/logout/", views.LogoutAPIView.as_view(), name="logout_view"),
+    path(
+        "api/upload-signature/",
+        views.UploadEmployeeSignature.as_view(),
+        name="upload-signature",
+    ),
+    path("guest-pass/", views.guest_pass, name="guest_pass"),
+    path("public-guestpass/", views.public_guest_pass, name="public_guest_pass"),
+    path(
+        "public-guestpass/<int:pass_id>/",
+        views.public_guest_pass,
+        name="public_guest_pass",
+    ),
     path("home/", views.home, name="home"),
-    path('api/support-ticket/', SupportTicketAPIView.as_view(), name='support_ticket_api'),
-    path('api/all-users/', AllUsersListAPIView.as_view(), name='all_users_list'),
-    path('api/requests/<int:request_id>/', RequestRetrieveAPIView.as_view(), name='request-detail'),
-    path('verify/request/<int:request_id>/', request_verification_page, name='request-verification'),
+    path(
+        "api/support-ticket/", SupportTicketAPIView.as_view(), name="support_ticket_api"
+    ),
+    path("api/all-users/", AllUsersListAPIView.as_view(), name="all_users_list"),
+    path(
+        "api/requests/<int:request_id>/",
+        RequestRetrieveAPIView.as_view(),
+        name="request-detail",
+    ),
+    path(
+        "verify/request/<int:request_id>/",
+        request_verification_page,
+        name="request-verification",
+    ),
 ]
 urlpatterns.extend(router.urls)
