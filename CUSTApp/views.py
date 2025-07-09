@@ -847,6 +847,7 @@ class OTPVerifyView(APIView):
                         "phone_no": user.phone_number,
                         "father_name": user.father_name,
                         "cnic": user.CNIC,
+                        "gender":user.gender,
                         "dob": user.DoB,
                         "passport_number": user.passport_number,
                         "user_type": user.user_type,
