@@ -1,5 +1,5 @@
 # CUSTApp/urls.py
-from django.urls import path
+from django.urls import include, path
 from . import views
 from rest_framework.routers import DefaultRouter
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path("admin-templates/", views.admin_templates, name="admin_templates"),
     path("admin-faculty/", views.admin_faculty, name="admin_faculty"),
     path("departments/", DepartmentList.as_view(), name="departments_list"),
-    path("requests/", RequestList.as_view(), name="requests_list"),
+    path("requests/", include("user_requests.urls"), name="requests_list"),
     path("request-otp/", OTPSendView.as_view(), name="otp_send"),
     path("otp/verify/", OTPVerifyView.as_view(), name="otp_verify"),
     path("otp/verifyAPI/", OTPVerifyView.as_view(), name="otp_verify"),

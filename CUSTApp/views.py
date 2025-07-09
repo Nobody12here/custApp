@@ -31,7 +31,7 @@ from .serializers import (
     OTPVerifySerializer,
     PhoneOTPVerifySerializer,
 )
-
+from user_requests.serializers import ComplaintSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .utils import (
     send_alert_email,
@@ -613,7 +613,12 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
-
+    def get_serializer_class(self):
+        request_type = self.request.query_params.get('type','Application')
+        if request_type == "Application":
+            return RequestSerializer
+        elif request_type == "Complaint":
+            return ComplaintSerializer
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -647,7 +652,6 @@ class RequestDelete(generics.DestroyAPIView):
         instance = self.get_object()
         user = self.request.user
         user_type = str(user.user_type)
-        print(user)
         if user_type.lower() == "student" and instance.StudentID != user.user_id:
             return Response(
                 {"error": "This application Does not belong to current user!"},

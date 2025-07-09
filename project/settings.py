@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "rest_framework",
     "GuestPass",
+    "user_requests",
     "CUSTApp.apps.CustappConfig",
     "ApplicationTemplate",
     "rest_framework_simplejwt",

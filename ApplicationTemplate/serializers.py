@@ -73,6 +73,7 @@ class RequestSerializer(serializers.ModelSerializer):
             "responsible_dept_name",
             "responsible_employee_name",
             "request_file",
+            "request_type",
             "responsible_employee_designation",
         ]
         read_only_fields = [
