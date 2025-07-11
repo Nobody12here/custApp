@@ -14,6 +14,7 @@ from .views import (
     UsersList,
     DepartmentList,
     RequestList,
+    complaints,
     index_page,
     request_verification_page,
     test_api_view,
@@ -126,5 +127,6 @@ urlpatterns = [
         request_verification_page,
         name="request-verification",
     ),
+    path("complaints/", complaints, name="complaints"),
 ]
 urlpatterns.extend(router.urls)

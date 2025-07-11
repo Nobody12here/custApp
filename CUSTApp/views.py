@@ -405,7 +405,14 @@ def verify_otp_page(request):
 def index_page(request):
     return render(request, "CUSTApp/index.html")
 
-
+def complaints(request):
+    complaint_stats = [
+        {"key": "pending", "label": "PENDING", "icon": "hourglass_empty"},
+        {"key": "resolved", "label": "RESOLVED", "icon": "check_circle"},
+        {"key": "rejected", "label": "REJECTED", "icon": "cancel"},
+        {"key": "total", "label": "TOTAL", "icon": "list_alt"},
+    ]
+    return render(request,"CUSTApp/UserDashboard/complaints.html",{"complaint_stats": complaint_stats})
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 

@@ -34,11 +34,7 @@ class RequestViewset(ModelViewSet):
         return base_queryset
 
     def perform_create(self, serializer):
-        user = self.request.user
-        department_head = self.request.data
-        print(department_head)
         request_type: str = self.request.query_params.get("type", "application")
-
         serializer.validated_data["request_type"] = request_type.capitalize()
         if request_type == "complaint":
             serializer.validated_data.setdefault("status", "Pending")
