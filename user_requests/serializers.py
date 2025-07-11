@@ -3,6 +3,8 @@ from rest_framework import serializers
 
 
 class ComplaintSerializer(serializers.ModelSerializer):
+    applicant_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Request
         fields = [
@@ -12,9 +14,11 @@ class ComplaintSerializer(serializers.ModelSerializer):
             "created_at",
             "complain_description",
             "complain_department_head",
-            "applicant",
+            "applicant_name",
+            "request_id"
         ]
-
+    def get_applicant_name(self,obj:Request):
+        return obj.applicant.name if obj.applicant else None 
     def validate(self, data):
         if not data["complain_description"]:
             raise serializers.ValidationError("Complaint Description not provided")

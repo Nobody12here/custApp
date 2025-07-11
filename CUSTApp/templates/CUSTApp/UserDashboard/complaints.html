@@ -480,20 +480,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="applicant">Applicant Name*</label>
-                                <input type="text" class="form-control" id="applicant" name="applicant" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="complain_description">Complaint Description*</label>
-                                <textarea class="form-control" id="complain_description" name="complain_description"
-                                    rows="4" required></textarea>
-                            </div>
-
-
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="department">Department*</label>
                                 <select class="form-control" id="department" name="department" required>
                                     <option value="">Select Department</option>
@@ -507,6 +493,18 @@
                                     <option value="">Select Department First</option>
                                 </select>
                             </div>
+
+
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="complain_description">Complaint Description*</label>
+                                <textarea class="form-control" id="complain_description" name="complain_description"
+                                    rows="4" required></textarea>
+                            </div>
+
 
                             <div class="form-group">
                                 <label for="comments">Additional Comments</label>
@@ -562,16 +560,88 @@
         </div>
     </div>
 </div>
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDetailsModalLabel">Guest Pass Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Guest Information</h6>
+                            <p><strong>Name:</strong> <span id="detail-guest-name"></span></p>
+                            <p><strong>Phone:</strong> <span id="detail-guest-phone"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Visit Details</h6>
+                            <p><strong>Date & Time:</strong> <span id="detail-visit-datetime"></span></p>
+                            <p><strong>Purpose:</strong> <span id="detail-purpose"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="actionButtons" class="action-buttons" style="display: none;">
+                    <button type="button" class="btn btn-success" id="acceptBtn">
+                        <i class="material-icons">check</i> Accept
+                    </button>
+                    <button type="button" class="btn btn-danger" id="rejectBtn">
+                        <i class="material-icons">close</i> Reject
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
 
 <script>
-
+    function fetchComplaints(){
+        $.ajax({
+            url: '/requests/?type=complaint',
+            type: 'GET',
+            success: function (response) {
+                console.log(response);
+                const complaints = response;
+                const tableBody = $('#ComplaintTableBody');
+                tableBody.empty();
+                complaints.forEach(complaint => {
+                    const statusClass = complaint.status.toLowerCase();
+                    tableBody.append(`
+                        <tr>
+                            <td>${complaint.applicant_name}</td>
+                            <td>${complaint.complain_description}</td>
+                            <td><span class="status-badge ${statusClass}">${complaint.status}</span></td>
+                            <td>
+                                <button class="btn btn-info btn-sm view-complaint" data-id="${complaint.request_id}">
+                                    <i class="material-icons">visibility</i> View
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            },
+            error: function (xhr) {
+                alert('Error fetching complaints: ' + xhr.responseText);
+            }
+        })}
     $(document).ready(function () {
         if (!checkAuth()) return;
         // Toggle complaint form visibility
+        fetchComplaints();
         $('#toggleComplaintForm').click(function () {
             fetchDepartments();
             $('#complaintForm').slideToggle(200);
@@ -588,11 +658,11 @@
         });
         $('#complaintForm').submit(function (e) {
             e.preventDefault();
+            const applicantID = window.localStorage.getItem('user_id');
             const formData = {
-
                 complain_description: $('#complain_description').val(),
                 complain_department_head: $('#dept_head').val(),
-                applicant: $('#applicant').val(),
+                applicant: applicantID,
                 comments: $('#comments').val(),
             };
             $.ajax({
@@ -618,6 +688,23 @@
                 }
             });
         });
-    });
+        $('#ComplaintTableBody').on('click', '.view-complaint', function () {
+            const complaintId = $(this).data('id');
+            $.ajax({
+                url: `/requests/${complaintId}/`,
+                type: 'GET',
+                success: function (response) {
+                    $('#detail-guest-name').text(response.applicant_name);
+                    $('#detail-guest-phone').text(response.applicant_phone || 'N/A');
+                    $('#detail-visit-datetime').text(response.created_at);
+                    $('#detail-purpose').text(response.complain_description);
+                    $('#viewDetailsModal').modal('show');
+                },
+                error: function (xhr) {
+                    alert('Error fetching complaint details: ' + xhr.responseText);
+                }
+            });
+        });
+});
 </script>
 {% endblock %}
