@@ -22,6 +22,8 @@ class RequestViewset(ModelViewSet):
         user_type = user.user_type
         request_type: str = self.request.query_params.get("type", "application")
         base_queryset = Request.objects.filter(request_type=request_type.capitalize())
+        print(user_type)
+        print(request_type)
         if user_type == "Student":
             base_queryset = base_queryset.filter(applicant=user)
         if user_type == "Staff":

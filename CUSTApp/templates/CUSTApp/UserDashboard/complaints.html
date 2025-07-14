@@ -575,16 +575,16 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="detail-item">
-                            <h6>Guest Information</h6>
+                            <h6>Applicant Information</h6>
                             <p><strong>Name:</strong> <span id="detail-guest-name"></span></p>
                             <p><strong>Phone:</strong> <span id="detail-guest-phone"></span></p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="detail-item">
-                            <h6>Visit Details</h6>
+                            <h6>ComplaintDetails</h6>
                             <p><strong>Date & Time:</strong> <span id="detail-visit-datetime"></span></p>
-                            <p><strong>Purpose:</strong> <span id="detail-purpose"></span></p>
+                            <p><strong>Description:</strong> <span id="detail-purpose"></span></p>
                         </div>
                     </div>
                 </div>
@@ -691,12 +691,13 @@
         $('#ComplaintTableBody').on('click', '.view-complaint', function () {
             const complaintId = $(this).data('id');
             $.ajax({
-                url: `/requests/${complaintId}/`,
+                url: `/requests/${complaintId}?type=complaint`,
                 type: 'GET',
                 success: function (response) {
+                    const dateTime = new Date(response.created_at);
                     $('#detail-guest-name').text(response.applicant_name);
                     $('#detail-guest-phone').text(response.applicant_phone || 'N/A');
-                    $('#detail-visit-datetime').text(response.created_at);
+                    $('#detail-visit-datetime').text(dateTime.toLocaleString());
                     $('#detail-purpose').text(response.complain_description);
                     $('#viewDetailsModal').modal('show');
                 },
