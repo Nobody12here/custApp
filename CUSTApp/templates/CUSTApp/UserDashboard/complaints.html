@@ -592,7 +592,7 @@
                 <!-- Action Buttons -->
                 <div id="actionButtons" class="action-buttons" style="display: none;">
                     <button type="button" class="btn btn-success" id="acceptBtn">
-                        <i class="material-icons">check</i> Accept
+                        <i class="material-icons">check</i> Resolved
                     </button>
                     <button type="button" class="btn btn-danger" id="rejectBtn">
                         <i class="material-icons">close</i> Reject
@@ -609,7 +609,40 @@
 <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
 
 <script>
-    function fetchComplaints(){
+    function updateRequestStatus(requestId, status, modifiedDatetime = null, comment = null) {
+        let data = { status: status };
+
+        if (modifiedDatetime) {
+            data.meeting_date_time = modifiedDatetime;
+        }
+
+        if (comment) {
+            data.comments = comment;
+        }
+
+        $.ajax({
+            url: `/update-request-status/${requestId}/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: data,
+            success: function (response, textStatus, jqXHR) {
+                if (jqXHR.status === 200) {
+                    $('#viewDetailsModal').modal('hide');
+                    fetchComplaints();
+                    alert(`Request ${status.toLowerCase()} successfully`);
+                } else {
+                    alert(response.error || 'Failed to update request status');
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.error || 'An error occurred while updating the request status');
+            }
+        });
+    }
+
+    function fetchComplaints() {
         $.ajax({
             url: '/requests/?type=complaint',
             type: 'GET',
@@ -637,10 +670,13 @@
             error: function (xhr) {
                 alert('Error fetching complaints: ' + xhr.responseText);
             }
-        })}
+        })
+    }
+    let currentPassId = null;
     $(document).ready(function () {
         if (!checkAuth()) return;
         // Toggle complaint form visibility
+
         fetchComplaints();
         $('#toggleComplaintForm').click(function () {
             fetchDepartments();
@@ -656,9 +692,23 @@
                 ).prop('disabled', true);
             }
         });
+
+        $('#acceptBtn').on('click', function () {
+            if (confirm('Are you sure you want to mark this request as resolved ?')) {
+                updateRequestStatus(currentPassId, 'Resolved');
+            }
+        });
+
+        // Reject button click
+        $('#rejectBtn').on('click', function () {
+            updateRequestStatus(currentPassId, 'Rejected');
+
+        });
+
         $('#complaintForm').submit(function (e) {
             e.preventDefault();
             const applicantID = window.localStorage.getItem('user_id');
+            console.log('Applicant ID:', applicantID);
             const formData = {
                 complain_description: $('#complain_description').val(),
                 complain_department_head: $('#dept_head').val(),
@@ -690,6 +740,8 @@
         });
         $('#ComplaintTableBody').on('click', '.view-complaint', function () {
             const complaintId = $(this).data('id');
+            currentPassId = complaintId; // Store the current pass ID for actions
+            $('#actionButtons').show();
             $.ajax({
                 url: `/requests/${complaintId}?type=complaint`,
                 type: 'GET',
@@ -706,6 +758,6 @@
                 }
             });
         });
-});
+    });
 </script>
 {% endblock %}

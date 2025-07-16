@@ -69,7 +69,7 @@ function populateDepartmentHead() {
       const deptHead = $('#dept_head');
       deptHead.empty();
       deptHead.prop('disabled', false);
-      deptHead.append('<option value="">Select Host</option>');
+      deptHead.append('<option value="">Select Staff</option>');
       data.forEach(user => {
         deptHead.append(`<option value="${user.user_id}">${user.name}</option>`);
       });
