@@ -31,7 +31,7 @@ from .serializers import (
     OTPVerifySerializer,
     PhoneOTPVerifySerializer,
 )
-
+from user_requests.serializers import ComplaintSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .utils import (
     send_alert_email,
@@ -106,7 +106,7 @@ class AddCommentView(APIView):
 def update_request_status(request, id):
     if request.method == "POST":
         status = request.POST.get("status")
-        if status not in ["Approved", "Rejected", "Visited"]:
+        if status not in ["Approved", "Rejected", "Visited","Resolved"]:
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
@@ -405,7 +405,14 @@ def verify_otp_page(request):
 def index_page(request):
     return render(request, "CUSTApp/index.html")
 
-
+def complaints(request):
+    complaint_stats = [
+        {"key": "pending", "label": "PENDING", "icon": "hourglass_empty"},
+        {"key": "resolved", "label": "RESOLVED", "icon": "check_circle"},
+        {"key": "rejected", "label": "REJECTED", "icon": "cancel"},
+        {"key": "total", "label": "TOTAL", "icon": "list_alt"},
+    ]
+    return render(request,"CUSTApp/UserDashboard/complaints.html",{"complaint_stats": complaint_stats})
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 
@@ -613,7 +620,12 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
-
+    def get_serializer_class(self):
+        request_type = self.request.query_params.get('type','Application')
+        if request_type == "Application":
+            return RequestSerializer
+        elif request_type == "Complaint":
+            return ComplaintSerializer
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -647,7 +659,6 @@ class RequestDelete(generics.DestroyAPIView):
         instance = self.get_object()
         user = self.request.user
         user_type = str(user.user_type)
-        print(user)
         if user_type.lower() == "student" and instance.StudentID != user.user_id:
             return Response(
                 {"error": "This application Does not belong to current user!"},

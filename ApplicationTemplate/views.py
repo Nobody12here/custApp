@@ -21,24 +21,27 @@ class ApplicationTemplateViewset(ModelViewSet):
 
     def get_queryset(self):
         if self.action == "list":
-            return Applications.objects.filter(status=1,)
+            return Applications.objects.filter(
+                status=1,
+            )
         return super().get_queryset()
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(status=1)  # Save with default status
         return Response(
-            {"success": "Application Created Successfully", "data": serializer.data},
-            status=status.HTTP_201_CREATED
+            {"success": "Request Created Successfully", "data": serializer.data},
+            status=status.HTTP_201_CREATED,
         )
+
     def perform_destroy(self, instance):
         instance.status = 0
         instance.save()
-       
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(
-        {"success": "Application Deleted Successfully"},
-        status=status.HTTP_200_OK)
+            {"success": "Application Deleted Successfully"}, status=status.HTTP_200_OK
+        )
