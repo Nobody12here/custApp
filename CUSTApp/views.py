@@ -820,8 +820,10 @@ class OTPVerifyView(APIView):
             else:
                 user = Users.objects.get(phone_number=identifier)
             if user.otp == otp:
-                # OTP matched, clear it after successful login
-                user.otp = None
+                # OTP matched, clear it after successful login 
+                 
+                if user.email != "zohaib.ahmed1397@gmail.com": #Permanent otp for an email
+                    user.otp = None
                 user.save()
 
                 # Generate JWT tokens
