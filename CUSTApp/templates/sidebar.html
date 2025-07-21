@@ -1,23 +1,22 @@
 {% load static %}
 <!-- Sidebar -->
+
 <div class="sidebar" data-color="blue">
   <!-- Sidebar Header -->
   <div class="logo-container">
     <a href="/" class="logo">
-      <img src="{% static 'assets/img/logo.png' %}" 
-           alt="Logo" 
-           class="logo-img" />
+      <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="logo-img" />
       <span class="logo-text">CUST App</span>
     </a>
     <button class="sidebar-toggle d-lg-none">
-      <i class="material-icons">close</i>
+      <i class="fa-solid fa-gauge"></i>
     </button>
   </div>
 
   <!-- User Profile -->
   <div class="user-profile">
     <div class="user-avatar">
-      <img id = "photo" src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" />
+      <img id="photo" src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" />
     </div>
     <div class="user-details">
       <div class="user-name">
@@ -78,384 +77,372 @@
       </li>
     </ul>
   </nav>
-  
-  <!-- Sidebar Footer -->
-  <div class="sidebar-footer">
-    <div class="sidebar-minimizer">
-      <i class="material-icons">chevron_left</i>
-    </div>
-  </div>
+
+
 </div>
 
 <style>
-:root {
-  --sidebar-width: 260px;
-  --sidebar-width-mini: 80px;
-  --sidebar-bg: #ffffff;
-  --sidebar-color: #3C4858;
-  --sidebar-active-bg: #0A369D;
-  --sidebar-active-color: #ffffff;
-  --sidebar-hover-bg: rgba(10, 54, 157, 0.1);
-  --sidebar-hover-color: #0A369D;
-  --sidebar-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  --sidebar-transition: all 0.3s ease;
-  --sidebar-z-index: 1000;
-}
+  :root {
+    --sidebar-width: 260px;
+    --sidebar-width-mini: 80px;
+    --sidebar-bg: #ffffff;
+    --sidebar-color: #3C4858;
+    --sidebar-active-bg: #0A369D;
+    --sidebar-active-color: #ffffff;
+    --sidebar-hover-bg: rgba(10, 54, 157, 0.1);
+    --sidebar-hover-color: #0A369D;
+    --sidebar-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    --sidebar-transition: all 0.3s ease;
+    --sidebar-z-index: 0;
+  }
 
-/* Base Sidebar Styles */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
-  background-color: var(--sidebar-bg);
-  color: var(--sidebar-color);
-  box-shadow: var(--sidebar-shadow);
-  z-index: var(--sidebar-z-index);
-  display: flex;
-  flex-direction: column;
-  transition: var(--sidebar-transition);
-  overflow: hidden;
-}
-
-/* Logo Section */
-.logo-container {
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo-img {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.sidebar-toggle {
-  background: none;
-  border: none;
-  color: var(--sidebar-color);
-  cursor: pointer;
-  display: none;
-  padding: 5px;
-}
-
-.sidebar-toggle i {
-  font-size: 24px;
-}
-
-/* User Profile Section */
-.user-profile {
-  padding: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.user-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 15px;
-  border: 3px solid rgba(0, 0, 0, 0.05);
-}
-
-.user-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.user-details {
-  text-align: center;
-}
-
-.user-name {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
-  margin-bottom: 5px;
-  cursor: pointer;
-}
-
-.user-name span {
-  margin-right: 5px;
-}
-
-.dropdown-icon {
-  font-size: 18px;
-  transition: transform 0.3s ease;
-}
-
-.user-menu {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.user-menu.show {
-  max-height: 200px;
-}
-
-.user-menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 0;
-  color: var(--sidebar-color);
-  text-decoration: none;
-  transition: var(--sidebar-transition);
-}
-
-.user-menu-item:hover {
-  color: var(--sidebar-hover-color);
-}
-
-.user-menu-item i {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-/* Navigation */
-.sidebar-nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 0;
-}
-
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-item {
-  margin: 5px 10px;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  border-radius: 6px;
-  color: var(--sidebar-color);
-  text-decoration: none;
-  transition: var(--sidebar-transition);
-  white-space: nowrap;
-}
-
-.nav-link:hover {
-  background-color: var(--sidebar-hover-bg);
-  color: var(--sidebar-hover-color);
-}
-
-.nav-link i {
-  font-size: 22px;
-  margin-right: 15px;
-  min-width: 24px;
-  text-align: center;
-}
-
-.nav-text {
-  font-size: 14px;
-  font-weight: 400;
-}
-
-.nav-item.active .nav-link {
-  background-color: var(--sidebar-active-bg);
-  color: var(--sidebar-active-color);
-  box-shadow: 0 4px 12px rgba(10, 54, 157, 0.2);
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  text-align: right;
-}
-
-.sidebar-minimizer {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: var(--sidebar-transition);
-}
-
-.sidebar-minimizer:hover {
-  background-color: var(--sidebar-hover-bg);
-  color: var(--sidebar-hover-color);
-}
-
-/* Mini Sidebar State */
-.sidebar-mini {
-  width: var(--sidebar-width-mini);
-}
-
-.sidebar-mini .logo-text,
-.sidebar-mini .nav-text,
-.sidebar-mini .user-name span,
-.sidebar-mini .user-menu-item span,
-.sidebar-mini .dropdown-icon {
-  display: none;
-}
-
-.sidebar-mini .logo-img {
-  margin-right: 0;
-}
-
-.sidebar-mini .nav-link {
-  justify-content: center;
-  padding: 12px;
-}
-
-.sidebar-mini .nav-link i {
-  margin-right: 0;
-}
-
-.sidebar-mini .sidebar-minimizer i {
-  transform: rotate(180deg);
-}
-
-/* Responsive Styles */
-@media (max-width: 991.98px) {
+  /* Base Sidebar Styles */
   .sidebar {
-    transform: translateX(-100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-color);
+    box-shadow: var(--sidebar-shadow);
+    z-index: var(--sidebar-z-index);
+    display: flex;
+    flex-direction: column;
+    transition: var(--sidebar-transition);
+    overflow: hidden;
   }
-  
-  .sidebar.show {
-    transform: translateX(0);
+
+  /* Logo Section */
+  .logo-container {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   }
-  
+
+  .logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .logo-img {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
   .sidebar-toggle {
-    display: block;
+    background: none;
+    border: none;
+    color: var(--sidebar-color);
+    cursor: pointer;
+    display: none;
+    padding: 5px;
   }
-  
-  .main-panel {
-    margin-left: 0 !important;
-    width: 100% !important;
+
+  .sidebar-toggle i {
+    font-size: 24px;
   }
-}
 
-/* Animation for smooth transitions */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+  /* User Profile Section */
+  .user-profile {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
 
-/* Tooltip for mini sidebar */
-.sidebar-mini .nav-item {
-  position: relative;
-}
+  .user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 15px;
+    border: 3px solid rgba(0, 0, 0, 0.05);
+  }
 
-.sidebar-mini .nav-item:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 10px;
-  padding: 6px 12px;
-  background-color: var(--sidebar-active-bg);
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1001;
-  animation: fadeIn 0.2s ease;
-}
+  .user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-.sidebar-mini .nav-item:hover::before {
-  content: '';
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-right: 6px solid var(--sidebar-active-bg);
-  z-index: 1001;
-}
+  .user-details {
+    text-align: center;
+  }
+
+  .user-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+
+  .user-name span {
+    margin-right: 5px;
+  }
+
+  .dropdown-icon {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  .user-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .user-menu.show {
+    max-height: 200px;
+  }
+
+  .user-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+    color: var(--sidebar-color);
+    text-decoration: none;
+    transition: var(--sidebar-transition);
+  }
+
+  .user-menu-item:hover {
+    color: var(--sidebar-hover-color);
+  }
+
+  .user-menu-item i {
+    margin-right: 8px;
+    font-size: 18px;
+  }
+
+  /* Navigation */
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+
+  .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav-item {
+    margin: 5px 10px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 6px;
+    color: var(--sidebar-color);
+    text-decoration: none;
+    transition: var(--sidebar-transition);
+    white-space: nowrap;
+  }
+
+  .nav-link:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-hover-color);
+  }
+
+  .nav-link i {
+    font-size: 22px;
+    margin-right: 15px;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .nav-text {
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .nav-item.active .nav-link {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+    box-shadow: 0 4px 12px rgba(10, 54, 157, 0.2);
+  }
+
+  /* Sidebar Footer */
+  .sidebar-footer {
+    padding: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: right;
+  }
+
+  .sidebar-minimizer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--sidebar-transition);
+  }
+
+  .sidebar-minimizer:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-hover-color);
+  }
+
+  /* Mini Sidebar State */
+  .sidebar-mini {
+    width: var(--sidebar-width-mini);
+  }
+
+  .sidebar-mini .logo-text,
+  .sidebar-mini .nav-text,
+  .sidebar-mini .user-name span,
+  .sidebar-mini .user-menu-item span,
+  .sidebar-mini .dropdown-icon {
+    display: none;
+  }
+
+  .sidebar-mini .logo-img {
+    margin-right: 0;
+  }
+
+  .sidebar-mini .nav-link {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .sidebar-mini .nav-link i {
+    margin-right: 0;
+  }
+
+  .sidebar-mini .sidebar-minimizer i {
+    transform: rotate(180deg);
+  }
+
+  /* Responsive Styles */
+  @media (max-width: 991.98px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+      display: block;
+    }
+
+    .main-panel {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+  }
+
+  /* Animation for smooth transitions */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Tooltip for mini sidebar */
+  .sidebar-mini .nav-item {
+    position: relative;
+  }
+
+  .sidebar-mini .nav-item:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 10px;
+    padding: 6px 12px;
+    background-color: var(--sidebar-active-bg);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .sidebar-mini .nav-item:hover::before {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid var(--sidebar-active-bg);
+    z-index: 1001;
+  }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sidebar = document.querySelector('.sidebar');
-  const sidebarToggle = document.querySelector('.sidebar-toggle');
-  const minimizer = document.querySelector('.sidebar-minimizer');
-  const userMenuToggle = document.querySelector('.user-name');
-  const userMenu = document.querySelector('.user-menu');
-  
-  // Mobile toggle
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
-      sidebar.classList.toggle('show');
-    });
-  }
-  
-  // Minimize sidebar
-  if (minimizer) {
-    minimizer.addEventListener('click', function() {
-      sidebar.classList.toggle('sidebar-mini');
-    });
-  }
-  
-  // Toggle user menu
-  if (userMenuToggle) {
-    userMenuToggle.addEventListener('click', function() {
-      userMenu.classList.toggle('show');
-      const icon = this.querySelector('.dropdown-icon');
-      if (userMenu.classList.contains('show')) {
-        icon.textContent = 'expand_less';
-      } else {
-        icon.textContent = 'expand_more';
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const userMenuToggle = document.querySelector('.user-name');
+    const userMenu = document.querySelector('.user-menu');
+
+    // Mobile toggle
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', function () {
+        sidebar.classList.toggle('show');
+      });
+    }
+
+    // Toggle user menu
+    if (userMenuToggle) {
+      userMenuToggle.addEventListener('click', function () {
+        userMenu.classList.toggle('show');
+        const icon = this.querySelector('.dropdown-icon');
+        
+      });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function (event) {
+      if (window.innerWidth < 992) {
+        if (!sidebar.contains(event.target) &&
+          (!sidebarToggle || !sidebarToggle.contains(event.target))) {
+          sidebar.classList.remove('show');
+        }
       }
     });
-  }
-  
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', function(event) {
-    if (window.innerWidth < 992) {
-      if (!sidebar.contains(event.target) && 
-          (!sidebarToggle || !sidebarToggle.contains(event.target))) {
+
+    // Add tooltip attributes for mini sidebar
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      const text = item.querySelector('.nav-text')?.textContent || '';
+      item.setAttribute('data-tooltip', text);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 992) {
         sidebar.classList.remove('show');
       }
-    }
+    });
   });
-  
-  // Add tooltip attributes for mini sidebar
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(item => {
-    const text = item.querySelector('.nav-text')?.textContent || '';
-    item.setAttribute('data-tooltip', text);
-  });
-  
-  // Handle window resize
-  window.addEventListener('resize', function() {
-    if (window.innerWidth >= 992) {
-      sidebar.classList.remove('show');
-    }
-  });
-});
 </script>
