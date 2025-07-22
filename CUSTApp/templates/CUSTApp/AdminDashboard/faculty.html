@@ -116,6 +116,7 @@
 
             // Initialize DataTable with AJAX source and filter out Students
             var facultyTable = $('#facultyTable').DataTable({
+                serverSide:true,
                 ajax: {
                     url: '/users?user_type=Staff',
                      headers: {
@@ -123,7 +124,7 @@
                     },
                     dataSrc: function (json) {
                         // Filter out users where user_type is 'Student'
-                        return json.filter(function (user) {
+                        return json.results.filter(function (user) {
                             return user.user_type !== 'Student';
                         });
                     },

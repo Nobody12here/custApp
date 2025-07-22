@@ -42,7 +42,7 @@ SECRET_KEY = "django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 FCM_DJANGO_SETTINGS = {
-    'MYSQL_COMPATIBILITY': True,
+    "MYSQL_COMPATIBILITY": True,
 }
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
@@ -95,7 +95,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
+
 AUTH_USER_MODEL = "CUSTApp.Users"
 
 
@@ -176,13 +180,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-}
 
 
 CACHES = {

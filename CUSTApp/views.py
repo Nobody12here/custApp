@@ -363,15 +363,19 @@ class ApplicationRequestAPIView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+from rest_framework.generics import ListAPIView
 
-class AllUsersListAPIView(APIView):
+class AllUsersListAPIView(ListAPIView):
+    
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        users = Users.objects.all()
-        serializer = UsersSerializer(users, many=True)
-        return Response(serializer.data)
-
+    queryset = Users.objects.all()
+    serializer_class = UsersSerializer
+    def get_queryset(self):
+        user = self.request.query_params.get("user_type",None)
+        queryset = Users.objects.all()
+        if user:
+            queryset = Users.objects.filter(user_type=user)
+        return queryset
 
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
