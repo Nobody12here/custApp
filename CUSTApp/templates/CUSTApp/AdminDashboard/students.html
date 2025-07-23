@@ -4,21 +4,516 @@
 
 <head>
     <meta charset="utf-8" />
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <title>Students Dashboard</title>
+    <title>Students Management - CUST Portal</title>
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-    <!-- Load Fonts and Icons -->
-    <link rel="stylesheet" type="text/css"
-        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-    <!-- Load CSS -->
-    <link href="{% static 'assets/css/material-dashboard.css' %}?v=2.2.2" rel="stylesheet" />
-    <link href="{% static 'assets/demo/demo.css' %}" rel="stylesheet" />
+    
+    <!-- Fonts and Icons -->
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    
     <!-- SheetJS for Excel processing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0A369D;
+            --primary-light: #1E88E5;
+            --primary-dark: #082d7d;
+            --secondary-color: #4472CA;
+            --accent-color: #5E7CE2;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --error-color: #EF4444;
+            --info-color: #3B82F6;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        /* Modern Card Design */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-2px);
+        }
+
+        .card-header-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: var(--white);
+            padding: 2rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .card-header-primary::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: translate(-50px, 50px);
+        }
+
+        .card-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-category {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        /* Enhanced Button Styling */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-transform: none;
+            letter-spacing: 0.025em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info-color) 0%, #60A5FA 100%);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2563EB 0%, var(--info-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #34D399 100%);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, var(--success-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* File Upload Styling */
+        .file-upload-container {
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-container:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(10, 54, 157, 0.02) 0%, rgba(30, 136, 229, 0.02) 100%);
+        }
+
+        .file-upload-container::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            opacity: 0.05;
+            border-radius: 50%;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .upload-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Progress Bar */
+        .progress {
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius);
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* DataTable Enhancements */
+        .table-responsive {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .table {
+            margin: 0;
+            background: var(--white);
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-200);
+            vertical-align: middle;
+            color: var(--gray-600);
+        }
+
+        .table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* DataTables Custom Styling */
+        .dataTables_wrapper {
+            padding: 0;
+        }
+
+        .dataTables_length,
+        .dataTables_filter {
+            margin-bottom: 1.5rem;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .dataTables_length select:focus,
+        .dataTables_filter input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.1);
+        }
+
+        .dataTables_info {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .dataTables_paginate .paginate_button {
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.125rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-300);
+            background: var(--white);
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        /* File Name Display */
+        .file-name {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            margin-left: 1rem;
+        }
+
+        .file-name i {
+            color: var(--success-color);
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-200);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .card-title {
+                font-size: 1.5rem;
+            }
+            
+            .file-upload-container {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Success/Error Messages */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background-color: #F0FDF4;
+            border-color: #BBF7D0;
+            color: #166534;
+        }
+
+        .alert-error {
+            background-color: #FEF2F2;
+            border-color: #FECACA;
+            color: #DC2626;
+        }
+
+        .alert i {
+            font-size: 1.25rem;
+        }
+
+        /* Animation for elements */
+        .card {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
 <body class="">
@@ -33,47 +528,61 @@
                         <div class="col-md-12">
                             <div class="card">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Students List</h4>
-                                    <p class="card-category">View all students</p>
+                                    <h4 class="card-title">
+                                        <i class="material-icons">school</i>
+                                        Students Management
+                                    </h4>
+                                    <p class="card-category">Manage student records and bulk operations</p>
                                 </div>
                                 <div class="card-body">
-                                    <div class="mb-3">
-                                        <button class="btn btn-info" onclick="downloadStudentTemplate()">
-                                            <i class="material-icons">download</i> Download Template
-                                        </button>
-                                        <input type="file" id="studentFileUpload" accept=".xlsx,.xls,.csv"
-                                            style="display: none;" />
-                                        <button class="btn btn-primary"
-                                            onclick="document.getElementById('studentFileUpload').click()">
-                                            <i class="material-icons">upload</i> Upload Students
-                                        </button>
-                                        <!-- Add this new upload button (initially disabled) -->
-                                        <button id="uploadToApiBtn" class="btn btn-success" disabled
-                                            onclick="uploadStudentsToApi()">
-                                            <i class="material-icons">cloud_upload</i> Save to Database
-                                        </button>
-                                        <span id="fileName" class="ml-2" style="vertical-align: middle;"></span>
+                                    <!-- File Upload Section -->
+                                    <div class="file-upload-container">
+                                        <i class="material-icons upload-icon">cloud_upload</i>
+                                        <div class="upload-text">Upload Student Data</div>
+                                        <div class="upload-subtext">Drag and drop your Excel file here or click to browse</div>
+                                        
+                                        <div class="action-buttons">
+                                            <button class="btn btn-info" onclick="downloadStudentTemplate()">
+                                                <i class="material-icons">download</i> Download Template
+                                            </button>
+                                            <input type="file" id="studentFileUpload" accept=".xlsx,.xls,.csv" style="display: none;" />
+                                            <button class="btn btn-primary" onclick="document.getElementById('studentFileUpload').click()">
+                                                <i class="material-icons">upload</i> Choose File
+                                            </button>
+                                            <button id="uploadToApiBtn" class="btn btn-success" disabled onclick="uploadStudentsToApi()">
+                                                <i class="material-icons">cloud_upload</i> Save to Database
+                                            </button>
+                                        </div>
+                                        
+                                        <span id="fileName" class="file-name" style="display: none;">
+                                            <i class="material-icons">description</i>
+                                            <span class="file-text"></span>
+                                        </span>
                                     </div>
-                                    <div class="progress" id="uploadProgress" style="display: none; height: 5px;">
-                                        <div class="progress-bar progress-bar-primary" role="progressbar"
-                                            style="width: 0%"></div>
+
+                                    <!-- Progress Bar -->
+                                    <div class="progress" id="uploadProgress" style="display: none;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
                                     </div>
-                                    <table id="studentsTable" class="table table-striped table-bordered"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Father Name</th>
-                                                <th>Registration #</th>
-                                                <th>CGPA</th>
-                                                <th>Term</th>
-                                                <th>Email</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
+
+                                    <!-- Students Table -->
+                                    <div class="table-responsive">
+                                        <table id="studentsTable" class="table table-striped" style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Name</th>
+                                                    <th>Father Name</th>
+                                                    <th>Registration #</th>
+                                                    <th>CGPA</th>
+                                                    <th>Term</th>
+                                                    <th>Email</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +631,7 @@
                         });
                     },
                     error: function (xhr, error, thrown) {
-                        alert('Failed to load students: ' + error);
+                        Swal.fire('Error', 'Failed to load students: ' + error, 'error');
                     }
                 },
                 columns: [
@@ -140,34 +649,40 @@
                 language: {
                     search: "_INPUT_",
                     searchPlaceholder: "Search students...",
+                    lengthMenu: "Show _MENU_ students per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ students",
+                    infoEmpty: "No students found",
+                    infoFiltered: "(filtered from _MAX_ total students)",
+                    zeroRecords: "No matching students found"
                 },
                 columnDefs: [
                     { targets: [0], visible: false }, // Hide ID column
                     { targets: [1, 2], width: "20%" },
                     { targets: [3, 4, 5, 6, 7], width: "12%" }
-                ]
+                ],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
             });
         });
-    </script>
 
-    <script>
-        
-
-            // File upload handler
-            document.getElementById('studentFileUpload').addEventListener('change', function (event) {
-                const file = event.target.files[0];
-                if (file) {
-                    document.getElementById('fileName').textContent = file.name;
-                    processStudentFile(file);
-                }
-            });
-        
+        // File upload handler
+        document.getElementById('studentFileUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileName = document.getElementById('fileName');
+                const fileText = fileName.querySelector('.file-text');
+                fileText.textContent = file.name;
+                fileName.style.display = 'inline-flex';
+                processStudentFile(file);
+            }
+        });
 
         // Add this global variable to store the processed students
         let currentStudentsData = [];
 
         function processStudentFile(file) {
             const progress = document.getElementById('uploadProgress');
+            const progressBar = progress.querySelector('.progress-bar');
             progress.style.display = 'block';
 
             const reader = new FileReader();
@@ -221,85 +736,143 @@
                         // Enable the upload button
                         $('#uploadToApiBtn').prop('disabled', false);
 
-                        // Show preview alert
-                        alert(`Found ${currentStudentsData.length} students. Click "Save to Database" to upload them.`);
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'File Processed Successfully',
+                            text: `Found ${currentStudentsData.length} students. Click "Save to Database" to upload them.`,
+                            confirmButtonColor: '#0A369D'
+                        });
                     } else {
-                        alert('Warning: No valid student records found in the file.');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Data Found',
+                            text: 'No valid student records found in the file.',
+                            confirmButtonColor: '#F59E0B'
+                        });
                         $('#uploadToApiBtn').prop('disabled', true);
                     }
 
                 } catch (error) {
                     console.error('Error processing file:', error);
-                    alert('Error: Failed to process the file. Please check the format.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Processing Error',
+                        text: 'Failed to process the file. Please check the format.',
+                        confirmButtonColor: '#EF4444'
+                    });
                     $('#uploadToApiBtn').prop('disabled', true);
                 } finally {
                     progress.style.display = 'none';
+                    progressBar.style.width = '0%';
                 }
             };
 
             reader.readAsArrayBuffer(file);
         }
+
         function uploadStudentsToApi() {
             if (!currentStudentsData.length) {
-                alert('Error: No student data to upload');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No Data',
+                    text: 'No student data to upload',
+                    confirmButtonColor: '#EF4444'
+                });
                 return;
             }
 
             const fileInput = document.getElementById('studentFileUpload');
             if (!fileInput.files.length) {
-                alert('Error: Please select a file first');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No File Selected',
+                    text: 'Please select a file first',
+                    confirmButtonColor: '#EF4444'
+                });
                 return;
             }
 
-            const progress = document.getElementById('uploadProgress');
-            progress.style.display = 'block';
+            Swal.fire({
+                title: 'Confirm Upload',
+                text: `Are you sure you want to upload ${currentStudentsData.length} students to the database?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0A369D',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, upload!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const progress = document.getElementById('uploadProgress');
+                    const progressBar = progress.querySelector('.progress-bar');
+                    const uploadBtn = document.getElementById('uploadToApiBtn');
+                    
+                    progress.style.display = 'block';
+                    uploadBtn.classList.add('loading');
 
-            const confirmed = confirm(`Are you sure you want to upload ${currentStudentsData.length} students to the database?`);
-            if (confirmed) {
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
 
-                // Simulate progress (replace with actual upload progress)
-                let progressPercent = 0;
-                const progressInterval = setInterval(() => {
-                    progressPercent += 10;
-                    document.querySelector('.progress-bar').style.width = progressPercent + '%';
+                    // Simulate progress
+                    let progressPercent = 0;
+                    const progressInterval = setInterval(() => {
+                        progressPercent += 10;
+                        progressBar.style.width = progressPercent + '%';
 
-                    if (progressPercent >= 100) {
-                        clearInterval(progressInterval);
+                        if (progressPercent >= 100) {
+                            clearInterval(progressInterval);
 
-                        // Actual AJAX request to your API
-                        $.ajax({
-                            url: '/api/upload-users/',
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken')
-                            },
-                            success: function (response) {
-                                progress.style.display = 'none';
-                                if (response.message) {
-                                    alert(response.message);
-                                    $('#uploadToApiBtn').prop('disabled', true);
-                                } else if (response.error) {
-                                    alert('Error: ' + response.error);
+                            // Actual AJAX request to your API
+                            $.ajax({
+                                url: '/api/upload-users/',
+                                type: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                },
+                                success: function (response) {
+                                    progress.style.display = 'none';
+                                    uploadBtn.classList.remove('loading');
+                                    
+                                    if (response.message) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Upload Successful',
+                                            text: response.message,
+                                            confirmButtonColor: '#10B981'
+                                        });
+                                        $('#uploadToApiBtn').prop('disabled', true);
+                                        // Refresh the table
+                                        $('#studentsTable').DataTable().ajax.reload();
+                                    } else if (response.error) {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Upload Failed',
+                                            text: response.error,
+                                            confirmButtonColor: '#EF4444'
+                                        });
+                                    }
+                                },
+                                error: function (xhr) {
+                                    progress.style.display = 'none';
+                                    uploadBtn.classList.remove('loading');
+                                    const errorMsg = xhr.responseJSON?.error || 'Server error';
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Upload Failed',
+                                        text: errorMsg,
+                                        confirmButtonColor: '#EF4444'
+                                    });
                                 }
-                            },
-                            error: function (xhr) {
-                                progress.style.display = 'none';
-                                const errorMsg = xhr.responseJSON?.error || 'Server error';
-                                alert('Error: ' + errorMsg);
-                            }
-                        });
-                    }
-                }, 200);
-            } else {
-                progress.style.display = 'none';
-            }
+                            });
+                        }
+                    }, 200);
+                }
+            });
         }
-
 
         function getCookie(name) {
             let cookieValue = null;
@@ -330,7 +903,57 @@
 
             // Generate and download the file
             XLSX.writeFile(wb, 'student_template.xlsx');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Template Downloaded',
+                text: 'Student template has been downloaded successfully!',
+                confirmButtonColor: '#10B981',
+                timer: 2000,
+                timerProgressBar: true
+            });
         }
+
+        // Drag and drop functionality
+        const uploadContainer = document.querySelector('.file-upload-container');
+        
+        uploadContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--primary-color)';
+            this.style.background = 'linear-gradient(135deg, rgba(10, 54, 157, 0.05) 0%, rgba(30, 136, 229, 0.05) 100%)';
+        });
+        
+        uploadContainer.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--gray-300)';
+            this.style.background = 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)';
+        });
+        
+        uploadContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--gray-300)';
+            this.style.background = 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.includes('sheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
+                    document.getElementById('studentFileUpload').files = files;
+                    const fileName = document.getElementById('fileName');
+                    const fileText = fileName.querySelector('.file-text');
+                    fileText.textContent = file.name;
+                    fileName.style.display = 'inline-flex';
+                    processStudentFile(file);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid File Type',
+                        text: 'Please upload an Excel file (.xlsx, .xls) or CSV file.',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            }
+        });
     </script>
 </body>
 
