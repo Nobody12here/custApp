@@ -1,5 +1,5 @@
 <!-- CUSTApp/templates/CUSTApp/index.html -->
-{% extends 'base.html' %}
+{% extends 'CUSTApp/AdminDashboard/base.html' %}
 {% load static %}
 {% block extra_css %}
 <style>
@@ -691,12 +691,12 @@
                         $attributeSelect.append(`<option value="${attr}">${attr}</option>`);
                     });
                 } else {
-                    Swal.fire('Warning', 'No attributes found for table: ' + table + (userType ? ' (' + userType + ')' : ''), 'warning');
+                    console.log('Warning', 'No attributes found for table: ' + table + (userType ? ' (' + userType + ')' : ''), 'warning');
                 }
             },
             error: function (xhr, status, error) {
                 console.error('AJAX Error:', { status, error, responseText: xhr.responseText });
-                Swal.fire('Error', 'Failed to fetch attributes: ' + error, 'error');
+                console.log('Error', 'Failed to fetch attributes: ' + error, 'error');
             }
         });
     }
@@ -728,7 +728,7 @@
         let applicationFee = $('#applicationFee').val();
 
         if (!templateName || !templateContent || !departmentId || !employeeId) {
-            Swal.fire('Error', 'Please fill in All the fields', 'error');
+            console.log('Error', 'Please fill in All the fields', 'error');
             return;
         }
 
@@ -749,18 +749,18 @@
             success: function (response) {
                 console.log(response);
                 if (response.success) {
-                    Swal.fire('Success', response.success, 'success');
+                    console.log('Success', response.success, 'success');
                     $('#templateForm')[0].reset();
                     editorInstance.setData('');
                     $('#attributeSelect').prop('disabled', true).empty().append('<option value="">Select Attribute</option>');
                     $('#userTypeSelect').prop('disabled', true).val('');
                     $('#tableSelect').val('');
                 } else {
-                    Swal.fire('Error', response.error || 'Failed to save application', 'error');
+                    console.log('Error', response.error || 'Failed to save application', 'error');
                 }
             },
             error: function (xhr, status, error) {
-                Swal.fire('Error', 'Failed to save application: ' + error, 'error');
+                console.log('Error', 'Failed to save application: ' + error, 'error');
                 console.error('Save application error:', xhr.responseText);
             }
         });
@@ -770,7 +770,7 @@
         const templateName = $('#templateName').val();
         const templateContent = editorInstance.getData();
         if (!templateName || !templateContent) {
-            Swal.fire('Error', 'Please fill in both application name and content.', 'error');
+            console.log('Error', 'Please fill in both application name and content.', 'error');
             return;
         }
 
@@ -788,10 +788,10 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                Swal.fire('Success', 'PDF generated successfully', 'success');
+                console.log('Success', 'PDF generated successfully', 'success');
             },
             error: function (xhr, status, error) {
-                Swal.fire('Error', 'Failed to generate PDF: ' + error, 'error');
+                console.log('Error', 'Failed to generate PDF: ' + error, 'error');
             }
         });
     }
