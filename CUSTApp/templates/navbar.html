@@ -19,18 +19,18 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle user-profile" href="#" id="userDropdown" role="button"
             data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="user-avatar-small">
+            <div class="user-avatar-small profile-img">
               <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar">
             </div>
-            <span class="user-name d-none d-md-inline">John Doe</span>
+            <span class="user-name d-none d-md-inline">-</span>
           </a>
           <div class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
             <div class="dropdown-header">
               <div class="user-info">
-                <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" class="user-avatar-large">
+                <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" class="user-avatar-large profile-img">
                 <div class="user-details">
-                  <h6>John Doe</h6>
-                  <p>john.doe@example.com</p>
+                  <h6 class="user-name">-</h6>
+                  <p class="user-email">-</p>
                 </div>
               </div>
             </div>
@@ -39,7 +39,7 @@
               <i class="material-icons">account_circle</i>
               <span>My Profile</span>
             </a>
-            
+
             <div class="dropdown-divider"></div>
             <a class="dropdown-item text-danger" href="#" id="logoutButton">
               <i class="material-icons">logout</i>
@@ -83,7 +83,7 @@
   .navbar {
     position: fixed;
     top: 0;
-    left:0;
+    left: 0;
     right: 0;
     width: 100%;
     height: var(--navbar-height);
@@ -742,6 +742,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    $(".user-name").text(localStorage.getItem("user_name") || "User");
+
     // Mobile sidebar toggle
     const menuToggle = document.getElementById('menuToggle');
     const mobileSidebar = document.getElementById('mobileSidebar');
