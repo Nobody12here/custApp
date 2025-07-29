@@ -16,6 +16,15 @@
   <!-- CSS Files -->
   <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
   <!-- Page-specific CSS -->
+   <style>
+    .page-link {
+      border: none !important;
+
+    }
+    .active>.page-link{
+      background-color: transparent !important;
+    }
+    </style>
   {% block extra_css %}{% endblock %}
 </head>
 

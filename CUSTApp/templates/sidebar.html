@@ -80,7 +80,7 @@
   --border-color: #e0e0e0;
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: color 0.3s ease, background-color 0.3s ease;
   --border-radius: 12px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -109,7 +109,7 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: background-color 0.3s ease;
   box-shadow: var(--shadow);
 }
 
@@ -117,14 +117,12 @@
   width: 20px;
   height: 2px;
   background: white;
-  transition: var(--transition);
+  transition: transform 0.3s ease;
   border-radius: 1px;
 }
 
 .mobile-toggle:hover {
   background: var(--primary-light);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-hover);
 }
 
 .mobile-toggle.active span:nth-child(1) {
@@ -157,12 +155,14 @@
   opacity: 1;
 }
 
-/* Main Sidebar - FIXED WIDTH, NO AUTO-COLLAPSE */
+/* Main Sidebar - FIXED WIDTH ALWAYS */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   width: var(--sidebar-width);
+  min-width: var(--sidebar-width);  /* Prevent shrinking */
+  max-width: var(--sidebar-width);  /* Prevent growing */
   height: 100vh;
   background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 100%);
   border-right: 1px solid var(--border-color);
@@ -170,7 +170,7 @@
   z-index: 1050;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease;
   overflow: hidden;
 }
 
@@ -189,7 +189,7 @@
   color: var(--primary-color);
   font-weight: 600;
   font-size: 18px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition: var(--transition);
   padding: var(--spacing-sm);
   border-radius: var(--spacing-sm);
 }
@@ -255,7 +255,7 @@
   padding: var(--spacing-sm);
   border-radius: var(--spacing-sm);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: var(--transition);
   text-align: center;
 }
 
@@ -298,7 +298,7 @@
   text-decoration: none;
   font-size: 13px;
   border-radius: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: var(--transition);
   margin: 2px 0;
 }
 
@@ -316,8 +316,9 @@
 
 /* Main Navigation */
 .sidebar-wrapper {
+
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: var(--spacing-md) 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(10, 54, 157, 0.2) transparent;
@@ -350,7 +351,7 @@
   margin: 4px var(--spacing-md);
 }
 
-/* FIXED NAV-LINKS - NO WIDTH CHANGES ON HOVER/FOCUS */
+/* FIXED NAV-LINKS - NO SIZE/WIDTH CHANGES */
 .nav-container .nav-link {
   display: flex;
   align-items: center;
@@ -358,7 +359,7 @@
   color: var(--text-color);
   text-decoration: none;
   border-radius: var(--border-radius);
-  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: var(--transition);
   font-weight: 500;
   font-size: 14px;
   position: relative;
@@ -379,7 +380,7 @@
 
 .nav-container .nav-link:hover {
   color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(10, 54, 157, 0.15);
+  background: rgba(10, 54, 157, 0.05);
 }
 
 .nav-container .nav-link:hover::before {
@@ -389,7 +390,6 @@
 .nav-container .nav-item.active .nav-link {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(10, 54, 157, 0.25);
 }
 
 .nav-container .nav-item.active .nav-link::before {
@@ -402,7 +402,6 @@
   margin-right: var(--spacing-md);
   width: 30px;
   text-align: center;
-  transition: none; /* Removed scale transform */
   flex-shrink: 0;
 }
 
@@ -411,22 +410,17 @@
   letter-spacing: 0.25px;
 }
 
-/* Layout Adjustments */
+/* Layout Adjustments - FIXED POSITIONING */
 .main-panel {
   margin-left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   min-height: 100vh;
-  transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 .navbar {
   left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
-  transition: left 0.3s ease, width 0.3s ease;
 }
-
-/* REMOVED COLLAPSED SIDEBAR FUNCTIONALITY */
-/* The .collapsed class styles have been removed to prevent automatic resizing */
 
 /* Responsive Design */
 @media (max-width: 991px) {
@@ -476,7 +470,7 @@
   }
 }
 
-/* SIMPLIFIED FOCUS STYLES - NO SIZE CHANGES */
+/* FOCUS STYLES - NO SIZE CHANGES */
 .nav-link:focus,
 .username:focus,
 .logo a:focus {
