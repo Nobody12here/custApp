@@ -419,7 +419,7 @@ def test_api_view(request):
 
 # Generic API Views
 class UsersList(generics.ListCreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
