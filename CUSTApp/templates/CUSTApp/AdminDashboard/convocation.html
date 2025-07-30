@@ -1,0 +1,753 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Convocation Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .datetime-modification select.form-control {
+        margin-bottom: 0;
+    }
+
+    .modal-header .close {
+        padding: 0.5rem 1rem;
+        margin: -1rem -1rem -1rem auto;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        opacity: 0.8;
+        background: none;
+        border: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-header .close:hover {
+        opacity: 1;
+        color: #000;
+        cursor: pointer;
+    }
+
+    /* Base Styles */
+    .card-stats {
+        cursor: pointer;
+        transition: transform 0.2s;
+        min-width: 220px;
+        max-width: 300px;
+    }
+
+    /* Form Styles */
+    .convocation-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.14);
+        margin-bottom: 30px;
+    }
+
+    .convocation-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .convocation-form label {
+        color: #555;
+        font-weight: 500;
+    }
+
+    .convocation-form .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+        height: auto;
+    }
+
+    .convocation-form .form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 0.2rem rgba(10, 54, 157, 0.25);
+    }
+
+    /* Table Styles */
+    .table th {
+        font-weight: 500;
+        color: #0A369D;
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .btn i.material-icons {
+        font-size: 18px;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: capitalize;
+        font-size: 13px;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .status-badge.active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-badge.upcoming {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #eee;
+        padding: 20px;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        color: #0A369D;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #eee;
+        padding: 15px 20px;
+    }
+
+    /* Detail Items */
+    .detail-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #0A369D;
+    }
+
+    .detail-item h6 {
+        color: #0A369D;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-item p {
+        margin-bottom: 10px;
+        display: flex;
+    }
+
+    .detail-item p strong {
+        min-width: 120px;
+        display: inline-block;
+    }
+
+    /* Enhanced Input Fields */
+    .convocation-form .form-control {
+        border-radius: 6px;
+        border: 2px solid #ddd;
+        padding: 8px 12px;
+        height: auto;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .convocation-form .form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+        outline: none;
+    }
+
+    /* Form Group Enhancements */
+    .convocation-form .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .convocation-form label {
+        color: #555;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Textarea Styling */
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Search Input Enhancement */
+    #searchInput {
+        border-radius: 30px;
+        border: 2px solid #ddd;
+        padding: 10px 20px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+        outline: none;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .detail-item p {
+            flex-direction: column;
+        }
+
+        .detail-item p strong {
+            min-width: auto;
+            margin-bottom: 5px;
+        }
+    }
+
+    /* Animation for form toggle */
+    #ConvocationFormRow {
+        transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .form-control.is-valid {
+        border-color: #28a745;
+    }
+
+    .invalid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+        display: block;
+    }
+
+    .valid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #28a745;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Add New Convocation Button -->
+<div class="row">
+    <div class="col-md-12 text-right mb-3 mt-3">
+        <button id="toggleConvocationForm" class="btn btn-primary">
+            <i class="material-icons">add</i> Add New Convocation Instance
+        </button>
+    </div>
+</div>
+
+<!-- Add New Convocation Form (hidden by default) -->
+<div class="row" id="ConvocationFormRow" style="display: none;">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Add Convocation</h4>
+                <p class="card-category">Enter convocation details to create a new instance</p>
+            </div>
+            <div class="card-body">
+                <form id="convocationForm" class="convocation-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="convocationTitle">Convocation Title</label>
+                                <input type="text" class="form-control" id="convocationTitle" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="academicYear">Academic Year</label>
+                                <input type="text" class="form-control" id="academicYear" placeholder="e.g., 2023-2024" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="registrationDate">Registration Start Date</label>
+                                <input type="date" class="form-control" id="registrationDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="registrationDeadline">Registration Deadline</label>
+                                <input type="date" class="form-control" id="registrationDeadline" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="rehearsalDate">Rehearsal Date</label>
+                                <input type="date" class="form-control" id="rehearsalDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="rehearsalTime">Rehearsal Time</label>
+                                <input type="time" class="form-control" id="rehearsalTime" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="registrationFormLink">Registration Form Link</label>
+                                <input type="url" class="form-control" id="registrationFormLink" placeholder="https://..." required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="description">Description (Optional)</label>
+                                <textarea class="form-control" id="description" rows="3" placeholder="Enter convocation description..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="material-icons">send</i> Create Convocation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Convocation Instances Table -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Convocation Instances</h4>
+                <p class="card-category">Manage all convocation instances</p>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <div class="form-group mb-0">
+                            <input type="text" class="form-control" id="searchInput"
+                                placeholder="Search convocations...">
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <button id="filterActive" class="btn btn-info">
+                            <i class="material-icons">check_circle</i> Active Only
+                        </button>
+                        <button id="clearFilters" class="btn btn-secondary ml-2">
+                            <i class="material-icons">clear</i> Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>Title</th>
+                                <th>Academic Year</th>
+                                <th>Registration Deadline</th>
+                                <th>Rehearsal Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="convocationTableBody">
+                            <!-- Convocation instances will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1" role="dialog" aria-labelledby="viewDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDetailsModalLabel">Convocation Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>General Information</h6>
+                            <p><strong>Title:</strong> <span id="detail-title"></span></p>
+                            <p><strong>Academic Year:</strong> <span id="detail-academic-year"></span></p>
+                            <p><strong>Status:</strong> <span id="detail-status"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <h6>Important Dates</h6>
+                            <p><strong>Registration Start:</strong> <span id="detail-registration-date"></span></p>
+                            <p><strong>Registration Deadline:</strong> <span id="detail-registration-deadline"></span></p>
+                            <p><strong>Rehearsal:</strong> <span id="detail-rehearsal-datetime"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="detail-item">
+                            <h6>Additional Information</h6>
+                            <p><strong>Registration Form:</strong> <a id="detail-form-link" href="#" target="_blank">Open Form</a></p>
+                            <p><strong>Description:</strong> <span id="detail-description"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validation functions
+    function showValidationFeedback(inputId, isValid, message) {
+        const input = $(`#${inputId}`);
+        const feedbackElement = input.siblings('.invalid-feedback, .valid-feedback');
+
+        // Remove existing classes
+        input.removeClass('is-valid is-invalid');
+        feedbackElement.remove();
+
+        if (isValid) {
+            input.addClass('is-valid');
+            if (message) {
+                input.after(`<div class="valid-feedback">${message}</div>`);
+            }
+        } else {
+            input.addClass('is-invalid');
+            input.after(`<div class="invalid-feedback">${message}</div>`);
+        }
+    }
+
+    function validateDates() {
+        const registrationDate = $('#registrationDate').val();
+        const registrationDeadline = $('#registrationDeadline').val();
+        const rehearsalDate = $('#rehearsalDate').val();
+
+        let isValid = true;
+
+        if (registrationDate && registrationDeadline) {
+            if (new Date(registrationDate) >= new Date(registrationDeadline)) {
+                showValidationFeedback('registrationDeadline', false, 'Deadline must be after registration start date');
+                isValid = false;
+            } else {
+                showValidationFeedback('registrationDeadline', true, '');
+            }
+        }
+
+        if (registrationDeadline && rehearsalDate) {
+            if (new Date(registrationDeadline) > new Date(rehearsalDate)) {
+                showValidationFeedback('rehearsalDate', false, 'Rehearsal date should be after registration deadline');
+                isValid = false;
+            } else {
+                showValidationFeedback('rehearsalDate', true, '');
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateForm() {
+        let isFormValid = true;
+
+        // Validate required fields
+        const requiredFields = ['convocationTitle', 'academicYear', 'registrationDate', 'registrationDeadline', 'rehearsalDate', 'rehearsalTime', 'registrationFormLink'];
+        
+        requiredFields.forEach(fieldId => {
+            const value = $(`#${fieldId}`).val();
+            if (!value || value.trim() === '') {
+                showValidationFeedback(fieldId, false, 'This field is required');
+                isFormValid = false;
+            } else {
+                showValidationFeedback(fieldId, true, '');
+            }
+        });
+
+        // Validate URL format
+        const formLink = $('#registrationFormLink').val();
+        if (formLink) {
+            try {
+                new URL(formLink);
+                showValidationFeedback('registrationFormLink', true, '');
+            } catch {
+                showValidationFeedback('registrationFormLink', false, 'Please enter a valid URL');
+                isFormValid = false;
+            }
+        }
+
+        // Validate dates
+        if (!validateDates()) {
+            isFormValid = false;
+        }
+
+        return isFormValid;
+    }
+
+    function loadConvocations(searchTerm = '', showActiveOnly = false) {
+        let url = '/convocation/';
+        if (showActiveOnly) {
+            url += '?active_only=true';
+        }
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function (data) {
+                const tbody = $('#convocationTableBody');
+                tbody.empty();
+
+                const filteredConvocations = searchTerm ? data.filter(convocation => {
+                    const searchStr = `${convocation.title} ${convocation.academic_year} ${convocation.status}`.toLowerCase();
+                    return searchStr.includes(searchTerm.toLowerCase());
+                }) : data;
+
+                if (filteredConvocations.length === 0) {
+                    tbody.html('<tr><td colspan="6" class="text-center">No convocation instances found</td></tr>');
+                    return;
+                }
+
+                filteredConvocations.forEach(convocation => {
+                    const registrationDeadline = new Date(convocation.registration_deadline);
+                    const rehearsalDate = new Date(convocation.rehearsal_date);
+                    const rehearsalTime = convocation.rehearsal_time;
+
+                    const deadlineStr = registrationDeadline.toLocaleDateString();
+                    const rehearsalDateStr = rehearsalDate.toLocaleDateString();
+
+                    const row = `
+                        <tr>
+                            <td>${convocation.title}</td>
+                            <td>${convocation.academic_year}</td>
+                            <td>${deadlineStr}</td>
+                            <td>${rehearsalDateStr} ${rehearsalTime}</td>
+                            <td>
+                                <span class="status-badge ${convocation.status.toLowerCase()}">
+                                    ${convocation.status}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-info btn-sm" onclick="viewConvocationDetails(${convocation.id})">
+                                    <i class="material-icons">visibility</i> View
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            },
+            error: function () {
+                $('#convocationTableBody').html('<tr><td colspan="6" class="text-center">Error loading convocation instances</td></tr>');
+            }
+        });
+    }
+
+    function viewConvocationDetails(convocationId) {
+        $.ajax({
+            url: `/convocation/${convocationId}/`,
+            method: 'GET',
+            success: function (convocation) {
+                const registrationDate = new Date(convocation.registration_date);
+                const registrationDeadline = new Date(convocation.registration_deadline);
+                const rehearsalDate = new Date(convocation.rehearsal_date);
+
+                $('#detail-title').text(convocation.title);
+                $('#detail-academic-year').text(convocation.academic_year);
+                $('#detail-status').text(convocation.status)
+                    .removeClass('active inactive upcoming')
+                    .addClass(convocation.status.toLowerCase());
+                $('#detail-registration-date').text(registrationDate.toLocaleDateString());
+                $('#detail-registration-deadline').text(registrationDeadline.toLocaleDateString());
+                $('#detail-rehearsal-datetime').text(`${rehearsalDate.toLocaleDateString()} at ${convocation.rehearsal_time}`);
+                $('#detail-form-link').attr('href', convocation.registration_form_link);
+                $('#detail-description').text(convocation.description || 'No description provided');
+
+                $('#viewDetailsModal').modal('show');
+            },
+            error: function (xhr) {
+                alert('Failed to load convocation details');
+                console.error(xhr);
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $(document).ready(function () {
+        if (!checkAuth()) return;
+
+        // Date validation on change
+        $('#registrationDate, #registrationDeadline, #rehearsalDate').on('change', function() {
+            validateDates();
+        });
+
+        // Real-time validation for required fields
+        $('input[required], select[required]').on('blur', function () {
+            const value = $(this).val();
+            const fieldId = $(this).attr('id');
+
+            if (!value || value.trim() === '') {
+                showValidationFeedback(fieldId, false, 'This field is required');
+            } else {
+                showValidationFeedback(fieldId, true, '');
+            }
+        });
+
+        // URL validation
+        $('#registrationFormLink').on('blur', function() {
+            const url = $(this).val();
+            if (url) {
+                try {
+                    new URL(url);
+                    showValidationFeedback('registrationFormLink', true, '');
+                } catch {
+                    showValidationFeedback('registrationFormLink', false, 'Please enter a valid URL');
+                }
+            }
+        });
+
+        // Form submission
+        $('#convocationForm').on('submit', function (e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                const firstInvalid = $('.is-invalid').first();
+                if (firstInvalid.length) {
+                    $('html, body').animate({
+                        scrollTop: firstInvalid.offset().top - 100
+                    }, 300);
+                    firstInvalid.focus();
+                }
+                return false;
+            }
+
+            const formData = {
+                title: $('#convocationTitle').val(),
+                academic_year: $('#academicYear').val(),
+                registration_date: $('#registrationDate').val(),
+                registration_deadline: $('#registrationDeadline').val(),
+                rehearsal_date: $('#rehearsalDate').val(),
+                rehearsal_time: $('#rehearsalTime').val(),
+                registration_form_link: $('#registrationFormLink').val(),
+                description: $('#description').val()
+            };
+
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Creating...');
+
+            $.ajax({
+                url: '/convocation/',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData,
+                success: function (response, textStatus, jqXHR) {
+                    if (jqXHR.status === 201) {
+                        alert('Convocation instance created successfully');
+                        $('#convocationForm')[0].reset();
+                        $('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+                        $('.invalid-feedback, .valid-feedback').remove();
+                        loadConvocations();
+                        $('#ConvocationFormRow').slideUp();
+                    } else {
+                        alert(response.error || 'Failed to create convocation instance');
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'An error occurred while creating the convocation instance';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    }
+                    alert(errorMessage);
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+
+        // Search functionality
+        $('#searchInput').on('input', function () {
+            loadConvocations($(this).val());
+        });
+
+        // Filter buttons
+        $('#filterActive').on('click', () => loadConvocations('', true));
+        $('#clearFilters').on('click', () => loadConvocations('', false));
+
+        // Toggle form
+        $('#toggleConvocationForm').on('click', function () {
+            $('#ConvocationFormRow').slideToggle(200);
+        });
+
+        // Initial load
+        loadConvocations();
+    });
+</script>
+{% endblock %}

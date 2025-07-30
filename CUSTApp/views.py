@@ -377,7 +377,8 @@ class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.role == "admin"
 
-
+def convocation(request):
+    return render(request, "CUSTApp/AdminDashboard/convocation.html")
 def about(request):
     return HttpResponse("This is the about page.")
 

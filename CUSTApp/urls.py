@@ -32,6 +32,7 @@ urlpatterns = [
     path("login/", views.login, name="login"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("students/", views.students, name="students"),
+    path("convocation/", views.convocation, name="convocation"),
     path("about/", views.about, name="about"),
     path("test/", test_api_view, name="test_api"),
     path("users/", UsersList.as_view(), name="users_list"),
