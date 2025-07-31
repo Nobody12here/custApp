@@ -20,7 +20,7 @@ from django.apps import apps
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
 from ApplicationTemplate.models import Applications, Request
-from .models import Program, Users, Department
+from .models import Program, Users, Department,Convocation
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
     ProgramSerializer,
@@ -30,6 +30,7 @@ from .serializers import (
     OTPSendSerializer,
     OTPVerifySerializer,
     PhoneOTPVerifySerializer,
+    ConvocationSerializer
 )
 from user_requests.serializers import ComplaintSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -56,6 +57,13 @@ from PyPDF2 import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)
 
+
+class ConvocationView(ModelViewSet):
+    permission_classes = [AllowAny]
+    serializer_class = ConvocationSerializer
+    def get_queryset(self):
+        queryset = Convocation.objects.all()
+        return queryset
 
 class UploadEmployeeSignature(APIView):
     permission_classes = [IsAuthenticated]

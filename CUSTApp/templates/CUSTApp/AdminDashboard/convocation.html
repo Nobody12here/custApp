@@ -264,6 +264,92 @@
         color: #28a745;
         display: block;
     }
+
+    /* Student Upload Section */
+    .student-upload-section {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+        transition: border-color 0.3s ease;
+    }
+
+    .student-upload-section:hover {
+        border-color: #0A369D;
+    }
+
+    .student-upload-section.dragover {
+        border-color: #0A369D;
+        background-color: rgba(10, 54, 157, 0.05);
+    }
+
+    .btn-upload {
+        width: 100%;
+        height: 45px;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-upload:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-upload:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .upload-status .alert {
+        margin-bottom: 0;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .upload-progress {
+        margin-top: 10px;
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e9ecef;
+    }
+
+    .progress-bar {
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    /* File input styling */
+    input[type="file"].form-control {
+        padding: 10px 12px;
+        border: 2px solid #ddd;
+        background: white;
+        cursor: pointer;
+    }
+
+    input[type="file"].form-control:focus {
+        border-color: #0A369D;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.15);
+    }
+
+    input[type="file"].form-control::file-selector-button {
+        background: #0A369D;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        margin-right: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    input[type="file"].form-control::file-selector-button:hover {
+        background: #1E88E5;
+    }
 </style>
 {% endblock %}
 
@@ -334,6 +420,33 @@
                             <div class="form-group">
                                 <label for="registrationFormLink">Registration Form Link</label>
                                 <input type="url" class="form-control" id="registrationFormLink" placeholder="https://..." required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="studentDataFile">Student Data Upload</label>
+                                <div class="student-upload-section">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <input type="file" class="form-control" id="studentDataFile" accept=".csv,.xlsx,.xls" placeholder="Select student data file...">
+                                            <small class="form-text text-muted">
+                                                Supported formats: CSV, Excel (.xlsx, .xls). File should contain student information.
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-secondary btn-upload" id="uploadStudentDataBtn" disabled>
+                                                <i class="material-icons">cloud_upload</i> Upload File
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="upload-status" id="uploadStatus" style="display: none;">
+                                        <div class="alert alert-info mt-2" role="alert">
+                                            <span id="uploadStatusMessage"></span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -744,6 +857,46 @@
         // Toggle form
         $('#toggleConvocationForm').on('click', function () {
             $('#ConvocationFormRow').slideToggle(200);
+        });
+
+        // File input change handler
+        $('#studentDataFile').on('change', function() {
+            const file = this.files[0];
+            $('#uploadStudentDataBtn').prop('disabled', !file);
+            
+            if (file) {
+                // Hide any previous status
+                $('#uploadStatus').hide();
+            }
+        });
+
+        // Upload button click handler
+        $('#uploadStudentDataBtn').on('click', function() {
+            handleFileUpload();
+        });
+
+        // Drag and drop functionality
+        const uploadSection = $('.student-upload-section');
+        
+        uploadSection.on('dragover', function(e) {
+            e.preventDefault();
+            $(this).addClass('dragover');
+        });
+        
+        uploadSection.on('dragleave', function(e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+        });
+        
+        uploadSection.on('drop', function(e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+            
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                $('#studentDataFile')[0].files = files;
+                $('#uploadStudentDataBtn').prop('disabled', false);
+            }
         });
 
         // Initial load

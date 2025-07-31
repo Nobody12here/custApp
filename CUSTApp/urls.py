@@ -75,6 +75,9 @@ urlpatterns = [
         name="application-list",
     ),
     path(
+        "api/convocation/", views.ConvocationView.as_view({'get':'list','post':'create'}), name="convocation_requests"
+    ),
+    path(
         "api/application-request/",
         ApplicationRequestAPIView.as_view(),
         name="application_request",

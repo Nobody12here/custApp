@@ -136,3 +136,33 @@ class Users(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.name
+
+
+class Convocation(models.Model):
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive'),
+        ('Upcoming', 'Upcoming'),
+        ('Completed', 'Completed'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    academic_year = models.CharField(max_length=20)  # e.g., "2023-2024"
+    registration_date = models.DateField()
+    registration_deadline = models.DateField()
+    rehearsal_date = models.DateField()
+    rehearsal_time = models.TimeField()
+    registration_form_link = models.URLField(max_length=500,blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Upcoming')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    
+    class Meta:
+        db_table = 'convocations'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} - {self.academic_year}"
