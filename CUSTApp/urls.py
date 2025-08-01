@@ -27,12 +27,13 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r"program", ProgramView)
+router.register(r"convocation", views.ConvocationView, basename="convocation")
 urlpatterns = [
     path("", views.home, name="home_"),
     path("login/", views.login, name="login"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("students/", views.students, name="students"),
-    path("convocation/", views.convocation, name="convocation"),
+    path("convocation-page/", views.convocation, name="convocation_page"),
     path("about/", views.about, name="about"),
     path("test/", test_api_view, name="test_api"),
     path("users/", UsersList.as_view(), name="users_list"),
@@ -73,9 +74,6 @@ urlpatterns = [
         "api/applications/",
         views.ApplicationListView.as_view(),
         name="application-list",
-    ),
-    path(
-        "api/convocation/", views.ConvocationView.as_view({'get':'list','post':'create'}), name="convocation_requests"
     ),
     path(
         "api/application-request/",
@@ -132,5 +130,10 @@ urlpatterns = [
         name="request-verification",
     ),
     path("complaints/", complaints, name="complaints"),
+    path(
+        "api/upload-convocation-data/",
+        views.UploadConvocationData.as_view(),
+        name="upload_convocation_data",
+    ),
 ]
 urlpatterns.extend(router.urls)

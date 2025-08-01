@@ -383,7 +383,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="academicYear">Academic Year</label>
-                                <input type="text" class="form-control" id="academicYear" placeholder="e.g., 2023-2024" required>
+                                <input type="text" class="form-control" id="academicYear" placeholder="e.g., 2023-2024"
+                                    required>
                             </div>
                         </div>
                     </div>
@@ -419,42 +420,18 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="registrationFormLink">Registration Form Link</label>
-                                <input type="url" class="form-control" id="registrationFormLink" placeholder="https://..." required>
+                                <input type="url" class="form-control" id="registrationFormLink"
+                                    placeholder="https://..." required>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="studentDataFile">Student Data Upload</label>
-                                <div class="student-upload-section">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <input type="file" class="form-control" id="studentDataFile" accept=".csv,.xlsx,.xls" placeholder="Select student data file...">
-                                            <small class="form-text text-muted">
-                                                Supported formats: CSV, Excel (.xlsx, .xls). File should contain student information.
-                                            </small>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="button" class="btn btn-secondary btn-upload" id="uploadStudentDataBtn" disabled>
-                                                <i class="material-icons">cloud_upload</i> Upload File
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="upload-status" id="uploadStatus" style="display: none;">
-                                        <div class="alert alert-info mt-2" role="alert">
-                                            <span id="uploadStatusMessage"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="description">Description (Optional)</label>
-                                <textarea class="form-control" id="description" rows="3" placeholder="Enter convocation description..."></textarea>
+                                <textarea class="form-control" id="description" rows="3"
+                                    placeholder="Enter convocation description..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -542,7 +519,8 @@
                         <div class="detail-item">
                             <h6>Important Dates</h6>
                             <p><strong>Registration Start:</strong> <span id="detail-registration-date"></span></p>
-                            <p><strong>Registration Deadline:</strong> <span id="detail-registration-deadline"></span></p>
+                            <p><strong>Registration Deadline:</strong> <span id="detail-registration-deadline"></span>
+                            </p>
                             <p><strong>Rehearsal:</strong> <span id="detail-rehearsal-datetime"></span></p>
                         </div>
                     </div>
@@ -551,8 +529,39 @@
                     <div class="col-md-12">
                         <div class="detail-item">
                             <h6>Additional Information</h6>
-                            <p><strong>Registration Form:</strong> <a id="detail-form-link" href="#" target="_blank">Open Form</a></p>
+                            <p><strong>Registration Form:</strong> <a id="detail-form-link" href="#"
+                                    target="_blank">Open Form</a></p>
                             <p><strong>Description:</strong> <span id="detail-description"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="studentDataFile">Student Data Upload</label>
+                            <div class="student-upload-section">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="file" class="form-control" id="studentDataFile"
+                                            accept=".csv,.xlsx,.xls" placeholder="Select student data file...">
+                                        <small class="form-text text-muted">
+                                            Supported formats: CSV, Excel (.xlsx, .xls). File should contain student
+                                            information.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-secondary btn-upload"
+                                            id="uploadStudentDataBtn" disabled>
+                                            <i class="material-icons">cloud_upload</i> Upload File
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="upload-status" id="uploadStatus" style="display: none;">
+                                    <div class="alert alert-info mt-2" role="alert">
+                                        <span id="uploadStatusMessage"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -617,7 +626,7 @@
 
         // Validate required fields
         const requiredFields = ['convocationTitle', 'academicYear', 'registrationDate', 'registrationDeadline', 'rehearsalDate', 'rehearsalTime', 'registrationFormLink'];
-        
+
         requiredFields.forEach(fieldId => {
             const value = $(`#${fieldId}`).val();
             if (!value || value.trim() === '') {
@@ -706,6 +715,217 @@
         });
     }
 
+    // File upload functionality
+    function handleFileUpload() {
+        const fileInput = $('#studentDataFile')[0];
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            showUploadStatus('error', 'Please select a file to upload');
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['.xlsx', '.xls'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            showUploadStatus('error', 'Invalid file type. Please select a CSV or Excel file.');
+            return;
+        }
+
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            showUploadStatus('error', 'File size too large. Maximum allowed size is 10MB.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('convocation_data', file);
+
+        // Get current convocation ID from modal (you might need to store this when opening modal)
+        const convocationId = $('#viewDetailsModal').data('convocation-id');
+        if (convocationId) {
+            formData.append('convocation_id', convocationId);
+        }
+
+        // Show upload progress
+        showUploadStatus('info', 'Uploading file...', true);
+        $('#uploadStudentDataBtn').prop('disabled', true).html('<i class="material-icons">hourglass_empty</i> Uploading...');
+
+        $.ajax({
+            url: '/api/upload-convocation-data/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function() {
+                const xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        const percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                        updateUploadProgress(percentComplete);
+                    }
+                }, false);
+                return xhr;
+            },
+            success: function(response) {
+                const processedCount = response.result.modified || 0;
+                const errorCount = response.result.total || 0;
+                
+                if (errorCount > 0) {
+                    showUploadStatus('warning', 
+                        `File uploaded with ${errorCount} errors. ${processedCount} records processed successfully.`);
+                } else {
+                    showUploadStatus('success', 
+                        `File uploaded successfully! ${processedCount} student records processed.`);
+                }
+                
+                // Reset file input
+                fileInput.value = '';
+                $('#uploadStudentDataBtn').prop('disabled', true);
+                
+                // Show detailed results if available
+                if (response.errors && response.errors.length > 0) {
+                    showDetailedErrors(response.errors);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Failed to upload file';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.status === 413) {
+                    errorMessage = 'File too large. Please reduce file size and try again.';
+                } else if (xhr.status === 400) {
+                    errorMessage = 'Invalid file format or data. Please check your file and try again.';
+                }
+                showUploadStatus('error', errorMessage);
+            },
+            complete: function() {
+                $('#uploadStudentDataBtn').prop('disabled', false).html('<i class="material-icons">cloud_upload</i> Upload File');
+                hideUploadProgress();
+            }
+        });
+    }
+
+    function showUploadStatus(type, message, showProgress = false) {
+        const statusDiv = $('#uploadStatus');
+        const messageSpan = $('#uploadStatusMessage');
+        const alertDiv = statusDiv.find('.alert');
+        
+        // Remove existing alert classes
+        alertDiv.removeClass('alert-success alert-danger alert-info alert-warning');
+        
+        // Add appropriate class
+        switch(type) {
+            case 'success':
+                alertDiv.addClass('alert-success');
+                break;
+            case 'error':
+                alertDiv.addClass('alert-danger');
+                break;
+            case 'warning':
+                alertDiv.addClass('alert-warning');
+                break;
+            default:
+                alertDiv.addClass('alert-info');
+        }
+        
+        messageSpan.text(message);
+        statusDiv.show();
+        
+        if (showProgress) {
+            showUploadProgress();
+        }
+        
+        // Auto-hide success/error messages after 8 seconds
+        if (type === 'success' || type === 'error') {
+            setTimeout(() => {
+                statusDiv.fadeOut();
+            }, 8000);
+        }
+    }
+
+    function showUploadProgress() {
+        const progressHtml = `
+            <div class="upload-progress mt-2">
+                <div class="progress">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        <span class="sr-only">0% Complete</span>
+                    </div>
+                </div>
+                <small class="text-muted">Uploading... <span id="progress-percent">0%</span></small>
+            </div>
+        `;
+        $('#uploadStatus .alert').after(progressHtml);
+    }
+
+    function updateUploadProgress(percent) {
+        const progressBar = $('.progress-bar');
+        const progressText = $('#progress-percent');
+        
+        progressBar.css('width', percent + '%').attr('aria-valuenow', percent);
+        progressText.text(percent + '%');
+        
+        // Update progress bar color based on completion
+        if (percent < 50) {
+            progressBar.removeClass('bg-warning bg-success').addClass('bg-primary');
+        } else if (percent < 90) {
+            progressBar.removeClass('bg-primary bg-success').addClass('bg-warning');
+        } else {
+            progressBar.removeClass('bg-primary bg-warning').addClass('bg-success');
+        }
+    }
+
+    function hideUploadProgress() {
+        $('.upload-progress').remove();
+    }
+
+    function showDetailedErrors(errors) {
+        if (errors.length === 0) return;
+        
+        const errorModal = `
+            <div class="modal fade" id="uploadErrorModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Upload Errors</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted">The following errors occurred during file processing:</p>
+                            <div class="error-list" style="max-height: 400px; overflow-y: auto;">
+                                ${errors.slice(0, 20).map(error => `<div class="alert alert-warning small">${error}</div>`).join('')}
+                            </div>
+                            ${errors.length > 20 ? `<p class="text-muted"><em>... and ${errors.length - 20} more errors</em></p>` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing error modal if any
+        $('#uploadErrorModal').remove();
+        
+        // Add and show new error modal
+        $('body').append(errorModal);
+        $('#uploadErrorModal').modal('show');
+        
+        // Auto-remove modal when hidden
+        $('#uploadErrorModal').on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+
     function viewConvocationDetails(convocationId) {
         $.ajax({
             url: `/convocation/${convocationId}/`,
@@ -725,6 +945,14 @@
                 $('#detail-rehearsal-datetime').text(`${rehearsalDate.toLocaleDateString()} at ${convocation.rehearsal_time}`);
                 $('#detail-form-link').attr('href', convocation.registration_form_link);
                 $('#detail-description').text(convocation.description || 'No description provided');
+
+                // Store convocation ID for file upload
+                $('#viewDetailsModal').data('convocation-id', convocationId);
+                
+                // Reset file upload section
+                $('#studentDataFile').val('');
+                $('#uploadStudentDataBtn').prop('disabled', true);
+                $('#uploadStatus').hide();
 
                 $('#viewDetailsModal').modal('show');
             },
@@ -754,7 +982,7 @@
         if (!checkAuth()) return;
 
         // Date validation on change
-        $('#registrationDate, #registrationDeadline, #rehearsalDate').on('change', function() {
+        $('#registrationDate, #registrationDeadline, #rehearsalDate').on('change', function () {
             validateDates();
         });
 
@@ -771,7 +999,7 @@
         });
 
         // URL validation
-        $('#registrationFormLink').on('blur', function() {
+        $('#registrationFormLink').on('blur', function () {
             const url = $(this).val();
             if (url) {
                 try {
@@ -860,43 +1088,59 @@
         });
 
         // File input change handler
-        $('#studentDataFile').on('change', function() {
+        $('#studentDataFile').on('change', function () {
             const file = this.files[0];
             $('#uploadStudentDataBtn').prop('disabled', !file);
-            
+
             if (file) {
                 // Hide any previous status
                 $('#uploadStatus').hide();
+                
+                // Show file info
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                const fileInfo = `Selected: ${file.name} (${fileSize} MB)`;
+                $(this).next('.form-text').text(fileInfo);
             }
         });
 
         // Upload button click handler
-        $('#uploadStudentDataBtn').on('click', function() {
+        $('#uploadStudentDataBtn').on('click', function () {
             handleFileUpload();
         });
 
         // Drag and drop functionality
         const uploadSection = $('.student-upload-section');
-        
-        uploadSection.on('dragover', function(e) {
+
+        uploadSection.on('dragover', function (e) {
             e.preventDefault();
             $(this).addClass('dragover');
         });
-        
-        uploadSection.on('dragleave', function(e) {
+
+        uploadSection.on('dragleave', function (e) {
             e.preventDefault();
             $(this).removeClass('dragover');
         });
-        
-        uploadSection.on('drop', function(e) {
+
+        uploadSection.on('drop', function (e) {
             e.preventDefault();
             $(this).removeClass('dragover');
-            
+
             const files = e.originalEvent.dataTransfer.files;
             if (files.length > 0) {
                 $('#studentDataFile')[0].files = files;
                 $('#uploadStudentDataBtn').prop('disabled', false);
+                
+                // Trigger change event to show file info
+                $('#studentDataFile').trigger('change');
             }
+        });
+        
+        // Reset upload section when modal is closed
+        $('#viewDetailsModal').on('hidden.bs.modal', function() {
+            $('#studentDataFile').val('');
+            $('#uploadStudentDataBtn').prop('disabled', true);
+            $('#uploadStatus').hide();
+            $('.upload-progress').remove();
         });
 
         // Initial load

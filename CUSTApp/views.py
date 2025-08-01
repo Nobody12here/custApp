@@ -20,7 +20,7 @@ from django.apps import apps
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
 from ApplicationTemplate.models import Applications, Request
-from .models import Program, Users, Department,Convocation
+from .models import Program, Users, Department, Convocation
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
     ProgramSerializer,
@@ -30,7 +30,7 @@ from .serializers import (
     OTPSendSerializer,
     OTPVerifySerializer,
     PhoneOTPVerifySerializer,
-    ConvocationSerializer
+    ConvocationSerializer,
 )
 from user_requests.serializers import ComplaintSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -39,6 +39,7 @@ from .utils import (
     add_comment_to_instance,
     notify_user_devices,
     extract_year_term,
+    load_convocation_data,
 )
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -61,9 +62,51 @@ logger = logging.getLogger(__name__)
 class ConvocationView(ModelViewSet):
     permission_classes = [AllowAny]
     serializer_class = ConvocationSerializer
+
     def get_queryset(self):
         queryset = Convocation.objects.all()
         return queryset
+
+
+class UploadConvocationData(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        convocation_id = request.data.get("convocation_id")
+        convocation_file = request.FILES.get("convocation_data")
+        if not convocation_file:
+            return Response(
+                {"error": "Data file not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not convocation_id:
+            return Response(
+                {"error": "Convocation ID not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not convocation_file.name.endswith(".xlsx"):
+            return Response(
+                {"error": "Only .xlsx files are supported"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            # load_convocation_data should handle the file and update student data
+            convocation_instance = Convocation.objects.get(id=convocation_id)
+            result = load_convocation_data(convocation_file,convocation_instance)
+            return Response(
+                {
+                    "message": "Convocation data uploaded and student records updated.",
+                    "result": result,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to process file: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 class UploadEmployeeSignature(APIView):
     permission_classes = [IsAuthenticated]
@@ -114,7 +157,7 @@ class AddCommentView(APIView):
 def update_request_status(request, id):
     if request.method == "POST":
         status = request.POST.get("status")
-        if status not in ["Approved", "Rejected", "Visited","Resolved"]:
+        if status not in ["Approved", "Rejected", "Visited", "Resolved"]:
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
@@ -385,8 +428,11 @@ class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.role == "admin"
 
+
 def convocation(request):
     return render(request, "CUSTApp/AdminDashboard/convocation.html")
+
+
 def about(request):
     return HttpResponse("This is the about page.")
 
@@ -405,14 +451,18 @@ def students(request):
 def dashboard(request):
     return render(request, "CUSTApp/dashboard.html")
 
+
 def privacy_policy(request):
-    return render(request,"CUSTApp/UserDashboard/privacy-policy.html")
+    return render(request, "CUSTApp/UserDashboard/privacy-policy.html")
+
+
 def verify_otp_page(request):
     return render(request, "CUSTApp/verify_otp.html")
 
 
 def index_page(request):
     return render(request, "CUSTApp/index.html")
+
 
 def complaints(request):
     complaint_stats = [
@@ -421,7 +471,13 @@ def complaints(request):
         {"key": "rejected", "label": "REJECTED", "icon": "cancel"},
         {"key": "total", "label": "TOTAL", "icon": "list_alt"},
     ]
-    return render(request,"CUSTApp/UserDashboard/complaints.html",{"complaint_stats": complaint_stats})
+    return render(
+        request,
+        "CUSTApp/UserDashboard/complaints.html",
+        {"complaint_stats": complaint_stats},
+    )
+
+
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 
@@ -629,12 +685,14 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
+
     def get_serializer_class(self):
-        request_type = self.request.query_params.get('type','Application')
+        request_type = self.request.query_params.get("type", "Application")
         if request_type == "Application":
             return RequestSerializer
         elif request_type == "Complaint":
             return ComplaintSerializer
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -843,11 +901,13 @@ class OTPVerifyView(APIView):
             else:
                 user = Users.objects.get(phone_number=identifier)
             if user.otp == otp:
-                # OTP matched, clear it after successful login 
-                 
-                if user.email != "zohaib.ahmed1397@gmail.com": #Permanent otp for an email
+                # OTP matched, clear it after successful login
+
+                if (
+                    user.email != "zohaib.ahmed1397@gmail.com"
+                ):  # Permanent otp for an email
                     user.otp = None
-                user.save() 
+                user.save()
 
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(user)
@@ -872,7 +932,7 @@ class OTPVerifyView(APIView):
                         "phone_no": user.phone_number,
                         "father_name": user.father_name,
                         "cnic": user.CNIC,
-                        "gender":user.gender,
+                        "gender": user.gender,
                         "dob": user.DoB,
                         "passport_number": user.passport_number,
                         "user_type": user.user_type,
@@ -1034,13 +1094,11 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         for line in content.split("\n"):
             elements.append(Paragraph(line, body_style))
 
-        
-
         # --- QR Code Footer Section ---
 
         # Generate verification URL (adjust 'request-verification' to your actual URL name)
         verify_url = request.build_absolute_uri(
-            reverse('request-verification', args=[request_obj.request_id])
+            reverse("request-verification", args=[request_obj.request_id])
         )
 
         # Generate QR code
@@ -1049,11 +1107,12 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         qr_buffer = BytesIO()
-        qr_img.save(qr_buffer, format='PNG')
+        qr_img.save(qr_buffer, format="PNG")
         qr_buffer.seek(0)
         qr_image = RLImage(qr_buffer, width=60, height=60)
         # QR code text and URL paragraph
         from reportlab.lib import colors
+
         verify_note_style = ParagraphStyle(
             name="VerifyNote",
             parent=styles["Normal"],
@@ -1062,48 +1121,62 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             alignment=0,  # Left align
             textColor=colors.grey,
         )
-    
-        qr_note = Paragraph("Scan the QR code to verify this document.", verify_note_style)
-        qr_link = Paragraph(f"<a href='{verify_url}' color='blue'>{verify_url}</a>", verify_note_style)
+
+        qr_note = Paragraph(
+            "Scan the QR code to verify this document.", verify_note_style
+        )
+        qr_link = Paragraph(
+            f"<a href='{verify_url}' color='blue'>{verify_url}</a>", verify_note_style
+        )
 
         # Signature section (image + name + designation + department)
         signature_data = [
             signature_image,
-            Paragraph(serializer.data.get("responsible_employee_name"), signature_style),
-            Paragraph(serializer.data.get("responsible_employee_designation"), signature_style),
+            Paragraph(
+                serializer.data.get("responsible_employee_name"), signature_style
+            ),
+            Paragraph(
+                serializer.data.get("responsible_employee_designation"), signature_style
+            ),
             Paragraph(serializer.data.get("responsible_dept_name"), signature_style),
         ]
 
         signature_table = Table([[s] for s in signature_data], colWidths=[150])
         signature_table.setStyle(
-            TableStyle([
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ])
+            TableStyle(
+                [
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
         )
 
         # QR section (QR image + small note + link)
         qr_table = Table([[qr_image], [qr_note], [qr_link]], colWidths=[200])
         qr_table.setStyle(
-            TableStyle([
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ])
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ]
+            )
         )
 
         # Combine signature and QR into one horizontal row
         final_footer_table = Table(
             [[signature_table, qr_table]],
-            colWidths=[300, 200]  # Adjust width as needed
+            colWidths=[300, 200],  # Adjust width as needed
         )
         final_footer_table.setStyle(
-            TableStyle([
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ])
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
         )
 
         elements.append(Spacer(1, 30))
@@ -1142,7 +1215,9 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Return PDF response
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{request_obj.applicant.uu_id} - {request_obj.application.application_name}"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{request_obj.applicant.uu_id} - {request_obj.application.application_name}"'
+        )
         response.write(pdf)
         return response
 
@@ -1263,7 +1338,9 @@ class RequestRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
-    lookup_field = 'request_id'
+    lookup_field = "request_id"
+
+
 def request_verification_page(request, request_id):
     req = get_object_or_404(Request, request_id=request_id)
     return render(request, "CUSTApp/request_verification.html", {"req": req})

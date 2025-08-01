@@ -5,13 +5,14 @@ from firebase_admin import messaging
 import requests
 import os
 import json
-from .models import Users
+from .models import Users, Convocation
 from rest_framework.response import Response
 from rest_framework import status
 from push_notifications.models import GCMDevice
 import re
 from requests.exceptions import RequestException
-from typing import Optional
+from typing import Optional, Dict
+from openpyxl import load_workbook
 
 
 def format_phone_number(phone_number: str) -> Optional[str]:
@@ -179,9 +180,7 @@ def notify_user_devices(user: Users, title: str, body: str, url: str = None) -> 
                     badge=1,
                 ),
             ),
-            headers={
-                "apns-priority": "10"  # Immediate delivery for iOS
-            },
+            headers={"apns-priority": "10"},  # Immediate delivery for iOS
         ),
     )
 
@@ -303,3 +302,35 @@ def extract_year_term(reg_no: str) -> str:
     term = term_map.get(term_code, "Undefined Term Code")
 
     return f"{term} {year}"
+
+
+def load_convocation_data(file_path: str, convocation: Convocation) -> Dict:
+
+    total_rows = 0
+    users_modified = 0
+    wb = load_workbook(filename=file_path, read_only=True)
+    active = wb.active
+    header = next(active.iter_rows(min_row=1, max_row=1, values_only=True))
+
+    reg_idx = header.index("Registration No.")
+    whatsapp_idx = header.index("Whatsapp Number")
+    email_idx = header.index("Email Address")
+    is_eligible_idx = header.index("Will you attend the Convocation?")
+    for rows in active.iter_rows(min_row=2, values_only=True):  # Skip the header row
+        reg_no = rows[reg_idx]
+
+        try:
+            user = Users.objects.get(uu_id=reg_no)
+            # Update stuff
+            if rows[is_eligible_idx].lower() == "yes":
+                user.convocation = convocation
+            user.secondary_email = rows[email_idx]
+            user.phone_number = rows[whatsapp_idx]
+            user.save()
+            users_modified += 1
+            print(f"{user.name} -- {user.phone_number}")
+        except Users.DoesNotExist:
+            print(f"The user with this {reg_no} does not exists")
+            total_rows += 1
+            continue
+    return {"total": total_rows, "modified": users_modified}
