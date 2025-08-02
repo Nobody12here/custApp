@@ -73,6 +73,35 @@ class TemplateAttributes(models.Model):
         return self.attribute_name
 
 
+class Convocation(models.Model):
+    STATUS_CHOICES = [
+        ("Active", "Active"),
+        ("Inactive", "Inactive"),
+        ("Upcoming", "Upcoming"),
+        ("Completed", "Completed"),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    academic_year = models.CharField(max_length=20)  # e.g., "2023-2024"
+    registration_date = models.DateField()
+    registration_deadline = models.DateField()
+    rehearsal_date = models.DateField()
+    rehearsal_time = models.TimeField()
+    registration_form_link = models.URLField(max_length=500, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Upcoming")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "convocations"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} - {self.academic_year}"
+
+
 class Users(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     uu_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
@@ -88,7 +117,13 @@ class Users(AbstractBaseUser, PermissionsMixin):
         on_delete=models.SET_NULL,
         related_name="members",
     )
-    program = models.ForeignKey(Program,null=True,blank=True,on_delete=models.SET_NULL,related_name="program")
+    program = models.ForeignKey(
+        Program,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="program",
+    )
     gender = models.CharField(max_length=50, null=True, blank=True)
     status = models.CharField(max_length=50, null=True, blank=True)
     email = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -99,10 +134,14 @@ class Users(AbstractBaseUser, PermissionsMixin):
     designation = models.CharField(max_length=100, null=True, blank=True)
     remark = models.TextField(null=True, blank=True)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    auth_method = models.CharField(max_length=10,default='email',choices=[
-        ('email','Email'),
-        ('phone','Phone'),
-    ])
+    auth_method = models.CharField(
+        max_length=10,
+        default="email",
+        choices=[
+            ("email", "Email"),
+            ("phone", "Phone"),
+        ],
+    )
     profile_completed = models.BooleanField(default=False)
     picture = models.FileField(
         blank=True,
@@ -121,7 +160,10 @@ class Users(AbstractBaseUser, PermissionsMixin):
     DoB = models.DateField(null=True, blank=True)
     CNIC = models.CharField(max_length=15, null=True, blank=True)
     otp = models.CharField(max_length=10, null=True, blank=True)
+    whatsapp_number = models.CharField(max_length=15,null=True,blank=True)
+    secondary_email = models.EmailField(null=True,blank=True)
     passport_number = models.CharField(max_length=50, null=True, blank=True)
+    convocation = models.ForeignKey(Convocation, on_delete=models.CASCADE, blank=True,null=True)
     # Required for AbstractBaseUser
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

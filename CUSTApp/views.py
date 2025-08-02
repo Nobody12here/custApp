@@ -20,7 +20,7 @@ from django.apps import apps
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
 from ApplicationTemplate.models import Applications, Request
-from .models import Program, Users, Department
+from .models import Program, Users, Department, Convocation
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
     ProgramSerializer,
@@ -30,6 +30,7 @@ from .serializers import (
     OTPSendSerializer,
     OTPVerifySerializer,
     PhoneOTPVerifySerializer,
+    ConvocationSerializer,
 )
 from user_requests.serializers import ComplaintSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -38,6 +39,8 @@ from .utils import (
     add_comment_to_instance,
     notify_user_devices,
     extract_year_term,
+    load_convocation_data,
+    upload_student_data,
 )
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -55,6 +58,86 @@ import os
 from PyPDF2 import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)
+
+
+class ConvocationView(ModelViewSet):
+    permission_classes = [AllowAny]
+    serializer_class = ConvocationSerializer
+
+    def get_queryset(self):
+        queryset = Convocation.objects.all()
+        return queryset
+
+
+class UploadStudentData(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        student_data = request.FILES.get("student_data")
+        if not student_data:
+            return Response(
+                {"error": "Data file not provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if not student_data.name.endswith(".xlsx"):
+            return Response(
+                {"error": "Only .xlsx files are supported"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            result = upload_student_data(student_data)
+            return Response(
+                {
+                    "message": "Student data uploaded and student records updated.",
+                    "result": result,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to process file: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UploadConvocationData(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        convocation_id = request.data.get("convocation_id")
+        convocation_file = request.FILES.get("convocation_data")
+        if not convocation_file:
+            return Response(
+                {"error": "Data file not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not convocation_id:
+            return Response(
+                {"error": "Convocation ID not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not convocation_file.name.endswith(".xlsx"):
+            return Response(
+                {"error": "Only .xlsx files are supported"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            # load_convocation_data should handle the file and update student data
+            convocation_instance = Convocation.objects.get(id=convocation_id)
+            result = load_convocation_data(convocation_file, convocation_instance)
+            return Response(
+                {
+                    "message": "Convocation data uploaded and student records updated.",
+                    "result": result,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to process file: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class UploadEmployeeSignature(APIView):
@@ -106,7 +189,7 @@ class AddCommentView(APIView):
 def update_request_status(request, id):
     if request.method == "POST":
         status = request.POST.get("status")
-        if status not in ["Approved", "Rejected", "Visited","Resolved"]:
+        if status not in ["Approved", "Rejected", "Visited", "Resolved"]:
             return JsonResponse({"error": "Invalid status"}, status=400)
         try:
             req = Request.objects.get(pk=id)
@@ -378,6 +461,10 @@ class IsAdminUser(BasePermission):
         return request.user.role == "admin"
 
 
+def convocation(request):
+    return render(request, "CUSTApp/AdminDashboard/convocation.html")
+
+
 def about(request):
     return HttpResponse("This is the about page.")
 
@@ -396,14 +483,18 @@ def students(request):
 def dashboard(request):
     return render(request, "CUSTApp/dashboard.html")
 
+
 def privacy_policy(request):
-    return render(request,"CUSTApp/UserDashboard/privacy-policy.html")
+    return render(request, "CUSTApp/UserDashboard/privacy-policy.html")
+
+
 def verify_otp_page(request):
     return render(request, "CUSTApp/verify_otp.html")
 
 
 def index_page(request):
     return render(request, "CUSTApp/index.html")
+
 
 def complaints(request):
     complaint_stats = [
@@ -412,7 +503,13 @@ def complaints(request):
         {"key": "rejected", "label": "REJECTED", "icon": "cancel"},
         {"key": "total", "label": "TOTAL", "icon": "list_alt"},
     ]
-    return render(request,"CUSTApp/UserDashboard/complaints.html",{"complaint_stats": complaint_stats})
+    return render(
+        request,
+        "CUSTApp/UserDashboard/complaints.html",
+        {"complaint_stats": complaint_stats},
+    )
+
+
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 
@@ -471,136 +568,6 @@ class UserUpdateView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserCSVUploadAPIView(APIView):
-    parser_classes = [MultiPartParser]
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        excel_file = request.FILES.get("file")
-
-        # Validate file
-        if not excel_file:
-            return Response(
-                {"error": "Please upload a file."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if not (excel_file.name.endswith(".xlsx") or excel_file.name.endswith(".xls")):
-            return Response(
-                {"error": "Please upload a valid Excel file (xlsx or xls)."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            # Use pandas for faster Excel reading
-            df = pd.read_excel(excel_file, engine="openpyxl")
-
-            # Convert all column names to string and strip whitespace
-            df.columns = df.columns.astype(str).str.strip()
-
-            # Check required columns
-            required_columns = ["Name", "Father Name", "Reg #", "CGPA", "Academic Term"]
-            missing_columns = [col for col in required_columns if col not in df.columns]
-
-            if missing_columns:
-                return Response(
-                    {
-                        "error": f"Required columns not found in the Excel file: {', '.join(missing_columns)}"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            created_users = []
-            users_to_create = []
-
-            errors = []
-
-            # Preprocess the dataframe
-            df = df.replace({pd.NA: None})
-
-            # Process in bulk using transaction for better performance
-            for index, row in df.iterrows():
-                try:
-                    # Skip empty rows
-                    if pd.isna(row["Reg #"]):
-                        continue
-
-                    reg_no = str(row["Reg #"]).strip()
-                    if not reg_no:
-                        errors.append(
-                            f"Row {index + 2}: Registration number is required"
-                        )
-                        continue
-
-                    student_data = {
-                        "name": str(row["Name"]).strip() if row["Name"] else "",
-                        "father_name": (
-                            str(row["Father Name"]).strip().capitalize()
-                            if row["Father Name"]
-                            else ""
-                        ),
-                        "uu_id": reg_no,
-                        "cgpa": float(row["CGPA"]) if row["CGPA"] is not None else 0.0,
-                        "term": (
-                            str(row["Academic Term"]).strip()
-                            if row["Academic Term"]
-                            else ""
-                        ),
-                        "email": (
-                            str(row["Official Email"]).lower().strip()
-                            if "Official Email" in df.columns and row["Official Email"]
-                            else f"{reg_no.lower()}@cust.pk"
-                        ),
-                        "gender": (
-                            str(row["Gender"]).strip().capitalize()
-                            if "Gender" in df.columns and row["Gender"]
-                            else "Male"
-                        ),
-                        "user_type": "Student",
-                        "role": "Undergraduate",
-                        "designation": "N/A",
-                    }
-
-                    # Validate and save
-                    serializer = UsersSerializer(data=student_data)
-                    if serializer.is_valid():
-                        users_to_create.append(serializer.validated_data)
-                    else:
-                        errors.append(f"Row {index + 2}: {str(serializer.errors)}")
-
-                except Exception as e:
-                    errors.append(f"Row {index + 2}: Error processing - {str(e)}")
-                    continue
-            if users_to_create:
-                try:
-                    created_users = UsersSerializer.bulk_create(users_to_create)
-                except Exception as e:
-                    errors.append(f"Bulk create failed: {str(e)}")
-            if errors:
-                return Response(
-                    {
-                        "message": f"Upload completed with {len(errors)} errors",
-                        "created_count": len(created_users),
-                        "errors": errors,
-                        "data": created_users,
-                    },
-                    status=status.HTTP_207_MULTI_STATUS,
-                )
-
-            return Response(
-                {
-                    "message": f"Successfully uploaded {len(created_users)} students.",
-                    "data": created_users,
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
-        except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
 class DepartmentList(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
     queryset = Department.objects.all().order_by("dept_name")
@@ -620,12 +587,14 @@ class RequestList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
+
     def get_serializer_class(self):
-        request_type = self.request.query_params.get('type','Application')
+        request_type = self.request.query_params.get("type", "Application")
         if request_type == "Application":
             return RequestSerializer
         elif request_type == "Complaint":
             return ComplaintSerializer
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -834,11 +803,13 @@ class OTPVerifyView(APIView):
             else:
                 user = Users.objects.get(phone_number=identifier)
             if user.otp == otp:
-                # OTP matched, clear it after successful login 
-                 
-                if user.email != "zohaib.ahmed1397@gmail.com": #Permanent otp for an email
+                # OTP matched, clear it after successful login
+
+                if (
+                    user.email != "zohaib.ahmed1397@gmail.com"
+                ):  # Permanent otp for an email
                     user.otp = None
-                user.save() 
+                user.save()
 
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(user)
@@ -863,7 +834,7 @@ class OTPVerifyView(APIView):
                         "phone_no": user.phone_number,
                         "father_name": user.father_name,
                         "cnic": user.CNIC,
-                        "gender":user.gender,
+                        "gender": user.gender,
                         "dob": user.DoB,
                         "passport_number": user.passport_number,
                         "user_type": user.user_type,
@@ -1025,13 +996,11 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         for line in content.split("\n"):
             elements.append(Paragraph(line, body_style))
 
-        
-
         # --- QR Code Footer Section ---
 
         # Generate verification URL (adjust 'request-verification' to your actual URL name)
         verify_url = request.build_absolute_uri(
-            reverse('request-verification', args=[request_obj.request_id])
+            reverse("request-verification", args=[request_obj.request_id])
         )
 
         # Generate QR code
@@ -1040,11 +1009,12 @@ class GeneratePDFWithLetterheadAPIView(APIView):
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         qr_buffer = BytesIO()
-        qr_img.save(qr_buffer, format='PNG')
+        qr_img.save(qr_buffer, format="PNG")
         qr_buffer.seek(0)
         qr_image = RLImage(qr_buffer, width=60, height=60)
         # QR code text and URL paragraph
         from reportlab.lib import colors
+
         verify_note_style = ParagraphStyle(
             name="VerifyNote",
             parent=styles["Normal"],
@@ -1053,48 +1023,62 @@ class GeneratePDFWithLetterheadAPIView(APIView):
             alignment=0,  # Left align
             textColor=colors.grey,
         )
-    
-        qr_note = Paragraph("Scan the QR code to verify this document.", verify_note_style)
-        qr_link = Paragraph(f"<a href='{verify_url}' color='blue'>{verify_url}</a>", verify_note_style)
+
+        qr_note = Paragraph(
+            "Scan the QR code to verify this document.", verify_note_style
+        )
+        qr_link = Paragraph(
+            f"<a href='{verify_url}' color='blue'>{verify_url}</a>", verify_note_style
+        )
 
         # Signature section (image + name + designation + department)
         signature_data = [
             signature_image,
-            Paragraph(serializer.data.get("responsible_employee_name"), signature_style),
-            Paragraph(serializer.data.get("responsible_employee_designation"), signature_style),
+            Paragraph(
+                serializer.data.get("responsible_employee_name"), signature_style
+            ),
+            Paragraph(
+                serializer.data.get("responsible_employee_designation"), signature_style
+            ),
             Paragraph(serializer.data.get("responsible_dept_name"), signature_style),
         ]
 
         signature_table = Table([[s] for s in signature_data], colWidths=[150])
         signature_table.setStyle(
-            TableStyle([
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ])
+            TableStyle(
+                [
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
         )
 
         # QR section (QR image + small note + link)
         qr_table = Table([[qr_image], [qr_note], [qr_link]], colWidths=[200])
         qr_table.setStyle(
-            TableStyle([
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 2),
-            ])
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ]
+            )
         )
 
         # Combine signature and QR into one horizontal row
         final_footer_table = Table(
             [[signature_table, qr_table]],
-            colWidths=[300, 200]  # Adjust width as needed
+            colWidths=[300, 200],  # Adjust width as needed
         )
         final_footer_table.setStyle(
-            TableStyle([
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ])
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
         )
 
         elements.append(Spacer(1, 30))
@@ -1133,7 +1117,9 @@ class GeneratePDFWithLetterheadAPIView(APIView):
 
         # Return PDF response
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{request_obj.applicant.uu_id} - {request_obj.application.application_name}"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{request_obj.applicant.uu_id} - {request_obj.application.application_name}"'
+        )
         response.write(pdf)
         return response
 
@@ -1254,7 +1240,9 @@ class RequestRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
-    lookup_field = 'request_id'
+    lookup_field = "request_id"
+
+
 def request_verification_page(request, request_id):
     req = get_object_or_404(Request, request_id=request_id)
     return render(request, "CUSTApp/request_verification.html", {"req": req})

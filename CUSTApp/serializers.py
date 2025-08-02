@@ -1,8 +1,15 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from .models import Users, Department, TemplateAttributes, Program
+from .models import Users, Department, TemplateAttributes, Program,Convocation
 
-
+class ConvocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Convocation
+        exclude = ['created_at','updated_at']
+    def create(self, validated_data):
+        convocation = Convocation.objects.create(**validated_data)
+        convocation.save()
+        return convocation
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
