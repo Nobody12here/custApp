@@ -66,9 +66,6 @@ urlpatterns = [
     path("new-application/", views.new_application, name="new_application"),
     path("reports/", views.reports, name="reports"),
     path("support/", views.support, name="support"),
-    path(
-        "api/upload-users/", views.UserCSVUploadAPIView.as_view(), name="upload_users"
-    ),
     path("privacy-policy/", views.privacy_policy, name="privacy-policy"),
     path(
         "api/applications/",
@@ -134,6 +131,11 @@ urlpatterns = [
         "api/upload-convocation-data/",
         views.UploadConvocationData.as_view(),
         name="upload_convocation_data",
+    ),
+    path(
+        "api/upload-student-data/",
+        views.UploadStudentData.as_view(),
+        name="upload_student_data",
     ),
 ]
 urlpatterns.extend(router.urls)

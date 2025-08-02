@@ -40,6 +40,7 @@ from .utils import (
     notify_user_devices,
     extract_year_term,
     load_convocation_data,
+    upload_student_data,
 )
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -68,6 +69,37 @@ class ConvocationView(ModelViewSet):
         return queryset
 
 
+class UploadStudentData(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        student_data = request.FILES.get("student_data")
+        if not student_data:
+            return Response(
+                {"error": "Data file not provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if not student_data.name.endswith(".xlsx"):
+            return Response(
+                {"error": "Only .xlsx files are supported"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            result = upload_student_data(student_data)
+            return Response(
+                {
+                    "message": "Student data uploaded and student records updated.",
+                    "result": result,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to process file: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 class UploadConvocationData(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser]
@@ -93,7 +125,7 @@ class UploadConvocationData(APIView):
         try:
             # load_convocation_data should handle the file and update student data
             convocation_instance = Convocation.objects.get(id=convocation_id)
-            result = load_convocation_data(convocation_file,convocation_instance)
+            result = load_convocation_data(convocation_file, convocation_instance)
             return Response(
                 {
                     "message": "Convocation data uploaded and student records updated.",
@@ -534,136 +566,6 @@ class UserUpdateView(generics.UpdateAPIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserCSVUploadAPIView(APIView):
-    parser_classes = [MultiPartParser]
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        excel_file = request.FILES.get("file")
-
-        # Validate file
-        if not excel_file:
-            return Response(
-                {"error": "Please upload a file."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if not (excel_file.name.endswith(".xlsx") or excel_file.name.endswith(".xls")):
-            return Response(
-                {"error": "Please upload a valid Excel file (xlsx or xls)."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            # Use pandas for faster Excel reading
-            df = pd.read_excel(excel_file, engine="openpyxl")
-
-            # Convert all column names to string and strip whitespace
-            df.columns = df.columns.astype(str).str.strip()
-
-            # Check required columns
-            required_columns = ["Name", "Father Name", "Reg #", "CGPA", "Academic Term"]
-            missing_columns = [col for col in required_columns if col not in df.columns]
-
-            if missing_columns:
-                return Response(
-                    {
-                        "error": f"Required columns not found in the Excel file: {', '.join(missing_columns)}"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            created_users = []
-            users_to_create = []
-
-            errors = []
-
-            # Preprocess the dataframe
-            df = df.replace({pd.NA: None})
-
-            # Process in bulk using transaction for better performance
-            for index, row in df.iterrows():
-                try:
-                    # Skip empty rows
-                    if pd.isna(row["Reg #"]):
-                        continue
-
-                    reg_no = str(row["Reg #"]).strip()
-                    if not reg_no:
-                        errors.append(
-                            f"Row {index + 2}: Registration number is required"
-                        )
-                        continue
-
-                    student_data = {
-                        "name": str(row["Name"]).strip() if row["Name"] else "",
-                        "father_name": (
-                            str(row["Father Name"]).strip().capitalize()
-                            if row["Father Name"]
-                            else ""
-                        ),
-                        "uu_id": reg_no,
-                        "cgpa": float(row["CGPA"]) if row["CGPA"] is not None else 0.0,
-                        "term": (
-                            str(row["Academic Term"]).strip()
-                            if row["Academic Term"]
-                            else ""
-                        ),
-                        "email": (
-                            str(row["Official Email"]).lower().strip()
-                            if "Official Email" in df.columns and row["Official Email"]
-                            else f"{reg_no.lower()}@cust.pk"
-                        ),
-                        "gender": (
-                            str(row["Gender"]).strip().capitalize()
-                            if "Gender" in df.columns and row["Gender"]
-                            else "Male"
-                        ),
-                        "user_type": "Student",
-                        "role": "Undergraduate",
-                        "designation": "N/A",
-                    }
-
-                    # Validate and save
-                    serializer = UsersSerializer(data=student_data)
-                    if serializer.is_valid():
-                        users_to_create.append(serializer.validated_data)
-                    else:
-                        errors.append(f"Row {index + 2}: {str(serializer.errors)}")
-
-                except Exception as e:
-                    errors.append(f"Row {index + 2}: Error processing - {str(e)}")
-                    continue
-            if users_to_create:
-                try:
-                    created_users = UsersSerializer.bulk_create(users_to_create)
-                except Exception as e:
-                    errors.append(f"Bulk create failed: {str(e)}")
-            if errors:
-                return Response(
-                    {
-                        "message": f"Upload completed with {len(errors)} errors",
-                        "created_count": len(created_users),
-                        "errors": errors,
-                        "data": created_users,
-                    },
-                    status=status.HTTP_207_MULTI_STATUS,
-                )
-
-            return Response(
-                {
-                    "message": f"Successfully uploaded {len(created_users)} students.",
-                    "data": created_users,
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
-        except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
 
 class DepartmentList(generics.ListCreateAPIView):

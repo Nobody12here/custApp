@@ -576,7 +576,6 @@
 <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/moment.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/sweetalert2.js' %}"></script>
 <script src="{% static 'assets/js/plugins/jquery.validate.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/jquery.bootstrap-wizard.js' %}"></script>
 <script src="{% static 'assets/js/plugins/bootstrap-selectpicker.js' %}"></script>
@@ -592,6 +591,8 @@
 <script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
 <script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" type="text/javascript"></script>
+<!-- Add XLSX library for Excel template generation only -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
     $(document).ready(function () {
@@ -609,7 +610,7 @@
                     });
                 },
                 error: function (xhr, error, thrown) {
-                    Swal.fire('Error', 'Failed to load students: ' + error, 'error');
+                    alert('Failed to load students: ' + error);
                 }
             },
             columns: [
@@ -656,198 +657,94 @@
     });
 
     // Add this global variable to store the processed students
-    let currentStudentsData = [];
+    // let currentStudentsData = []; // Removed - no longer needed
 
     function processStudentFile(file) {
-        const progress = document.getElementById('uploadProgress');
-        const progressBar = progress.querySelector('.progress-bar');
-        progress.style.display = 'block';
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                const headers = jsonData[1];
-                const rows = jsonData.slice(2);
-
-                currentStudentsData = rows
-                    .filter(row => row && row[headers.indexOf('Reg #')])
-                    .map(row => {
-                        const regNo = row[headers.indexOf('Reg #')] || '';
-                        const email = (row[headers.indexOf('Official Email')] ||
-                            `${regNo.toLowerCase()}@cust.pk`).toLowerCase();
-
-                        return {
-                            id: regNo,
-                            name: row[headers.indexOf('Name')] || '',
-                            father_name: row[headers.indexOf('Father Name')] || '',
-                            reg_no: regNo,
-                            cgpa: parseFloat(row[headers.indexOf('CGPA')]) || 0.0,
-                            term: row[headers.indexOf('Academic Term')] || '',
-                            email: email,
-                            status: row[headers.indexOf('Student Status')] || 'enroll'
-                        };
-                    });
-
-                // Update DataTable display
-                const table = $('#studentsTable').DataTable();
-                table.clear();
-
-                if (currentStudentsData.length > 0) {
-                    // Convert to array format for DataTables
-                    const displayData = currentStudentsData.map(student => [
-                        student.id,
-                        student.name,
-                        student.father_name,
-                        student.reg_no,
-                        student.cgpa,
-                        student.term,
-                        student.email,
-                        student.status
-                    ]);
-
-                    table.rows.add(displayData).draw();
-                    // Enable the upload button
-                    $('#uploadToApiBtn').prop('disabled', false);
-
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'File Processed Successfully',
-                        text: `Found ${currentStudentsData.length} students. Click "Save to Database" to upload them.`,
-                        confirmButtonColor: '#0A369D'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'No Data Found',
-                        text: 'No valid student records found in the file.',
-                        confirmButtonColor: '#F59E0B'
-                    });
-                    $('#uploadToApiBtn').prop('disabled', true);
-                }
-
-            } catch (error) {
-                console.error('Error processing file:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Processing Error',
-                    text: 'Failed to process the file. Please check the format.',
-                    confirmButtonColor: '#EF4444'
-                });
-                $('#uploadToApiBtn').prop('disabled', true);
-            } finally {
-                progress.style.display = 'none';
-                progressBar.style.width = '0%';
-            }
-        };
-
-        reader.readAsArrayBuffer(file);
+        // Simply enable the upload button when file is selected
+        $('#uploadToApiBtn').prop('disabled', false);
+        alert(`File "${file.name}" selected successfully. Click "Save to Database" to upload.`);
     }
 
     function uploadStudentsToApi() {
-        if (!currentStudentsData.length) {
-            Swal.fire({
-                icon: 'error',
-                title: 'No Data',
-                text: 'No student data to upload',
-                confirmButtonColor: '#EF4444'
-            });
-            return;
-        }
-
         const fileInput = document.getElementById('studentFileUpload');
         if (!fileInput.files.length) {
-            Swal.fire({
-                icon: 'error',
-                title: 'No File Selected',
-                text: 'Please select a file first',
-                confirmButtonColor: '#EF4444'
-            });
+            alert('Please select a file first');
             return;
         }
 
-        Swal.fire({
-            title: 'Confirm Upload',
-            text: `Are you sure you want to upload ${currentStudentsData.length} students to the database?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#0A369D',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Yes, upload!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const progress = document.getElementById('uploadProgress');
-                const progressBar = progress.querySelector('.progress-bar');
-                const uploadBtn = document.getElementById('uploadToApiBtn');
+        if (!confirm(`Are you sure you want to upload the selected file to the database?`)) {
+            return;
+        }
 
-                progress.style.display = 'block';
-                uploadBtn.classList.add('loading');
+        const progress = document.getElementById('uploadProgress');
+        const progressBar = progress.querySelector('.progress-bar');
+        const uploadBtn = document.getElementById('uploadToApiBtn');
 
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+        progress.style.display = 'block';
+        uploadBtn.classList.add('loading');
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Uploading...';
 
-                // Simulate progress
-                let progressPercent = 0;
-                const progressInterval = setInterval(() => {
-                    progressPercent += 10;
-                    progressBar.style.width = progressPercent + '%';
+        const formData = new FormData();
+        formData.append('student_data', fileInput.files[0]);
 
-                    if (progressPercent >= 100) {
-                        clearInterval(progressInterval);
+        // Animate progress bar
+        let progressPercent = 0;
+        const progressInterval = setInterval(() => {
+            progressPercent += 5;
+            progressBar.style.width = Math.min(progressPercent, 90) + '%';
+        }, 100);
 
-                        // Actual AJAX request to your API
-                        $.ajax({
-                            url: '/api/upload-users/',
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken')
-                            },
-                            success: function (response) {
-                                progress.style.display = 'none';
-                                uploadBtn.classList.remove('loading');
+        // Actual AJAX request to your API
+        $.ajax({
+            url: '/api/upload-student-data/',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function (response) {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progress.style.display = 'none';
+                    uploadBtn.classList.remove('loading');
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = '<i class="material-icons">cloud_upload</i> Save to Database';
 
-                                if (response.message) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Upload Successful',
-                                        text: response.message,
-                                        confirmButtonColor: '#10B981'
-                                    });
-                                    $('#uploadToApiBtn').prop('disabled', true);
-                                    // Refresh the table
-                                    $('#studentsTable').DataTable().ajax.reload();
-                                } else if (response.error) {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Upload Failed',
-                                        text: response.error,
-                                        confirmButtonColor: '#EF4444'
-                                    });
-                                }
-                            },
-                            error: function (xhr) {
-                                progress.style.display = 'none';
-                                uploadBtn.classList.remove('loading');
-                                const errorMsg = xhr.responseJSON?.error || 'Server error';
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Upload Failed',
-                                    text: errorMsg,
-                                    confirmButtonColor: '#EF4444'
-                                });
-                            }
-                        });
+                    if (response.message) {
+                        alert('Upload successful: ' + response.message);
+                        $('#uploadToApiBtn').prop('disabled', true);
+                        // Clear the form
+                        fileInput.value = '';
+                        document.getElementById('fileName').style.display = 'none';
+                        // Refresh the table
+                        $('#studentsTable').DataTable().ajax.reload();
+                    } else if (response.error) {
+                        alert('Upload failed: ' + response.error);
                     }
-                }, 200);
+                }, 500);
+            },
+            error: function (xhr) {
+                clearInterval(progressInterval);
+                progress.style.display = 'none';
+                uploadBtn.classList.remove('loading');
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="material-icons">cloud_upload</i> Save to Database';
+
+                let errorMsg = 'Server error occurred';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                } else if (xhr.status === 413) {
+                    errorMsg = 'File too large. Please reduce file size.';
+                } else if (xhr.status === 400) {
+                    errorMsg = 'Invalid file format or data.';
+                }
+                alert('Upload failed: ' + errorMsg);
             }
         });
     }
@@ -882,14 +779,7 @@
         // Generate and download the file
         XLSX.writeFile(wb, 'student_template.xlsx');
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Template Downloaded',
-            text: 'Student template has been downloaded successfully!',
-            confirmButtonColor: '#10B981',
-            timer: 2000,
-            timerProgressBar: true
-        });
+        alert('Student template has been downloaded successfully!');
     }
 
     // Drag and drop functionality
@@ -923,12 +813,7 @@
                 fileName.style.display = 'inline-flex';
                 processStudentFile(file);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: 'Please upload an Excel file (.xlsx, .xls) or CSV file.',
-                    confirmButtonColor: '#EF4444'
-                });
+                alert('Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file.');
             }
         }
     });
