@@ -575,6 +575,36 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="applicationLetterSelect">Select Application Letter Template</label>
+                            <div class="detail-item">
+                                <h6>Letter Generation Options</h6>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <select class="form-control" id="applicationLetterSelect">
+                                            <option value="">Select an application letter template...</option>
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Choose the application letter template that will be used for generating convocation letters. Only exam department applications are shown.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-info btn-block" id="loadApplicationsBtn">
+                                            <i class="material-icons">refresh</i> Load Templates
+                                        </button>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <span id="applicationCount">0</span> templates available
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" onclick="generateConvocationLetter()">
@@ -953,6 +983,7 @@
             url: `/convocation/${convocationId}/`,
             method: 'GET',
             success: function (convocation) {
+                loadApplicationTemplates();
                 const registrationDate = new Date(convocation.registration_date);
                 const registrationDeadline = new Date(convocation.registration_deadline);
                 const rehearsalDate = new Date(convocation.rehearsal_date);
@@ -1001,11 +1032,92 @@
         return cookieValue;
     }
 
+    // Application Letter Template Functions
+    function loadApplicationTemplates() {
+        const button = $('#loadApplicationsBtn');
+        const originalText = button.html();
+        const select = $('#applicationLetterSelect');
+        const countSpan = $('#applicationCount');
+        
+        button.disabled = true;
+        button.html('<i class="material-icons">hourglass_empty</i> Loading...');
+        
+        $.ajax({
+            url: '/api/application',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            success: function(response) {
+                // Clear existing options
+                select.empty();
+                select.append('<option value="">Select an application letter template...</option>');
+                const data = response.filter(app => app.dept_name === 'Examination');
+                if (data.length > 0) {
+                    data.forEach(function(app) {
+                        const option = `<option value="${app.id}" data-name="${app.name}" data-description="${app.description}">
+                            ${app.short_name}
+                        </option>`;
+                        select.append(option);
+                    });
+                    
+                    countSpan.text(data.length);
+                    select.prop('disabled', false);
+                } else {
+                    select.append('<option value="" disabled>No exam department applications found</option>');
+                    countSpan.text('0');
+                    select.prop('disabled', true);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Failed to load application templates';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                
+                select.empty();
+                select.append('<option value="" disabled>Error loading templates</option>');
+                countSpan.text('0');
+                select.prop('disabled', true);
+                
+                console.error('Error loading applications:', errorMessage);
+                alert(errorMessage);
+            },
+            complete: function() {
+                button.disabled = false;
+                button.html(originalText);
+            }
+        });
+    }
+
+    function getSelectedApplicationTemplate() {
+        const select = $('#applicationLetterSelect');
+        const selectedValue = select.val();
+        
+        if (!selectedValue) {
+            return null;
+        }
+        
+        const selectedOption = select.find('option:selected');
+        return {
+            id: selectedValue,
+            name: selectedOption.data('name'),
+            description: selectedOption.data('description')
+        };
+    }
+
     // Convocation Letter Generation Functions
     function generateConvocationLetter() {
         const convocationId = $('#viewDetailsModal').data('convocation-id');
         if (!convocationId) {
             alert('No convocation selected');
+            return;
+        }
+
+        // Check if application template is selected
+        const selectedTemplate = getSelectedApplicationTemplate();
+        if (!selectedTemplate) {
+            alert('Please select an application letter template first');
             return;
         }
 
@@ -1024,7 +1136,8 @@
             },
             data: {
                 convocation_id: convocationId,
-                student_id: studentId
+                student_id: studentId,
+                application_id: selectedTemplate.id
             },
             xhrFields: {
                 responseType: 'blob'
