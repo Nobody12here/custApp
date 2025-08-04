@@ -425,6 +425,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="convocationDate">Convocation Date</label>
+                                <input type="date" class="form-control" id="convocationDate" required>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-md-12">
@@ -522,6 +530,8 @@
                             <p><strong>Registration Deadline:</strong> <span id="detail-registration-deadline"></span>
                             </p>
                             <p><strong>Rehearsal:</strong> <span id="detail-rehearsal-datetime"></span></p>
+                            <p><strong>Convocation :</strong> <span id="detail-convocation-datetime"></span></p>
+
                         </div>
                     </div>
                 </div>
@@ -565,6 +575,18 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="generateConvocationLetter()">
+                    <i class="material-icons">picture_as_pdf</i> Generate Letter Sample
+                </button>
+                <button type="button" class="btn btn-warning" onclick="bulkGenerateLetters()">
+                    <i class="material-icons">description</i> Generate All Letters
+                </button>
+                <button type="button" class="btn btn-info" onclick="sendConvocationEmails()">
+                    <i class="material-icons">email</i> Send Email Invitations
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -719,7 +741,7 @@
     function handleFileUpload() {
         const fileInput = $('#studentDataFile')[0];
         const file = fileInput.files[0];
-        
+
         if (!file) {
             showUploadStatus('error', 'Please select a file to upload');
             return;
@@ -728,7 +750,7 @@
         // Validate file type
         const allowedTypes = ['.xlsx', '.xls'];
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-        
+
         if (!allowedTypes.includes(fileExtension)) {
             showUploadStatus('error', 'Invalid file type. Please select a CSV or Excel file.');
             return;
@@ -763,9 +785,9 @@
             data: formData,
             processData: false,
             contentType: false,
-            xhr: function() {
+            xhr: function () {
                 const xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function(evt) {
+                xhr.upload.addEventListener("progress", function (evt) {
                     if (evt.lengthComputable) {
                         const percentComplete = Math.round((evt.loaded / evt.total) * 100);
                         updateUploadProgress(percentComplete);
@@ -773,28 +795,28 @@
                 }, false);
                 return xhr;
             },
-            success: function(response) {
+            success: function (response) {
                 const processedCount = response.result.modified || 0;
                 const errorCount = response.result.total || 0;
-                
+
                 if (errorCount > 0) {
-                    showUploadStatus('warning', 
+                    showUploadStatus('warning',
                         `File uploaded with ${errorCount} errors. ${processedCount} records processed successfully.`);
                 } else {
-                    showUploadStatus('success', 
+                    showUploadStatus('success',
                         `File uploaded successfully! ${processedCount} student records processed.`);
                 }
-                
+
                 // Reset file input
                 fileInput.value = '';
                 $('#uploadStudentDataBtn').prop('disabled', true);
-                
+
                 // Show detailed results if available
                 if (response.errors && response.errors.length > 0) {
                     showDetailedErrors(response.errors);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 let errorMessage = 'Failed to upload file';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
@@ -805,7 +827,7 @@
                 }
                 showUploadStatus('error', errorMessage);
             },
-            complete: function() {
+            complete: function () {
                 $('#uploadStudentDataBtn').prop('disabled', false).html('<i class="material-icons">cloud_upload</i> Upload File');
                 hideUploadProgress();
             }
@@ -816,12 +838,12 @@
         const statusDiv = $('#uploadStatus');
         const messageSpan = $('#uploadStatusMessage');
         const alertDiv = statusDiv.find('.alert');
-        
+
         // Remove existing alert classes
         alertDiv.removeClass('alert-success alert-danger alert-info alert-warning');
-        
+
         // Add appropriate class
-        switch(type) {
+        switch (type) {
             case 'success':
                 alertDiv.addClass('alert-success');
                 break;
@@ -834,14 +856,14 @@
             default:
                 alertDiv.addClass('alert-info');
         }
-        
+
         messageSpan.text(message);
         statusDiv.show();
-        
+
         if (showProgress) {
             showUploadProgress();
         }
-        
+
         // Auto-hide success/error messages after 8 seconds
         if (type === 'success' || type === 'error') {
             setTimeout(() => {
@@ -867,10 +889,10 @@
     function updateUploadProgress(percent) {
         const progressBar = $('.progress-bar');
         const progressText = $('#progress-percent');
-        
+
         progressBar.css('width', percent + '%').attr('aria-valuenow', percent);
         progressText.text(percent + '%');
-        
+
         // Update progress bar color based on completion
         if (percent < 50) {
             progressBar.removeClass('bg-warning bg-success').addClass('bg-primary');
@@ -887,7 +909,7 @@
 
     function showDetailedErrors(errors) {
         if (errors.length === 0) return;
-        
+
         const errorModal = `
             <div class="modal fade" id="uploadErrorModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-lg" role="document">
@@ -912,16 +934,16 @@
                 </div>
             </div>
         `;
-        
+
         // Remove existing error modal if any
         $('#uploadErrorModal').remove();
-        
+
         // Add and show new error modal
         $('body').append(errorModal);
         $('#uploadErrorModal').modal('show');
-        
+
         // Auto-remove modal when hidden
-        $('#uploadErrorModal').on('hidden.bs.modal', function() {
+        $('#uploadErrorModal').on('hidden.bs.modal', function () {
             $(this).remove();
         });
     }
@@ -934,7 +956,7 @@
                 const registrationDate = new Date(convocation.registration_date);
                 const registrationDeadline = new Date(convocation.registration_deadline);
                 const rehearsalDate = new Date(convocation.rehearsal_date);
-
+                const convocationDate = new Date(convocation.convocation_date);
                 $('#detail-title').text(convocation.title);
                 $('#detail-academic-year').text(convocation.academic_year);
                 $('#detail-status').text(convocation.status)
@@ -942,13 +964,14 @@
                     .addClass(convocation.status.toLowerCase());
                 $('#detail-registration-date').text(registrationDate.toLocaleDateString());
                 $('#detail-registration-deadline').text(registrationDeadline.toLocaleDateString());
+                $('#detail-convocation-datetime').text(`${convocationDate.toLocaleDateString()}`);
                 $('#detail-rehearsal-datetime').text(`${rehearsalDate.toLocaleDateString()} at ${convocation.rehearsal_time}`);
                 $('#detail-form-link').attr('href', convocation.registration_form_link);
                 $('#detail-description').text(convocation.description || 'No description provided');
 
                 // Store convocation ID for file upload
                 $('#viewDetailsModal').data('convocation-id', convocationId);
-                
+
                 // Reset file upload section
                 $('#studentDataFile').val('');
                 $('#uploadStudentDataBtn').prop('disabled', true);
@@ -976,6 +999,149 @@
             }
         }
         return cookieValue;
+    }
+
+    // Convocation Letter Generation Functions
+    function generateConvocationLetter() {
+        const convocationId = $('#viewDetailsModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        // For sample, we'll use a test student ID - in real scenario, you might want to select a student
+        const studentId = prompt('Enter student registration number (e.g., BSE203110) for sample letter:');
+        if (!studentId) {
+            return;
+        }
+
+        $.ajax({
+            url: '/api/generate-convocation-letter/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId,
+                student_id: studentId
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (data) {
+                // Create blob and download
+                const blob = new Blob([data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Convocation_Letter_${studentId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('Convocation letter generated and downloaded successfully!');
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to generate convocation letter';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            }
+        });
+    }
+
+    function bulkGenerateLetters() {
+        const convocationId = $('#viewDetailsModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        if (!confirm('This will generate convocation letters for all students in this convocation. Continue?')) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons">hourglass_empty</i> Generating...';
+
+        $.ajax({
+            url: '/api/bulk-generate-convocation-letters/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId
+            },
+            success: function (response) {
+                alert(`Successfully generated ${response.generated_count} convocation letters. ${response.error_count > 0 ? response.error_count + ' errors occurred.' : ''}`);
+                if (response.errors && response.errors.length > 0) {
+                    console.log('Generation errors:', response.errors);
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to generate convocation letters';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function () {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
+    }
+
+    function sendConvocationEmails() {
+        const convocationId = $('#viewDetailsModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        if (!confirm('This will send convocation invitation emails to all students. Continue?')) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons">hourglass_empty</i> Sending...';
+
+        $.ajax({
+            url: '/api/send-convocation-emails/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId
+            },
+            success: function (response) {
+                alert(`Successfully sent ${response.sent_count} convocation emails. ${response.error_count > 0 ? response.error_count + ' emails failed to send.' : ''}`);
+                if (response.errors && response.errors.length > 0) {
+                    console.log('Email errors:', response.errors);
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to send convocation emails';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function () {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
     }
 
     $(document).ready(function () {
@@ -1033,6 +1199,7 @@
                 registration_deadline: $('#registrationDeadline').val(),
                 rehearsal_date: $('#rehearsalDate').val(),
                 rehearsal_time: $('#rehearsalTime').val(),
+                convocation_date: $('#convocationDate').val(),
                 registration_form_link: $('#registrationFormLink').val(),
                 description: $('#description').val()
             };
@@ -1095,7 +1262,7 @@
             if (file) {
                 // Hide any previous status
                 $('#uploadStatus').hide();
-                
+
                 // Show file info
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
                 const fileInfo = `Selected: ${file.name} (${fileSize} MB)`;
@@ -1129,14 +1296,14 @@
             if (files.length > 0) {
                 $('#studentDataFile')[0].files = files;
                 $('#uploadStudentDataBtn').prop('disabled', false);
-                
+
                 // Trigger change event to show file info
                 $('#studentDataFile').trigger('change');
             }
         });
-        
+
         // Reset upload section when modal is closed
-        $('#viewDetailsModal').on('hidden.bs.modal', function() {
+        $('#viewDetailsModal').on('hidden.bs.modal', function () {
             $('#studentDataFile').val('');
             $('#uploadStudentDataBtn').prop('disabled', true);
             $('#uploadStatus').hide();
