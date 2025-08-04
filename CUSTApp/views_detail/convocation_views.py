@@ -71,10 +71,14 @@ class GenerateConvocationLetterAPIView(APIView):
             return Response(
                 {"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND
             )
+        try:
 
-        # Generate convocation letter content
-        content = self.generate_convocation_content(convocation, student, application)
-
+            # Generate convocation letter content
+            content = self.generate_convocation_content(
+                convocation, student, application
+            )
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         # Verify letterhead exists
         if not os.path.exists(LETTERHEAD_PATH):
             return Response(
@@ -108,12 +112,20 @@ class GenerateConvocationLetterAPIView(APIView):
         print(template_content)
         template_data = {
             "registration_deadline": registration_deadline,
-            "rehersal_date": rehearsal_date,
-            "rehersal_time": rehearsal_time,
+            "rehearsal_date": rehearsal_date,
+            "convocation_date": (
+                convocation.convocation_date.strftime("%B %d, %Y")
+                if convocation.convocation_date
+                else "TBD"
+            ),
+            "rehearsal_time": rehearsal_time,
             "academic_year": convocation.academic_year,
-            "registration_form_link":convocation.registration_form_link
+            "registration_form_link": convocation.registration_form_link,
         }
-        content = template_content.format(**template_data)
+        try:
+            content = template_content.format_map(template_data)
+        except KeyError as e:
+            raise ValueError(f"Missing template variable: {str(e)}")
         return content
 
     def create_convocation_pdf(self, content, convocation, student):
