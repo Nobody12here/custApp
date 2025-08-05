@@ -568,14 +568,14 @@ class UserUpdateView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DepartmentList(generics.ListCreateAPIView):
+class DepartmentList(generics.ListAPIView):
     permission_classes = [AllowAny]
     queryset = Department.objects.all().order_by("dept_name")
     serializer_class = DepartmentSerializer
 
 
 class DepartmentRetrieveUpdateDestroyAPI(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     # authentication_classes = [JWTAuthentication]
