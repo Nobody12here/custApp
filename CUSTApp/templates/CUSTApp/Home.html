@@ -316,10 +316,16 @@
     
     <script>
         function downloadApp() {
-            // Create a modal or direct download based on your app availability
+            // Direct download using Django static files
+            const apkUrl = "{% static 'app/CUSTApp.apk' %}";
             
-             window.open('http://custapp.pk/static/app/CUSTApp.apk', '_blank');
-            
+            // Create a temporary link element for download
+            const link = document.createElement('a');
+            link.href = apkUrl;
+            link.download = 'CUSTApp.apk';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </head>
@@ -341,10 +347,10 @@
                 <button class="main-btn" onclick="window.location.href='{% url 'login' %}'">
                     <i class="material-icons" style="vertical-align:middle;">login</i> Login
                 </button>
-                <a href="http://custapp.pk/static/app/CUSTApp.apk">
-                <button class="download-btn" >
-                    <i class="material-icons" style="vertical-align:middle;">android</i> Download App
-                </button>
+                <a href="{% static 'app/CUSTApp.apk' %}" download="CUSTApp.apk">
+                    <button class="download-btn">
+                        <i class="material-icons" style="vertical-align:middle;">android</i> Download App
+                    </button>
                 </a>
             </div>
             <ul class="features-list">
