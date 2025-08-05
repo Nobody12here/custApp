@@ -86,6 +86,7 @@ class Convocation(models.Model):
     academic_year = models.CharField(max_length=20)  # e.g., "2023-2024"
     registration_date = models.DateField()
     registration_deadline = models.DateField()
+    convocation_date = models.DateField(blank=True,null=True)
     rehearsal_date = models.DateField()
     rehearsal_time = models.TimeField()
     registration_form_link = models.URLField(max_length=500, blank=True, null=True)
