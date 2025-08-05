@@ -133,7 +133,7 @@
             flex-wrap: wrap;
             margin-bottom: 1.5rem;
         }
-        .main-btn, .guest-btn {
+        .main-btn, .guest-btn, .download-btn {
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -149,6 +149,7 @@
             box-shadow: 0 2px 12px #00eaff22;
             font-family: 'Poppins', Arial, sans-serif;
             letter-spacing: 0.5px;
+            gap: 0.5rem;
         }
         .main-btn {
             background: #116CAB;
@@ -158,6 +159,21 @@
         .main-btn:hover {
             background: #0A369D;
             border-color: #0A369D;
+        }
+        .download-btn {
+            background: linear-gradient(90deg, #ffb300 0%, #ff6f00 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 179, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .download-btn:hover {
+            background: linear-gradient(90deg, #ff6f00 0%, #ffb300 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 179, 0, 0.4);
+        }
+        .download-btn:active {
+            transform: translateY(0);
         }
         .guest-btn {
             background: linear-gradient(90deg, #ffb300 0%, #ff6f00 100%);
@@ -294,8 +310,18 @@
             .hero-title { font-size: 1.3rem; }
             .cta-bar { flex-direction: column; gap: 1rem; font-size: 1rem; }
             .hero-btns { flex-direction: column; gap: 1rem; }
+            .main-btn, .guest-btn, .download-btn { min-width: 100%; }
         }
     </style>
+    
+    <script>
+        function downloadApp() {
+            // Create a modal or direct download based on your app availability
+            
+             window.open('http://custapp.pk/static/app/CUSTApp.apk', '_blank');
+            
+        }
+    </script>
 </head>
 <body>
     <div class="background-animated"></div>
