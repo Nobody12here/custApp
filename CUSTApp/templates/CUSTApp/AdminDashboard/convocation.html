@@ -350,6 +350,37 @@
     input[type="file"].form-control::file-selector-button:hover {
         background: #1E88E5;
     }
+
+    /* Dropdown Styles */
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .dropdown-menu {
+        border-radius: 6px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border: none;
+        padding: 0.5rem 0;
+        min-width: 180px;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #0A369D;
+    }
+
+    .dropdown-item i.material-icons {
+        font-size: 18px;
+    }
 </style>
 {% endblock %}
 
@@ -416,15 +447,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="registrationFormLink">Registration Form Link</label>
-                                <input type="url" class="form-control" id="registrationFormLink"
-                                    placeholder="https://..." required>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -545,45 +568,107 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Data Upload Modal -->
+<div class="modal fade" id="studentUploadModal" tabindex="-1" role="dialog" aria-labelledby="studentUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentUploadModalLabel">
+                    <i class="material-icons" style="vertical-align: middle;">cloud_upload</i>
+                    Student Data Upload
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="studentDataFile">Student Data Upload</label>
-                            <div class="student-upload-section">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <input type="file" class="form-control" id="studentDataFile"
-                                            accept=".csv,.xlsx,.xls" placeholder="Select student data file...">
-                                        <small class="form-text text-muted">
-                                            Supported formats: CSV, Excel (.xlsx, .xls). File should contain student
-                                            information.
-                                        </small>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <button type="button" class="btn btn-secondary btn-upload"
-                                            id="uploadStudentDataBtn" disabled>
-                                            <i class="material-icons">cloud_upload</i> Upload File
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="upload-status" id="uploadStatus" style="display: none;">
-                                    <div class="alert alert-info mt-2" role="alert">
-                                        <span id="uploadStatusMessage"></span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="detail-item">
+                            <h6>Convocation Information</h6>
+                            <p><strong>Title:</strong> <span id="upload-convocation-title"></span></p>
+                            <p><strong>Academic Year:</strong> <span id="upload-academic-year"></span></p>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="applicationLetterSelect">Select Application Letter Template</label>
+                            <label for="modalStudentDataFile">Select Student Data File</label>
+                            <div class="modal-student-upload-section">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="file" class="form-control" id="modalStudentDataFile"
+                                            accept=".csv,.xlsx,.xls" placeholder="Select student data file...">
+                                        <small class="form-text text-muted">
+                                            Supported formats: CSV, Excel (.xlsx, .xls). File should contain student
+                                            information including registration numbers, names, and convocation details.
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-primary btn-upload"
+                                            id="modalUploadStudentDataBtn">
+                                            <i class="material-icons">cloud_upload</i> Upload File
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="upload-status" id="modalUploadStatus" style="display: none;">
+                                    <div class="alert alert-info mt-2" role="alert">
+                                        <span id="modalUploadStatusMessage"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Letter Generation Modal -->
+<div class="modal fade" id="letterGenerationModal" tabindex="-1" role="dialog" aria-labelledby="letterGenerationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="letterGenerationModalLabel">
+                    <i class="material-icons" style="vertical-align: middle;">description</i>
+                    Convocation Letter Generation
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="detail-item">
+                            <h6>Convocation Information</h6>
+                            <p><strong>Title:</strong> <span id="letter-convocation-title"></span></p>
+                            <p><strong>Academic Year:</strong> <span id="letter-academic-year"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="modalApplicationLetterSelect">Select Application Letter Template</label>
                             <div class="detail-item">
                                 <h6>Letter Generation Options</h6>
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <select class="form-control" id="applicationLetterSelect">
+                                        <select class="form-control" id="modalApplicationLetterSelect">
                                             <option value="">Select an application letter template...</option>
                                         </select>
                                         <small class="form-text text-muted">
@@ -591,12 +676,12 @@
                                         </small>
                                     </div>
                                     <div class="col-md-4">
-                                        <button type="button" class="btn btn-info btn-block" id="loadApplicationsBtn">
+                                        <button type="button" class="btn btn-info btn-block" id="modalLoadApplicationsBtn">
                                             <i class="material-icons">refresh</i> Load Templates
                                         </button>
                                         <div class="mt-2">
                                             <small class="text-muted">
-                                                <span id="applicationCount">0</span> templates available
+                                                <span id="modalApplicationCount">0</span> templates available
                                             </small>
                                         </div>
                                     </div>
@@ -607,13 +692,13 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" onclick="generateConvocationLetter()">
+                <button type="button" class="btn btn-success" onclick="generateConvocationLetterFromModal()">
                     <i class="material-icons">picture_as_pdf</i> Generate Letter Sample
                 </button>
-                <button type="button" class="btn btn-warning" onclick="bulkGenerateLetters()">
+                <button type="button" class="btn btn-warning" onclick="bulkGenerateLettersFromModal()">
                     <i class="material-icons">description</i> Generate All Letters
                 </button>
-                <button type="button" class="btn btn-info" onclick="sendConvocationEmails()">
+                <button type="button" class="btn btn-info" onclick="sendConvocationEmailsFromModal()">
                     <i class="material-icons">email</i> Send Email Invitations
                 </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -755,6 +840,19 @@
                                 <button class="btn btn-info btn-sm" onclick="viewConvocationDetails(${convocation.id})">
                                     <i class="material-icons">visibility</i> View
                                 </button>
+                                <div class="dropdown d-inline-block ml-2">
+                                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton${convocation.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="material-icons">more_vert</i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton${convocation.id}">
+                                        <a class="dropdown-item" href="#" onclick="openStudentUploadModal(${convocation.id})">
+                                            <i class="material-icons">cloud_upload</i> Upload Student Data
+                                        </a>
+                                        <a class="dropdown-item" href="#" onclick="openLetterGenerationModal(${convocation.id})">
+                                            <i class="material-icons">description</i> Generate Letters
+                                        </a>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -771,7 +869,7 @@
     function handleFileUpload() {
         const fileInput = $('#studentDataFile')[0];
         const file = fileInput.files[0];
-
+        console.log(file);
         if (!file) {
             showUploadStatus('error', 'Please select a file to upload');
             return;
@@ -797,7 +895,8 @@
         formData.append('convocation_data', file);
 
         // Get current convocation ID from modal (you might need to store this when opening modal)
-        const convocationId = $('#viewDetailsModal').data('convocation-id');
+        const convocationId = $('#studentUploadModal').data('convocation-id');
+        console.log("Convocation ID:", convocationId);
         if (convocationId) {
             formData.append('convocation_id', convocationId);
         }
@@ -983,7 +1082,6 @@
             url: `/convocation/${convocationId}/`,
             method: 'GET',
             success: function (convocation) {
-                loadApplicationTemplates();
                 const registrationDate = new Date(convocation.registration_date);
                 const registrationDeadline = new Date(convocation.registration_deadline);
                 const rehearsalDate = new Date(convocation.rehearsal_date);
@@ -1000,15 +1098,56 @@
                 $('#detail-form-link').attr('href', convocation.registration_form_link);
                 $('#detail-description').text(convocation.description || 'No description provided');
 
-                // Store convocation ID for file upload
-                $('#viewDetailsModal').data('convocation-id', convocationId);
-
-                // Reset file upload section
-                $('#studentDataFile').val('');
-                $('#uploadStudentDataBtn').prop('disabled', true);
-                $('#uploadStatus').hide();
-
                 $('#viewDetailsModal').modal('show');
+            },
+            error: function (xhr) {
+                alert('Failed to load convocation details');
+                console.error(xhr);
+            }
+        });
+    }
+
+    // New functions for separate modals
+    function openStudentUploadModal(convocationId) {
+        $.ajax({
+            url: `/convocation/${convocationId}/`,
+            method: 'GET',
+            success: function (convocation) {
+                $('#upload-convocation-title').text(convocation.title);
+                $('#upload-academic-year').text(convocation.academic_year);
+                
+                // Store convocation ID
+                $('#studentUploadModal').data('convocation-id', convocationId);
+                
+                // Reset upload section
+                $('#modalStudentDataFile').val('');
+                $('#modalUploadStudentDataBtn').prop('disabled', true);
+                $('#modalUploadStatus').hide();
+                
+                $('#studentUploadModal').modal('show');
+            },
+            error: function (xhr) {
+                alert('Failed to load convocation details');
+                console.error(xhr);
+            }
+        });
+    }
+
+    function openLetterGenerationModal(convocationId) {
+        $.ajax({
+            url: `/convocation/${convocationId}/`,
+            method: 'GET',
+            success: function (convocation) {
+                $('#letter-convocation-title').text(convocation.title);
+                $('#letter-academic-year').text(convocation.academic_year);
+                
+                // Store convocation ID
+                $('#letterGenerationModal').data('convocation-id', convocationId);
+                
+                // Load application templates
+                loadApplicationTemplatesForModal();
+                
+                $('#letterGenerationModal').modal('show');
             },
             error: function (xhr) {
                 alert('Failed to load convocation details');
@@ -1104,6 +1243,183 @@
             name: selectedOption.data('name'),
             description: selectedOption.data('description')
         };
+    }
+
+    // Functions for modal-based operations
+    function loadApplicationTemplatesForModal() {
+        const button = $('#modalLoadApplicationsBtn');
+        const originalText = button.html();
+        const select = $('#modalApplicationLetterSelect');
+        const countSpan = $('#modalApplicationCount');
+        
+        button.disabled = true;
+        button.html('<i class="material-icons">hourglass_empty</i> Loading...');
+        
+        $.ajax({
+            url: '/api/exam-department-applications/',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            success: function(response) {
+                select.empty();
+                select.append('<option value="">Select an application letter template...</option>');
+                
+                if (response.status === 'success' && response.applications.length > 0) {
+                    response.applications.forEach(function(app) {
+                        const option = `<option value="${app.id}" data-name="${app.name}" data-description="${app.description}">
+                            ${app.name} (${app.short_name})
+                        </option>`;
+                        select.append(option);
+                    });
+                    
+                    countSpan.text(response.applications.length);
+                    select.prop('disabled', false);
+                } else {
+                    select.append('<option value="" disabled>No exam department applications found</option>');
+                    countSpan.text('0');
+                    select.prop('disabled', true);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'Failed to load application templates';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                
+                select.empty();
+                select.append('<option value="" disabled>Error loading templates</option>');
+                countSpan.text('0');
+                select.prop('disabled', true);
+                
+                console.error('Error loading applications:', errorMessage);
+                alert(errorMessage);
+            },
+            complete: function() {
+                button.disabled = false;
+                button.html(originalText);
+            }
+        });
+    }
+
+    function getSelectedApplicationTemplateFromModal() {
+        const select = $('#modalApplicationLetterSelect');
+        const selectedValue = select.val();
+        
+        if (!selectedValue) {
+            return null;
+        }
+        
+        const selectedOption = select.find('option:selected');
+        return {
+            id: selectedValue,
+            name: selectedOption.data('name'),
+            description: selectedOption.data('description')
+        };
+    }
+
+    function handleModalFileUpload() {
+        const fileInput = $('#modalStudentDataFile')[0];
+        const file = fileInput.files[0];
+
+        if (!file) {
+            showUploadStatusModal('error', 'Please select a file to upload');
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['.xlsx', '.xls'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+        if (!allowedTypes.includes(fileExtension)) {
+            showUploadStatusModal('error', 'Invalid file type. Please select a CSV or Excel file.');
+            return;
+        }
+
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            showUploadStatusModal('error', 'File size too large. Maximum allowed size is 10MB.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('convocation_data', file);
+
+        const convocationId = $('#studentUploadModal').data('convocation-id');
+        if (convocationId) {
+            formData.append('convocation_id', convocationId);
+        }
+
+        showUploadStatusModal('info', 'Uploading file...', true);
+        $('#modalUploadStudentDataBtn').prop('disabled', true).html('<i class="material-icons">hourglass_empty</i> Uploading...');
+
+        $.ajax({
+            url: '/api/upload-convocation-data/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                const processedCount = response.result.modified || 0;
+                const errorCount = response.result.total || 0;
+
+                if (errorCount > 0) {
+                    showUploadStatusModal('warning',
+                        `File uploaded with ${errorCount} errors. ${processedCount} records processed successfully.`);
+                } else {
+                    showUploadStatusModal('success',
+                        `File uploaded successfully! ${processedCount} student records processed.`);
+                }
+
+                fileInput.value = '';
+                $('#modalUploadStudentDataBtn').prop('disabled', true);
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to upload file';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                showUploadStatusModal('error', errorMessage);
+            },
+            complete: function () {
+                $('#modalUploadStudentDataBtn').prop('disabled', false).html('<i class="material-icons">cloud_upload</i> Upload File');
+            }
+        });
+    }
+
+    function showUploadStatusModal(type, message, showProgress = false) {
+        const statusDiv = $('#modalUploadStatus');
+        const messageSpan = $('#modalUploadStatusMessage');
+        const alertDiv = statusDiv.find('.alert');
+
+        alertDiv.removeClass('alert-success alert-danger alert-info alert-warning');
+
+        switch (type) {
+            case 'success':
+                alertDiv.addClass('alert-success');
+                break;
+            case 'error':
+                alertDiv.addClass('alert-danger');
+                break;
+            case 'warning':
+                alertDiv.addClass('alert-warning');
+                break;
+            default:
+                alertDiv.addClass('alert-info');
+        }
+
+        messageSpan.text(message);
+        statusDiv.show();
+
+        if (type === 'success' || type === 'error') {
+            setTimeout(() => {
+                statusDiv.fadeOut();
+            }, 8000);
+        }
     }
 
     // Convocation Letter Generation Functions
@@ -1213,6 +1529,161 @@
 
     function sendConvocationEmails() {
         const convocationId = $('#viewDetailsModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        if (!confirm('This will send convocation invitation emails to all students. Continue?')) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons">hourglass_empty</i> Sending...';
+
+        $.ajax({
+            url: '/api/send-convocation-emails/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId
+            },
+            success: function (response) {
+                alert(`Successfully sent ${response.sent_count} convocation emails. ${response.error_count > 0 ? response.error_count + ' emails failed to send.' : ''}`);
+                if (response.errors && response.errors.length > 0) {
+                    console.log('Email errors:', response.errors);
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to send convocation emails';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function () {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
+    }
+
+    // Letter generation functions for modal
+    function generateConvocationLetterFromModal() {
+        const convocationId = $('#letterGenerationModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        const selectedTemplate = getSelectedApplicationTemplateFromModal();
+        if (!selectedTemplate) {
+            alert('Please select an application letter template first');
+            return;
+        }
+
+        const studentId = prompt('Enter student registration number (e.g., BSE203110) for sample letter:');
+        if (!studentId) {
+            return;
+        }
+
+        $.ajax({
+            url: '/api/generate-convocation-letter/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId,
+                student_id: studentId,
+                application_id: selectedTemplate.id
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (data) {
+                const blob = new Blob([data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Convocation_Letter_${studentId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('Convocation letter generated and downloaded successfully!');
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to generate convocation letter';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            }
+        });
+    }
+
+    function bulkGenerateLettersFromModal() {
+        const convocationId = $('#letterGenerationModal').data('convocation-id');
+        if (!convocationId) {
+            alert('No convocation selected');
+            return;
+        }
+
+        const selectedTemplate = getSelectedApplicationTemplateFromModal();
+        if (!selectedTemplate) {
+            alert('Please select an application letter template first');
+            return;
+        }
+
+        if (!confirm(`This will generate convocation letters for all students using the template "${selectedTemplate.name}". Continue?`)) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons">hourglass_empty</i> Generating...';
+
+        $.ajax({
+            url: '/api/bulk-generate-convocation-letters/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            data: {
+                convocation_id: convocationId,
+                application_id: selectedTemplate.id
+            },
+            success: function (response) {
+                alert(`Successfully generated ${response.generated_count} convocation letters. ${response.error_count > 0 ? response.error_count + ' errors occurred.' : ''}`);
+                if (response.errors && response.errors.length > 0) {
+                    console.log('Generation errors:', response.errors);
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'Failed to generate convocation letters';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function () {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
+    }
+
+    function sendConvocationEmailsFromModal() {
+        const convocationId = $('#letterGenerationModal').data('convocation-id');
         if (!convocationId) {
             alert('No convocation selected');
             return;
@@ -1370,6 +1841,7 @@
         // File input change handler
         $('#studentDataFile').on('change', function () {
             const file = this.files[0];
+            console.log(file);
             $('#uploadStudentDataBtn').prop('disabled', !file);
 
             if (file) {
@@ -1385,6 +1857,7 @@
 
         // Upload button click handler
         $('#uploadStudentDataBtn').on('click', function () {
+            console.log('Upload button clicked');
             handleFileUpload();
         });
 
@@ -1421,6 +1894,82 @@
             $('#uploadStudentDataBtn').prop('disabled', true);
             $('#uploadStatus').hide();
             $('.upload-progress').remove();
+        });
+
+        // Event handlers for new modal functionality
+        
+        // Student Upload Modal file input change handler
+        $('#modalStudentDataFile').on('change', function () {
+            const file = this.files[0];
+            $('#modalUploadStudentDataBtn').prop('disabled', !file);
+
+            if (file) {
+                // Hide any previous status
+                $('#modalUploadStatus').hide();
+
+                // Show file info
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                const fileInfo = `Selected: ${file.name} (${fileSize} MB)`;
+                $(this).next('.form-text').text(fileInfo);
+            }
+        });
+
+        // Student Upload Modal upload button click handler
+        $('#modalUploadStudentDataBtn').on('click', function () {
+            handleModalFileUpload();
+        });
+
+        // Student Upload Modal drag and drop functionality
+        const modalUploadSection = $('.modal-student-upload-section');
+
+        modalUploadSection.on('dragover', function (e) {
+            e.preventDefault();
+            $(this).addClass('dragover');
+        });
+
+        modalUploadSection.on('dragleave', function (e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+        });
+
+        modalUploadSection.on('drop', function (e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                $('#modalStudentDataFile')[0].files = files;
+                $('#modalUploadStudentDataBtn').prop('disabled', false);
+
+                // Trigger change event to show file info
+                $('#modalStudentDataFile').trigger('change');
+            }
+        });
+
+        // Reset Student Upload Modal when closed
+        $('#studentUploadModal').on('hidden.bs.modal', function () {
+            $('#modalStudentDataFile').val('');
+            $('#modalUploadStudentDataBtn').prop('disabled', true);
+            $('#modalUploadStatus').hide();
+            $('.upload-progress').remove();
+        });
+
+        // Letter Generation Modal template selection handler
+        $('#modalApplicationTemplate').on('change', function () {
+            const templateId = $(this).val();
+            $('#modalGenerateLetterBtn').prop('disabled', !templateId);
+        });
+
+        // Letter Generation Modal generate button click handler
+        $('#modalGenerateLetterBtn').on('click', function () {
+            generateModalConvocationLetter();
+        });
+
+        // Reset Letter Generation Modal when closed
+        $('#letterGenerationModal').on('hidden.bs.modal', function () {
+            $('#modalApplicationTemplate').val('');
+            $('#modalGenerateLetterBtn').prop('disabled', true);
+            $('#modalLetterGenerationStatus').hide();
         });
 
         // Initial load

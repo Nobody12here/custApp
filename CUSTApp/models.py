@@ -89,7 +89,6 @@ class Convocation(models.Model):
     convocation_date = models.DateField(blank=True,null=True)
     rehearsal_date = models.DateField()
     rehearsal_time = models.TimeField()
-    registration_form_link = models.URLField(max_length=500, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Upcoming")
     created_at = models.DateTimeField(auto_now_add=True)
