@@ -1,7 +1,7 @@
 from openpyxl import load_workbook
 from CUSTApp.models import Users, Convocation
 from typing import Tuple
-
+import os 
 
 def upload_student_data(
     file_path: str,
@@ -50,5 +50,26 @@ def upload_student_data(
     print(f"Total Users updated present in the DB {total_updated}")
     print(f"Total users to add = {not_exists}")
 
+def upload_student_images(image_folder: str) -> None:
+    
+    try:
+        images = os.listdir(image_folder)
+        total_images = len(images)
 
-upload_student_data('../../Faculty.xlsx')
+        for index,image in enumerate(images,):
+            image_path = os.path.join(image_folder, image)
+            reg_no = image.split('.')[0]
+            user = Users.objects.filter(uu_id=reg_no).first()
+            if user:
+                with open(image_path, 'rb') as img_file:
+                    user.picture.save(image, img_file, save=True)
+                percent = (index / total_images) * 100
+                print(f"\rProcessing {index}/{total_images} images ({percent:.2f}%)", end='')
+
+            else:
+                continue
+
+    except FileNotFoundError:
+        print(f"Image folder {image_folder} does not exist.")
+        return
+upload_student_images('../../UniversityData/images')

@@ -152,7 +152,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     signature = models.FileField(
         blank=True,
         null=True,
-        upload_to="media",
+        upload_to="profile_pictures",
         validators=[validate_image_file_extension],
     )
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
