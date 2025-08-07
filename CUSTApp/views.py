@@ -638,7 +638,7 @@ class RequestDelete(generics.DestroyAPIView):
 
 
 class GetAttributesAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_model_fields(self, model_name):
         try:
@@ -674,7 +674,10 @@ class GetAttributesAPIView(APIView):
         user_type = request.GET.get("user_type", "")
         if not table:
             return Response([])
-        if table == "users":
+        if table =="Convocation":
+            attributes = self.get_model_fields("Convocation")
+            print(attributes)
+        elif table == "users":
             attributes = [
                 "student_name",
                 "email",

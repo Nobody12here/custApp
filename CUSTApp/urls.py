@@ -2,7 +2,11 @@
 from django.urls import include, path
 from . import views
 from rest_framework.routers import DefaultRouter
-
+from CUSTApp.views_detail.convocation_views import (
+    SendConvocationEmailsAPIView,
+    BulkGenerateConvocationLettersAPIView,
+    GenerateConvocationLetterAPIView,
+)
 from .views import (
     AllUsersListAPIView,
     DepartmentRetrieveUpdateDestroyAPI,
@@ -136,6 +140,22 @@ urlpatterns = [
         "api/upload-student-data/",
         views.UploadStudentData.as_view(),
         name="upload_student_data",
+    ),
+    # Convocation Letter Generation APIs
+    path(
+        "api/generate-convocation-letter/",
+        GenerateConvocationLetterAPIView.as_view(),
+        name="generate_convocation_letter",
+    ),
+    path(
+        "api/bulk-generate-convocation-letters/",
+        BulkGenerateConvocationLettersAPIView.as_view(),
+        name="bulk_generate_convocation_letters",
+    ),
+    path(
+        "api/send-convocation-emails/",
+        SendConvocationEmailsAPIView.as_view(),
+        name="send_convocation_emails",
     ),
 ]
 urlpatterns.extend(router.urls)

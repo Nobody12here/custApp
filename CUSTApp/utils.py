@@ -369,8 +369,11 @@ def load_convocation_data(file_path: str, convocation: Convocation) -> Dict:
             user = Users.objects.get(uu_id=reg_no)
             # Update stuff
             if rows[is_eligible_idx].lower() == "yes":
+                print("the user is eligible ")
                 user.convocation = convocation
-            user.secondary_email = rows[email_idx]
+            if not user.secondary_email:
+                print("Secondary email not found adding secondary email")
+                user.secondary_email = rows[email_idx]
             user.phone_number = rows[whatsapp_idx]
             user.save()
             users_modified += 1
