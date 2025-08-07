@@ -762,7 +762,7 @@
         let isFormValid = true;
 
         // Validate required fields
-        const requiredFields = ['convocationTitle', 'academicYear', 'registrationDate', 'registrationDeadline', 'rehearsalDate', 'rehearsalTime', 'registrationFormLink'];
+        const requiredFields = ['convocationTitle', 'academicYear', 'registrationDate', 'registrationDeadline', 'rehearsalDate', 'rehearsalTime', ];
 
         requiredFields.forEach(fieldId => {
             const value = $(`#${fieldId}`).val();
@@ -773,18 +773,6 @@
                 showValidationFeedback(fieldId, true, '');
             }
         });
-
-        // Validate URL format
-        const formLink = $('#registrationFormLink').val();
-        if (formLink) {
-            try {
-                new URL(formLink);
-                showValidationFeedback('registrationFormLink', true, '');
-            } catch {
-                showValidationFeedback('registrationFormLink', false, 'Please enter a valid URL');
-                isFormValid = false;
-            }
-        }
 
         // Validate dates
         if (!validateDates()) {
@@ -1256,7 +1244,7 @@
         button.html('<i class="material-icons">hourglass_empty</i> Loading...');
         
         $.ajax({
-            url: '/api/exam-department-applications/',
+            url: '/api/application/',
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('access_token')
@@ -1264,16 +1252,17 @@
             success: function(response) {
                 select.empty();
                 select.append('<option value="">Select an application letter template...</option>');
-                
-                if (response.status === 'success' && response.applications.length > 0) {
-                    response.applications.forEach(function(app) {
+                const data = response.filter(app => app.dept_name === 'Examination');
+
+                if (response.length > 0) {
+                    data.forEach(function(app) {
                         const option = `<option value="${app.id}" data-name="${app.name}" data-description="${app.description}">
-                            ${app.name} (${app.short_name})
+                            ${app.short_name}
                         </option>`;
                         select.append(option);
                     });
                     
-                    countSpan.text(response.applications.length);
+                    countSpan.text(data.length);
                     select.prop('disabled', false);
                 } else {
                     select.append('<option value="" disabled>No exam department applications found</option>');
@@ -1764,7 +1753,7 @@
         // Form submission
         $('#convocationForm').on('submit', function (e) {
             e.preventDefault();
-
+            console.log('Form submitted');
             if (!validateForm()) {
                 const firstInvalid = $('.is-invalid').first();
                 if (firstInvalid.length) {
@@ -1784,7 +1773,6 @@
                 rehearsal_date: $('#rehearsalDate').val(),
                 rehearsal_time: $('#rehearsalTime').val(),
                 convocation_date: $('#convocationDate').val(),
-                registration_form_link: $('#registrationFormLink').val(),
                 description: $('#description').val()
             };
 
