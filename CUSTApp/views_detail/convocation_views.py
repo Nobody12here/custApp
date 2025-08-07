@@ -1,4 +1,6 @@
 from io import BytesIO
+from bs4 import BeautifulSoup
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,9 +12,13 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
-import qrcode
+from reportlab.platypus import Image, Table, TableStyle
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.platypus import Image as RLImage
+from bs4 import BeautifulSoup
+from reportlab.platypus import Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_RIGHT
 
 import os
 
@@ -87,7 +93,8 @@ class GenerateConvocationLetterAPIView(APIView):
             )
 
         # Generate PDF
-        pdf_data = self.create_convocation_pdf(content, convocation, student)
+        responsible_employee = application.default_responsible_employee
+        pdf_data = self.create_convocation_pdf(content, responsible_employee)
 
         # Return PDF response
         response = HttpResponse(content_type="application/pdf")
@@ -109,7 +116,6 @@ class GenerateConvocationLetterAPIView(APIView):
 
         # Generate content based on student details
         template_content = application.application_desc
-        print(template_content)
         template_data = {
             "registration_deadline": registration_deadline,
             "rehearsal_date": rehearsal_date,
@@ -120,7 +126,6 @@ class GenerateConvocationLetterAPIView(APIView):
             ),
             "rehearsal_time": rehearsal_time,
             "academic_year": convocation.academic_year,
-            "registration_form_link": convocation.registration_form_link,
         }
         try:
             content = template_content.format_map(template_data)
@@ -128,7 +133,60 @@ class GenerateConvocationLetterAPIView(APIView):
             raise ValueError(f"Missing template variable: {str(e)}")
         return content
 
-    def create_convocation_pdf(self, content, convocation, student):
+    def parse_html_to_reportlab_elements(self, html_content: str) -> list:
+        """Converts HTML content into ReportLab flowables (Paragraphs, Spacers)."""
+        styles = getSampleStyleSheet()
+
+        # Define reusable styles
+        body_style = ParagraphStyle(
+            name="BodyText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=11,
+            leading=14,
+            alignment=TA_JUSTIFY,
+            leftIndent=52,
+            rightIndent=52,
+            spaceBefore=0,
+            spaceAfter=8,
+        )
+
+        title_style = ParagraphStyle(
+            name="TitleText",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=14,
+            leading=18,
+            alignment=TA_CENTER,
+            leftIndent=52,
+            rightIndent=52,
+            spaceBefore=20,
+            spaceAfter=20,
+        )
+
+        elements = []
+
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        for tag in soup.find_all(["p", "br"]):
+            if tag.name == "br":
+                elements.append(Spacer(1, 12))
+                continue
+
+            inner_html = tag.decode_contents().strip()
+
+            if not inner_html or inner_html == "&nbsp;":
+                elements.append(Spacer(1, 12))
+                continue
+
+            if "INVITATION TO CONVOCATION CEREMONY" in inner_html:
+                elements.append(Paragraph(inner_html, title_style))
+            else:
+                elements.append(Paragraph(inner_html, body_style))
+
+        return elements
+
+    def create_convocation_pdf(self, content: str, responsible_employee: Users):
         """Create PDF with letterhead and convocation content"""
 
         content_buffer = BytesIO()
@@ -141,11 +199,6 @@ class GenerateConvocationLetterAPIView(APIView):
             bottomMargin=0,
         )
         elements = []
-
-        # Import required modules
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.platypus import Image, Table, TableStyle
-        from reportlab.lib import colors
 
         # Define custom styles
         styles = getSampleStyleSheet()
@@ -163,7 +216,17 @@ class GenerateConvocationLetterAPIView(APIView):
             spaceBefore=0,
             spaceAfter=8,
         )
-
+        # Signature style (left-aligned, with indent matching letter format)
+        signature_style = ParagraphStyle(
+            name="SignatureText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=12,
+            leading=14,
+            alignment=0,  # Left align
+            leftIndent=0,  # Match the document's left indent
+            rightIndent=0,
+        )
         # Title style
         title_style = ParagraphStyle(
             name="TitleText",
@@ -189,83 +252,38 @@ class GenerateConvocationLetterAPIView(APIView):
             rightIndent=72,
             leftIndent=0,
         )
-
+        # Add letterhead image
+        # Signature image
+        signature_image = Image(responsible_employee.signature, width=128, height=64)
         # Add current date
         current_date = timezone.now().strftime("%B %d, %Y")
         elements.append(Spacer(1, 70))
         elements.append(Paragraph(current_date, date_style))
         elements.append(Spacer(1, 40))
 
-        # Process content line by line
-        lines = content.strip().split("\n")
-        for line in lines:
-            if line.strip():
-                if line.strip() == "INVITATION TO CONVOCATION CEREMONY":
-                    elements.append(Paragraph(line.strip(), title_style))
-                elif line.strip().endswith(":") and line.strip().isupper():
-                    # Section headers
-                    header_style = ParagraphStyle(
-                        name="HeaderText",
-                        parent=styles["Normal"],
-                        fontName="Helvetica-Bold",
-                        fontSize=12,
-                        leading=16,
-                        alignment=0,
-                        leftIndent=52,
-                        rightIndent=52,
-                        spaceBefore=15,
-                        spaceAfter=8,
-                    )
-                    elements.append(Paragraph(line.strip(), header_style))
-                else:
-                    elements.append(Paragraph(line.strip(), body_style))
-            else:
-                elements.append(Spacer(1, 8))
-
-        # Add footer with verification QR code
-        verify_url = (
-            f"https://custapp.pk/convocation/verify/{convocation.id}/{student.uu_id}/"
-        )
-
-        # Generate QR code
-        qr = qrcode.QRCode(box_size=3, border=2)
-        qr.add_data(verify_url)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
-        qr_buffer = BytesIO()
-        qr_img.save(qr_buffer, format="PNG")
-        qr_buffer.seek(0)
-        qr_image = RLImage(qr_buffer, width=60, height=60)
-
-        # QR verification note
-        verify_note_style = ParagraphStyle(
-            name="VerifyNote",
-            parent=styles["Normal"],
-            fontSize=8,
-            leading=10,
-            alignment=1,  # Center
-            textColor=colors.grey,
-        )
-
-        qr_note = Paragraph(
-            "Scan QR code to verify this convocation letter", verify_note_style
-        )
-
-        # Create QR table
-        qr_table = Table([[qr_image], [qr_note]], colWidths=[150])
-        qr_table.setStyle(
+        elements += self.parse_html_to_reportlab_elements(content)
+        # signature
+        signature_image.hAlign = 'LEFT'
+        
+        # Use the original image object with proper alignment
+        signature_data = [
+            signature_image,
+            Paragraph(responsible_employee.name, signature_style),
+            Paragraph(responsible_employee.designation, signature_style),
+            Paragraph(responsible_employee.dept.dept_name + " department", signature_style),
+        ]
+        signature_table = Table([[s] for s in signature_data], colWidths=[350])
+        signature_table.setStyle(
             TableStyle(
                 [
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("LEFTPADDING", (0, 0), (-1, -1),52),  # Match document left indent
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                    ("TOPPADDING", (0, 0), (-1, -1), 10),
                 ]
             )
         )
-
+        signature_table.hAlign = 'LEFT'  # Align the entire table to the left
         elements.append(Spacer(1, 30))
-        elements.append(qr_table)
-
+        elements.append(signature_table)
         # Build the PDF
         doc.build(elements)
         content_buffer.seek(0)
@@ -338,9 +356,7 @@ class BulkGenerateConvocationLettersAPIView(APIView):
                 content = letter_generator.generate_convocation_content(
                     convocation, student
                 )
-                pdf_data = letter_generator.create_convocation_pdf(
-                    content, convocation, student
-                )
+                pdf_data = letter_generator.create_convocation_pdf(content)
 
                 generated_letters.append(
                     {

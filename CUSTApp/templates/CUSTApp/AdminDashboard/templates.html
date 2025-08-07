@@ -43,10 +43,14 @@
     }
 
     body {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background-color: var(--gray-50);
         color: var(--gray-800);
         line-height: 1.6;
+    }
+
+    .main-content {
+        padding: 1.5rem;
     }
 
     /* Modern Card Design */
@@ -57,6 +61,7 @@
         border: 1px solid var(--gray-200);
         overflow: hidden;
         transition: var(--transition);
+        margin-bottom: 2rem;
     }
 
     .card:hover {
@@ -67,7 +72,7 @@
     .card-header-primary {
         background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
         color: var(--white);
-        padding: 2rem;
+        padding: 2rem 2rem 1.5rem 2rem;
         border: none;
         position: relative;
         overflow: hidden;
@@ -98,7 +103,7 @@
     }
 
     .card-title {
-        font-size: 1.875rem;
+        font-size: 1.75rem;
         font-weight: 700;
         margin: 0 0 0.5rem 0;
         position: relative;
@@ -114,10 +119,11 @@
         margin: 0;
         position: relative;
         z-index: 1;
+        font-weight: 300;
     }
 
     .card-body {
-        padding: 2.5rem;
+        padding: 1.5rem 2rem 2rem 2rem;
     }
 
     /* Enhanced Button Styling */
@@ -137,6 +143,7 @@
         letter-spacing: 0.025em;
         position: relative;
         overflow: hidden;
+        white-space: nowrap;
     }
 
     .btn::before {
@@ -157,6 +164,7 @@
     .btn-sm {
         padding: 0.5rem 1rem;
         font-size: 0.75rem;
+        min-width: 80px;
     }
 
     .btn-primary {
@@ -169,6 +177,7 @@
         background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
+        color: var(--white);
     }
 
     .btn-danger {
@@ -181,6 +190,7 @@
         background: linear-gradient(135deg, #DC2626 0%, var(--error-color) 100%);
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
+        color: var(--white);
     }
 
     .btn-secondary {
@@ -193,6 +203,7 @@
         background: var(--gray-700);
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
+        color: var(--white);
     }
 
     .btn:active {
@@ -209,38 +220,53 @@
         font-size: 1rem;
     }
 
+    .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(10, 54, 157, 0.2);
+    }
+
     /* DataTable Enhancements */
     .table-responsive {
         border-radius: var(--radius-lg);
         overflow: hidden;
         box-shadow: var(--shadow);
+        margin-bottom: 0;
     }
 
     .table {
         margin: 0;
         background: var(--white);
+        font-size: 0.875rem;
     }
 
     .table thead th {
         background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
         border: none;
-        padding: 1rem;
+        padding: 1rem 0.75rem;
         font-weight: 600;
         color: var(--gray-700);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.75rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
     .table tbody td {
-        padding: 1rem;
+        padding: 1rem 0.75rem;
         border-top: 1px solid var(--gray-200);
         vertical-align: middle;
         color: var(--gray-600);
     }
 
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
     .table tbody tr:hover {
         background: var(--gray-50);
+        transform: scale(1.005);
     }
 
     /* DataTables Custom Styling */
@@ -251,6 +277,19 @@
     .dataTables_length,
     .dataTables_filter {
         margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dataTables_length label,
+    .dataTables_filter label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin: 0;
     }
 
     .dataTables_length select,
@@ -260,6 +299,7 @@
         padding: 0.5rem 0.75rem;
         font-size: 0.875rem;
         transition: var(--transition);
+        background: var(--white);
     }
 
     .dataTables_length select:focus,
@@ -272,6 +312,11 @@
     .dataTables_info {
         color: var(--gray-600);
         font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    .dataTables_paginate {
+        margin-top: 1rem;
     }
 
     .dataTables_paginate .paginate_button {
@@ -282,12 +327,14 @@
         background: var(--white);
         color: var(--gray-600);
         transition: var(--transition);
+        text-decoration: none;
     }
 
     .dataTables_paginate .paginate_button:hover {
         background: var(--primary-color);
         color: var(--white);
         border-color: var(--primary-color);
+        text-decoration: none;
     }
 
     .dataTables_paginate .paginate_button.current {
@@ -302,6 +349,7 @@
         gap: 0.5rem;
         align-items: center;
         justify-content: flex-start;
+        flex-wrap: wrap;
     }
 
     /* Modal Enhancements */
@@ -316,6 +364,7 @@
         color: var(--white);
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
         padding: 1.5rem 2rem;
+        border-bottom: none;
     }
 
     .modal-title {
@@ -324,6 +373,7 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        margin: 0;
     }
 
     .modal-body {
@@ -334,6 +384,28 @@
         padding: 1.5rem 2rem;
         border-top: 1px solid var(--gray-200);
         background: var(--gray-50);
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    .close {
+        background: transparent;
+        border: none;
+        color: var(--white);
+        opacity: 0.8;
+        font-size: 1.5rem;
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .close:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
     }
 
     /* Form Styling */
@@ -412,9 +484,12 @@
     /* Content Preview */
     .content-preview {
         max-width: 300px;
-        max-height: 100px;
+        max-height: 60px;
         overflow: hidden;
         position: relative;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        color: var(--gray-600);
     }
 
     .content-preview::after {
@@ -423,7 +498,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        height: 20px;
+        height: 15px;
         background: linear-gradient(transparent, var(--white));
     }
 
@@ -455,14 +530,36 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 768px) {
+    @media (max-width: 1200px) {
         .card-body {
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem 1.75rem 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 1rem;
+        }
+
+        .card-header-primary {
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1rem 1.5rem 1.5rem 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
         }
 
         .action-buttons {
             flex-direction: column;
             align-items: stretch;
+            width: 100%;
         }
 
         .btn {
@@ -470,8 +567,44 @@
             justify-content: center;
         }
 
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+        }
+
+        .table-responsive {
+            font-size: 0.75rem;
+        }
+
+        .table thead th,
+        .table tbody td {
+            padding: 0.5rem 0.25rem;
+        }
+
+        /* Stack action buttons vertically on mobile */
+        .action-buttons .btn-sm {
+            font-size: 0.65rem;
+            padding: 0.375rem 0.75rem;
+        }
+    }
+
+    @media (max-width: 576px) {
         .card-title {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .dataTables_length,
+        .dataTables_filter {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .content-preview {
+            max-width: 200px;
+            max-height: 40px;
         }
     }
 
@@ -491,6 +624,27 @@
             transform: translateY(0);
         }
     }
+
+    /* CKEditor enhancements */
+    .ck-editor__editable {
+        min-height: 250px !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .ck-toolbar {
+        border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    }
+
+    /* Better spacing */
+    .dataTables_top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+</style>
 </style>
 {%endblock%}
 {%block content%}
@@ -536,9 +690,8 @@
                     <i class="material-icons">edit</i>
                     Update Application Template
                 </h5>
-                <button type="button" class="close btn-close" data-dismiss="modal" aria-label="Close"
-                    style="filter: invert(1); opacity: 0.8;">
-                    
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -623,7 +776,7 @@
                 dataSrc: function (json) {
                     console.log('Templates data received:', json);
                     if (json.error) {
-                        alert({
+                        Swal.fire({
                             icon: 'error',
                             title: 'Loading Error',
                             text: json.error,
@@ -635,7 +788,7 @@
                 },
                 error: function (xhr, error, thrown) {
                     console.error('DataTables AJAX error:', xhr.responseText);
-                    alert({
+                    Swal.fire({
                         icon: 'error',
                         title: 'Loading Failed',
                         text: 'Failed to load templates: ' + error,
@@ -645,12 +798,18 @@
             },
             columns: [
                 { data: 'id', title: 'ID' },
-                { data: 'application_name', title: 'Template Name' },
+                { 
+                    data: 'application_name', 
+                    title: 'Template Name',
+                    render: function(data) {
+                        return `<strong style="color: var(--gray-800);">${data || 'Untitled'}</strong>`;
+                    }
+                },
                 {
                     data: 'application_desc',
                     title: 'Content Preview',
                     render: function (data) {
-                        if (!data) return 'No content';
+                        if (!data) return '<em style="color: var(--gray-400);">No content</em>';
 
                         // Create a temporary div to strip HTML tags
                         const tempDiv = document.createElement('div');
@@ -658,15 +817,17 @@
                         const text = tempDiv.textContent || tempDiv.innerText || '';
 
                         // Return truncated text with preview styling
-                        const truncated = text.length > 100 ? text.substr(0, 100) + '...' : text;
-                        return `<div class="content-preview">${truncated}</div>`;
+                        const truncated = text.length > 120 ? text.substr(0, 120) + '...' : text;
+                        return `<div class="content-preview" title="${text}">${truncated}</div>`;
                     }
                 },
                 {
                     data: 'created_at',
                     title: 'Created At',
                     render: function (data) {
-                        return data ? new Date(data).toLocaleDateString() : 'N/A';
+                        if (!data) return '<em style="color: var(--gray-400);">N/A</em>';
+                        const date = new Date(data);
+                        return `<span style="color: var(--gray-600);">${date.toLocaleDateString()}</span>`;
                     }
                 },
                 {
@@ -674,42 +835,45 @@
                     title: 'Actions',
                     orderable: false,
                     render: function (data, type, row) {
-                        const safeContent = (row.application_desc || '').replace(/`/g, '\\`').replace(/'/g, "\\'");
-                        const safeName = (row.application_name || '').replace(/'/g, "\\'");
                         return `
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-primary" onclick="showUpdateModal(${row.id}, '${safeName}', \`${safeContent}\`)" title="Edit Template">
-                                        <i class="material-icons">edit</i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${row.id})" title="Delete Template">
-                                        <i class="material-icons">delete</i>
-                                    </button>
-                                </div>
-                            `;
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary" onclick="showUpdateModal(${row.id})" title="Edit Template">
+                                    <i class="material-icons">edit</i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${row.id})" title="Delete Template">
+                                    <i class="material-icons">delete</i> Delete
+                                </button>
+                            </div>
+                        `;
                     }
                 }
             ],
-            dom: '<"top"lf>rt<"bottom"ip>',
+            dom: '<"dataTables_top"lf>rt<"bottom"ip>',
             responsive: true,
             language: {
                 search: "_INPUT_",
                 searchPlaceholder: "Search templates...",
-                lengthMenu: "Show _MENU_ templates per page",
+                lengthMenu: "Show _MENU_ templates",
                 info: "Showing _START_ to _END_ of _TOTAL_ templates",
                 infoEmpty: "No templates found",
-                infoFiltered: "(filtered from _MAX_ total templates)",
-                zeroRecords: "No matching templates found"
+                infoFiltered: "(filtered from _MAX_ total)",
+                zeroRecords: "No matching templates found",
+                emptyTable: "No templates available"
             },
             columnDefs: [
                 { targets: [0], visible: false }, // Hide ID column
-                { targets: [1], width: "25%" },
-                { targets: [2], width: "40%" },
-                { targets: [3], width: "15%" },
-                { targets: [4], width: "20%" }
+                { targets: [1], width: "25%", className: "text-left" },
+                { targets: [2], width: "40%", className: "text-left" },
+                { targets: [3], width: "15%", className: "text-center" },
+                { targets: [4], width: "20%", className: "text-center" }
             ],
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
-            order: [[3, 'desc']] // Sort by created date descending
+            order: [[3, 'desc']], // Sort by created date descending
+            drawCallback: function() {
+                // Ensure tooltips work after table redraw
+                $('[title]').tooltip();
+            }
         });
 
         // Logout functionality
@@ -721,22 +885,41 @@
         console.log('Templates page initialized');
     });
 
-    function showUpdateModal(id, name, content) {
-        $('#updateId').val(id);
-        $('#updateName').val(name);
+    function showUpdateModal(id) {
+        // First fetch the template data
+        $.ajax({
+            url: `/api/application/${id}/`,
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            },
+            success: function(template) {
+                $('#updateId').val(template.id);
+                $('#updateName').val(template.application_name || '');
 
-        // Destroy existing editor if it exists
-        if (updateEditor) {
-            updateEditor.destroy().then(() => {
-                console.log('Previous editor destroyed');
-                createNewEditor(id, name, content);
-            }).catch(err => {
-                console.error('Error destroying editor:', err);
-                createNewEditor(id, name, content);
-            });
-        } else {
-            createNewEditor(id, name, content);
-        }
+                // Destroy existing editor if it exists
+                if (updateEditor) {
+                    updateEditor.destroy().then(() => {
+                        console.log('Previous editor destroyed');
+                        createNewEditor(template.id, template.application_name, template.application_desc);
+                    }).catch(err => {
+                        console.error('Error destroying editor:', err);
+                        createNewEditor(template.id, template.application_name, template.application_desc);
+                    });
+                } else {
+                    createNewEditor(template.id, template.application_name, template.application_desc);
+                }
+            },
+            error: function(xhr) {
+                console.error('Error fetching template:', xhr);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load template data',
+                    confirmButtonColor: '#EF4444'
+                });
+            }
+        });
     }
 
     function createNewEditor(id, name, content) {
@@ -776,7 +959,7 @@
 
     function updateTemplate() {
         if (!updateEditor) {
-            alert({
+            Swal.fire({
                 icon: 'error',
                 title: 'Editor Not Ready',
                 text: 'Editor not initialized. Please try again.',
@@ -786,11 +969,11 @@
         }
 
         const id = $('#updateId').val();
-        const name = $('#updateName').val();
-        const content = updateEditor.getData();
+        const name = $('#updateName').val().trim();
+        const content = updateEditor.getData().trim();
 
         if (!name || !content) {
-            alert({
+            Swal.fire({
                 icon: 'error',
                 title: 'Missing Information',
                 text: 'Please fill in both name and content.',
@@ -799,35 +982,30 @@
             return;
         }
 
-        // Convert HTML to plain text for backend
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = content;
-        const templateContent = tempDiv.textContent || tempDiv.innerText || '';
-
         // Add loading state
         const saveBtn = $('.btn-primary');
-        saveBtn.addClass('loading');
+        const originalText = saveBtn.html();
+        saveBtn.prop('disabled', true).html('<i class="material-icons">hourglass_empty</i> Saving...');
 
         $.ajax({
             url: '/api/application/' + id + '/',
             method: 'PATCH',
             contentType: 'application/json',
             headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                'X-CSRFToken': getCookie('csrftoken')
             },
             data: JSON.stringify({
-                id: id,
                 application_name: name,
-                application_desc: templateContent
+                application_desc: content
             }),
-            dataType: 'json',
             success: function (response) {
-                saveBtn.removeClass('loading');
-                if (response.id) {
-                    alert({
+                saveBtn.prop('disabled', false).html(originalText);
+                if (response && (response.id || response.application_name)) {
+                    Swal.fire({
                         icon: 'success',
                         title: 'Template Updated',
-                        text: response.application_name + ' updated successfully!',
+                        text: (response.application_name || name) + ' updated successfully!',
                         confirmButtonColor: '#10B981',
                         timer: 2000,
                         timerProgressBar: true
@@ -835,30 +1013,60 @@
                     $('#updateModal').modal('hide');
                     $('#templatesTable').DataTable().ajax.reload();
                 } else {
-                    alert({
+                    Swal.fire({
                         icon: 'error',
                         title: 'Update Failed',
-                        text: response.error || 'Failed to update template',
+                        text: response.error || 'Unexpected response format',
                         confirmButtonColor: '#EF4444'
                     });
                 }
             },
             error: function (xhr, status, error) {
-                saveBtn.removeClass('loading');
-                const errorMsg = xhr.responseJSON?.error || 'Failed to update template: ' + error;
-                alert({
+                saveBtn.prop('disabled', false).html(originalText);
+                console.error('Update error:', xhr.responseText);
+                
+                let errorMsg = 'Failed to update template';
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON.detail) {
+                        errorMsg = xhr.responseJSON.detail;
+                    }
+                } else if (xhr.status === 403) {
+                    errorMsg = 'You do not have permission to update this template';
+                } else if (xhr.status === 404) {
+                    errorMsg = 'Template not found';
+                } else if (xhr.status === 400) {
+                    errorMsg = 'Invalid data provided';
+                }
+                
+                Swal.fire({
                     icon: 'error',
                     title: 'Update Failed',
                     text: errorMsg,
                     confirmButtonColor: '#EF4444'
                 });
-                console.error('Update error:', xhr.responseText);
             }
         });
     }
 
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     function deleteTemplate(id) {
-        alert({
+        Swal.fire({
             title: 'Delete Template',
             text: "Are you sure you want to delete this template? This action cannot be undone!",
             icon: 'warning',
@@ -866,42 +1074,65 @@
             confirmButtonColor: '#EF4444',
             cancelButtonColor: '#6B7280',
             confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
                 console.log('Sending delete request for ID:', id);
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait while we delete the template.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 $.ajax({
                     url: `/api/application/${id}/`,
                     method: 'DELETE',
-                    contentType: 'application/json',
                     headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                        'X-CSRFToken': getCookie('csrftoken')
                     },
                     success: function (response) {
                         console.log('Delete response:', response);
-                        if (response.success) {
-                            alert({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: response.success,
-                                confirmButtonColor: '#10B981',
-                                timer: 2000,
-                                timerProgressBar: true
-                            });
-                            $('#templatesTable').DataTable().ajax.reload();
-                        } else {
-                            alert({
-                                icon: 'error',
-                                title: 'Delete Failed',
-                                text: response.error || 'Failed to delete template',
-                                confirmButtonColor: '#EF4444'
-                            });
-                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: response.message || response.success || 'Template has been deleted successfully.',
+                            confirmButtonColor: '#10B981',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        $('#templatesTable').DataTable().ajax.reload();
                     },
                     error: function (xhr, status, error) {
                         console.error('Delete AJAX error:', xhr.responseText, 'Status:', status);
-                        const errorMsg = xhr.responseJSON?.error || 'Failed to delete template: ' + error;
+                        
+                        let errorMsg = 'Failed to delete template';
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.error) {
+                                errorMsg = xhr.responseJSON.error;
+                            } else if (xhr.responseJSON.detail) {
+                                errorMsg = xhr.responseJSON.detail;
+                            }
+                        } else if (xhr.status === 403) {
+                            errorMsg = 'You do not have permission to delete this template';
+                        } else if (xhr.status === 404) {
+                            errorMsg = 'Template not found';
+                        }
 
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Delete Failed',
+                            text: errorMsg,
+                            confirmButtonColor: '#EF4444'
+                        });
                     }
                 });
             }
