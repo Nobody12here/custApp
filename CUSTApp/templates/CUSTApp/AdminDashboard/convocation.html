@@ -672,9 +672,15 @@
                         <div class="detail-item">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0">Assigned Students</h6>
-                                <button type="button" class="btn btn-sm btn-info" id="refreshStudentsBtn">
-                                    <i class="material-icons">refresh</i> Refresh List
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm mr-2" id="studentSearchInput" placeholder="Search students..." style="width: 200px;">
+                                    <button type="button" class="btn btn-sm btn-success" id="addStudentBtn">
+                                        <i class="material-icons">person_add</i> Add Student
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-info ml-2" id="refreshStudentsBtn">
+                                        <i class="material-icons">refresh</i> Refresh List
+                                    </button>
+                                </div>
                             </div>
                             <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                                 <table class="table table-sm table-hover">
@@ -685,11 +691,12 @@
                                             <th>Student Name</th>
                                             <th>Email</th>
                                             <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="assignedStudentsTableBody">
                                         <tr>
-                                            <td colspan="5" class="text-center text-muted">
+                                            <td colspan="6" class="text-center text-muted">
                                                 <i class="material-icons">hourglass_empty</i>
                                                 Loading students...
                                             </td>
@@ -701,6 +708,29 @@
                                 <small class="text-muted">
                                     Total Students: <span id="totalStudentsCount" class="font-weight-bold">0</span>
                                 </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Search Table for Adding -->
+                <div class="row" id="studentSearchRow" style="display:none;">
+                    <div class="col-md-12">
+                        <div class="detail-item">
+                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                <table class="table table-sm table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Registration No</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentSearchResultsBody">
+                                        <tr><td colspan="4" class="text-center text-muted">Type to search students...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

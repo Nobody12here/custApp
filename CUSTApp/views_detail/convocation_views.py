@@ -38,7 +38,7 @@ class ConvocationStudentsListView(ListAPIView):
         if not convocation_id:
             return Users.objects.none()
         return Users.objects.filter(convocation=convocation_id)
-    
+
 
 class GenerateConvocationLetterAPIView(APIView):
     authentication_classes = [JWTAuthentication]

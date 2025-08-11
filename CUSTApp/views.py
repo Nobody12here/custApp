@@ -6,7 +6,7 @@ import qrcode
 from reportlab.platypus import Image as RLImage
 import re
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser,JSONParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -102,7 +102,7 @@ class UploadStudentData(APIView):
 
 class UploadConvocationData(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser]
+    parser_classes = [MultiPartParser,JSONParser]  # Will set per-method
 
     def post(self, request):
         convocation_id = request.data.get("convocation_id")
@@ -138,7 +138,37 @@ class UploadConvocationData(APIView):
                 {"error": f"Failed to process file: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+    def put(self, request):
+        convocation_id = request.data.get("convocation_id")
+        student_id = request.data.get("student_id")
+        if not convocation_id or not student_id:
+            return Response(
+                {"error": "Convocation ID and Student ID required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            convocation = Convocation.objects.get(id=convocation_id)
+            student = Users.objects.get(uu_id=student_id, user_type="Student")
+            student.convocation = convocation
+            student.save()
+            return Response({"message": "Updated sucessfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request):
+        student_id = request.data.get('student_id')
+        if not student_id:
+            return Response(
+                {"error": "Student ID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            student = Users.objects.get(uu_id=student_id, user_type="Student")
+            student.convocation = None
+            student.save()
+            return Response({"message": "Student deleted sucessfully!"}, status=status.HTTP_200_OK)
+        except Users.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UploadEmployeeSignature(APIView):
     permission_classes = [IsAuthenticated]
@@ -513,13 +543,15 @@ def complaints(request):
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 
-
+from rest_framework.filters import SearchFilter
 # Generic API Views
 class UsersList(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
-
+    filter_backends = [SearchFilter]
+    search_fields = ["name","uu_id"]
+    
     def get_queryset(self):
         department = self.request.query_params.get("department")
         user_type = self.request.query_params.get("user_type")

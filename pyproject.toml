@@ -20,6 +20,7 @@ dependencies = [
     "charset-normalizer==3.4.1",
     "cryptography==44.0.2",
     "django==4.1.13",
+    "django-filter>=23.5",
     "django-push-notifications==3.2.1",
     "django-unfold>=0.50.0",
     "djangorestframework==3.14.0",

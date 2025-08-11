@@ -249,6 +249,7 @@ dependencies = [
     { name = "charset-normalizer" },
     { name = "cryptography" },
     { name = "django" },
+    { name = "django-filter" },
     { name = "django-push-notifications" },
     { name = "django-unfold" },
     { name = "djangorestframework" },
@@ -331,6 +332,7 @@ requires-dist = [
     { name = "charset-normalizer", specifier = "==3.4.1" },
     { name = "cryptography", specifier = "==44.0.2" },
     { name = "django", specifier = "==4.1.13" },
+    { name = "django-filter", specifier = ">=23.5" },
     { name = "django-push-notifications", specifier = "==3.2.1" },
     { name = "django-unfold", specifier = ">=0.50.0" },
     { name = "djangorestframework", specifier = "==3.14.0" },
@@ -408,6 +410,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/34/09/300498ca0a5f37e0621b90a94c71fc8a4227be5488a3bd5550869c6e0049/Django-4.1.13.tar.gz", hash = "sha256:94a3f471e833c8f124ee7a2de11e92f633991d975e3fa5bdd91e8abd66426318", size = 10515104, upload-time = "2023-11-01T06:59:24.955Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ad/ac/203ce7fd2e03fb0392e0a6160f4b27d0d1efe1614cb65f1d29e6bbf2ef69/Django-4.1.13-py3-none-any.whl", hash = "sha256:04ab3f6f46d084a0bba5a2c9a93a3a2eb3fe81589512367a75f79ee8acf790ce", size = 8104299, upload-time = "2023-11-01T06:59:10.387Z" },
+]
+
+[[package]]
+name = "django-filter"
+version = "23.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1c/ce/e874b30a66684e3e79b183b0197dd3d08f842a8674972e47a90c09a6ec9c/django-filter-23.5.tar.gz", hash = "sha256:67583aa43b91fe8c49f74a832d95f4d8442be628fd4c6d65e9f811f5153a4e5c", size = 141058, upload-time = "2023-12-05T08:15:31.888Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/ff/4ae79361e09c3803562368700bc56672cca37bab7c1a8a91e7a225ce8fa0/django_filter-23.5-py3-none-any.whl", hash = "sha256:99122a201d83860aef4fe77758b69dda913e874cc5e0eaa50a86b0b18d708400", size = 94402, upload-time = "2023-12-05T08:15:29.191Z" },
 ]
 
 [[package]]

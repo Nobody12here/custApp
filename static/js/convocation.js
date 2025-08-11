@@ -44,11 +44,11 @@ function validateDates() {
     }
     if (rehearsalDate && convocationDate) {
         if (new Date(rehearsalDate) >= new Date(convocationDate)) {
-            console.log("Rehearsal date:", rehearsalDate, "Convocation date:", convocationDate," Not valid");
+            console.log("Rehearsal date:", rehearsalDate, "Convocation date:", convocationDate, " Not valid");
             showValidationFeedback('convocationDate', false, 'Convocation date should be after rehearsal date');
             isValid = false;
         } else {
-            console.log("Rehearsal date:", rehearsalDate, "Convocation date:", convocationDate," Valid");
+            console.log("Rehearsal date:", rehearsalDate, "Convocation date:", convocationDate, " Valid");
             showValidationFeedback('convocationDate', true, '');
         }
         return isValid;
@@ -759,7 +759,7 @@ function generateConvocationLetter() {
             window.URL.revokeObjectURL(url);
             alert('Convocation letter generated and downloaded successfully!');
         },
-        error: function (xhr,status, error) {
+        error: function (xhr, status, error) {
             console.log(xhr);
             console.log(status);
             console.log(error);
@@ -910,11 +910,11 @@ function generateConvocationLetterFromModal() {
             window.URL.revokeObjectURL(url);
             alert('Convocation letter generated and downloaded successfully!');
         },
-        error: function (xhr,status, error) {
+        error: function (xhr, status, error) {
             console.log(xhr);
             console.log(xhr.status);
             console.log(xhr.responseJSON);
-            let errorMessage = 'Failed to generate convocation letter : '+ error;
+            let errorMessage = 'Failed to generate convocation letter : ' + error;
             if (xhr.responseJSON && xhr.responseJSON.error) {
                 errorMessage = xhr.responseJSON.error;
             }
@@ -1022,72 +1022,128 @@ function sendConvocationEmailsFromModal() {
     });
 }
 
-// Function to load assigned students for a convocation
+// --- Student Table Search, Add, Remove ---
+let assignedStudentsCache = [];
+
+// Update loadAssignedStudents to support cache and remove button
 function loadAssignedStudents(convocationId) {
     const tableBody = $('#assignedStudentsTableBody');
     const totalCount = $('#totalStudentsCount');
-
-    // Show loading state
     tableBody.html(`
-            <tr>
-                <td colspan="5" class="text-center text-muted">
-                    <i class="material-icons">hourglass_empty</i>
-                    Loading students...
-                </td>
-            </tr>
-        `);
+        <tr>
+            <td colspan="6" class="text-center text-muted">
+                <i class="material-icons">hourglass_empty</i>
+                Loading students...
+            </td>
+        </tr>
+    `);
     totalCount.text('0');
-
     $.ajax({
         url: `/convocation/students/?convocation_id=${convocationId}`,
         method: 'GET',
         success: function (response) {
-            tableBody.empty();
-
-            if (!response || response.length === 0) {
-                tableBody.html(`
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">
-                                <i class="material-icons">people_outline</i>
-                                No students assigned to this convocation yet
-                            </td>
-                        </tr>
-                    `);
-                totalCount.text('0');
-                return;
-            }
-
-            response.forEach((student, index) => {
-                const statusBadge = getStudentStatusBadge('registered');
-                const row = `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${student.uu_id || student.regno || 'N/A'}</td>
-                            <td>${student.name || 'N/A'}</td>
-                            <td>${student.email || 'N/A'}</td>
-                            <td>${statusBadge}</td>
-                        </tr>
-                    `;
-                tableBody.append(row);
-            });
-
-            totalCount.text(response.length);
+            assignedStudentsCache = response || [];
+            renderAssignedStudentsTable(assignedStudentsCache);
         },
         error: function (xhr) {
             console.error('Failed to load students:', xhr);
             tableBody.html(`
-                    <tr>
-                        <td colspan="5" class="text-center text-danger">
-                            <i class="material-icons">error_outline</i>
-                            Failed to load students. Please try again.
-                        </td>
-                    </tr>
-                `);
+                <tr>
+                    <td colspan="6" class="text-center text-danger">
+                        <i class="material-icons">error_outline</i>
+                        Failed to load students. Please try again.
+                    </td>
+                </tr>
+            `);
             totalCount.text('0');
         }
     });
 }
 
+function renderAssignedStudentsTable(students) {
+    const tableBody = $('#assignedStudentsTableBody');
+    const totalCount = $('#totalStudentsCount');
+    tableBody.empty();
+    if (!students || students.length === 0) {
+        tableBody.html(`
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    <i class="material-icons">people_outline</i>
+                    No students assigned to this convocation yet
+                </td>
+            </tr>
+        `);
+        totalCount.text('0');
+        return;
+    }
+    students.forEach((student, index) => {
+        const statusBadge = getStudentStatusBadge(student.status || 'registered');
+        const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${student.uu_id || student.regno || 'N/A'}</td>
+                <td>${student.name || 'N/A'}</td>
+                <td>${student.email || 'N/A'}</td>
+                <td>${statusBadge}</td>
+                <td><button class="btn btn-sm btn-danger remove-student-btn" data-student-id="${student.uu_id}"><i class="material-icons">delete</i> Remove</button></td>
+            </tr>
+        `;
+        tableBody.append(row);
+    });
+    totalCount.text(students.length);
+}
+
+// Search filter
+$(document).on('input', '#studentSearchInput', function () {
+    const search = $(this).val().toLowerCase();
+    const filtered = assignedStudentsCache.filter(s =>
+        (s.uu_id && s.uu_id.toLowerCase().includes(search)) ||
+        (s.regno && s.regno.toLowerCase().includes(search)) ||
+        (s.name && s.name.toLowerCase().includes(search)) ||
+        (s.email && s.email.toLowerCase().includes(search))
+    );
+    renderAssignedStudentsTable(filtered);
+});
+
+// Remove student
+$(document).on('click', '.remove-student-btn', function () {
+    const studentId = $(this).data('student-id');
+    const convocationId = $('#studentUploadModal').data('convocation-id');
+    if (!studentId || !convocationId) return;
+    if (!confirm('Remove this student from the convocation?')) return;
+    $.ajax({
+        url: `/api/upload-convocation-data/`,
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        contentType: 'application/json',
+        data: { student_id: studentId },
+        success: function () {
+            loadAssignedStudents(convocationId);
+        },
+        error: function (xhr) {
+            alert('Failed to remove student.');
+        }
+    });
+});
+
+// Add student modal (simple prompt for regno or uu_id)
+$('#addStudentBtn').on('click', function () {
+    const convocationId = $('#studentUploadModal').data('convocation-id');
+    const regno = prompt('Enter Registration No or Student ID to add:');
+    if (!regno || !convocationId) return;
+    $.ajax({
+        url: `/convocation/add-student/`,
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        data: { convocation_id: convocationId, regno: regno },
+        success: function () {
+            loadAssignedStudents(convocationId);
+        },
+        error: function (xhr) {
+            alert('Failed to add student.');
+        }
+    });
+});
 // Function to get status badge HTML
 function getStudentStatusBadge(status) {
     const statusClass = {
@@ -1111,3 +1167,70 @@ function getStudentStatusBadge(status) {
 
     return `<span class="badge ${badgeClass}">${badgeText}</span>`;
 }
+
+// --- End Student Table Search, Add, Remove ---
+
+// --- Student Search and Add from /users/ endpoint ---
+let studentSearchTimeout = null;
+
+$(document).on('input', '#studentSearchInput', function () {
+    const search = $(this).val().trim();
+
+    if (search.length === 0) {
+        $('#studentSearchRow').hide();
+        $('#studentSearchResultsBody').html('<tr><td colspan="4" class="text-center text-muted">Type to search students...</td></tr>');
+        renderAssignedStudentsTable(assignedStudentsCache);
+        return;
+    }
+    $('#studentSearchRow').show();
+    $('#studentSearchResultsBody').html('<tr><td colspan="4" class="text-center text-muted"><i class="material-icons">hourglass_empty</i> Searching...</td></tr>');
+    clearTimeout(studentSearchTimeout);
+    studentSearchTimeout = setTimeout(function () {
+        $.ajax({
+            url: `/users/?user_type=student&search=${encodeURIComponent(search)}`,
+            method: 'GET',
+            success: function (users) {
+                if (!users || users.length === 0) {
+                    $('#studentSearchResultsBody').html('<tr><td colspan="4" class="text-center text-muted">No students found.</td></tr>');
+                    return;
+                }
+                let html = '';
+                users.forEach(user => {
+                    html += `<tr>
+                        <td>${user.uu_id || user.regno || 'N/A'}</td>
+                        <td>${user.name || 'N/A'}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td><button class="btn btn-sm btn-success add-student-btn" data-student-id="${user.uu_id}"><i class="material-icons">person_add</i> Add</button></td>
+                    </tr>`;
+                });
+                $('#studentSearchResultsBody').html(html);
+            },
+            error: function () {
+                $('#studentSearchResultsBody').html('<tr><td colspan="4" class="text-center text-danger">Failed to search students.</td></tr>');
+            }
+        });
+    }, 300); // debounce
+});
+
+// Add student from search result
+$(document).on('click', '.add-student-btn', function () {
+    const studentId = $(this).data('student-id');
+    const convocationId = $('#studentUploadModal').data('convocation-id');
+    if (!studentId || !convocationId) return;
+    $.ajax({
+        url: `/api/upload-convocation-data/`, //Add this student to convocation
+        method: 'PUT',
+        contentType: 'application/json',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        data: JSON.stringify({ convocation_id: convocationId, student_id: studentId }),
+        success: function () {
+            loadAssignedStudents(convocationId);
+            $('#studentSearchInput').val('');
+            $('#studentSearchRow').hide();
+        },
+        error: function () {
+            alert('Failed to add student.');
+        }
+    });
+});
+// --- End Student Search and Add ---
