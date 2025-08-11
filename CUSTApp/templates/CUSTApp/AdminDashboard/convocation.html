@@ -381,6 +381,41 @@
     .dropdown-item i.material-icons {
         font-size: 18px;
     }
+
+    /* Badge Styles for Student Status */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-primary {
+        background-color: #cce7ff;
+        color: #004085;
+    }
+
+    .badge-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-secondary {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
 </style>
 {% endblock %}
 
@@ -630,6 +665,46 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Assigned Students Table -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="detail-item">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Assigned Students</h6>
+                                <button type="button" class="btn btn-sm btn-info" id="refreshStudentsBtn">
+                                    <i class="material-icons">refresh</i> Refresh List
+                                </button>
+                            </div>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>S.No</th>
+                                            <th>Registration No</th>
+                                            <th>Student Name</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignedStudentsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">
+                                                <i class="material-icons">hourglass_empty</i>
+                                                Loading students...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Total Students: <span id="totalStudentsCount" class="font-weight-bold">0</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -720,7 +795,7 @@
         if (!checkAuth()) return;
 
         // Date validation on change
-        $('#registrationDate, #registrationDeadline, #rehearsalDate').on('change', function () {
+        $('#registrationDate, #registrationDeadline, #rehearsalDate, #convocationDate').on('change', function () {
             validateDates();
         });
 
@@ -939,6 +1014,22 @@
             $('#modalUploadStudentDataBtn').prop('disabled', true);
             $('#modalUploadStatus').hide();
             $('.upload-progress').remove();
+        });
+
+        // Load assigned students when Student Upload Modal is shown
+        $('#studentUploadModal').on('shown.bs.modal', function () {
+            const convocationId = $(this).data('convocation-id');
+            if (convocationId) {
+                loadAssignedStudents(convocationId);
+            }
+        });
+
+        // Refresh students button click handler
+        $('#refreshStudentsBtn').on('click', function () {
+            const convocationId = $('#studentUploadModal').data('convocation-id');
+            if (convocationId) {
+                loadAssignedStudents(convocationId);
+            }
         });
 
         // Letter Generation Modal template selection handler

@@ -6,6 +6,7 @@ from CUSTApp.views_detail.convocation_views import (
     SendConvocationEmailsAPIView,
     BulkGenerateConvocationLettersAPIView,
     GenerateConvocationLetterAPIView,
+    ConvocationStudentsListView,
 )
 from .views import (
     AllUsersListAPIView,
@@ -17,7 +18,6 @@ from .views import (
     UserUpdateView,
     UsersList,
     DepartmentList,
-    RequestList,
     complaints,
     index_page,
     request_verification_page,
@@ -39,7 +39,6 @@ urlpatterns = [
     path("students/", views.students, name="students"),
     path("convocation-page/", views.convocation, name="convocation_page"),
     path("about/", views.about, name="about"),
-    path("test/", test_api_view, name="test_api"),
     path("users/", UsersList.as_view(), name="users_list"),
     path("admin-departments/", views.admin_department, name="admin_departments"),
     path("admin-templates/", views.admin_templates, name="admin_templates"),
@@ -156,6 +155,11 @@ urlpatterns = [
         "api/send-convocation-emails/",
         SendConvocationEmailsAPIView.as_view(),
         name="send_convocation_emails",
+    ),
+    path(
+        "convocation/students/",
+        ConvocationStudentsListView.as_view(),
+        name="convocation_students_list",
     ),
 ]
 urlpatterns.extend(router.urls)

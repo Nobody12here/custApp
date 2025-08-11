@@ -6,19 +6,19 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from CUSTApp.models import Users, Convocation
+from rest_framework.generics import ListAPIView
+from CUSTApp.serializers import ConvocationStudentsSerializer
 from ApplicationTemplate.models import Applications
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
 from reportlab.platypus import Image, Table, TableStyle
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.platypus import Image as RLImage
-from bs4 import BeautifulSoup
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_RIGHT
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 
 import os
 
@@ -27,6 +27,18 @@ LETTERHEAD_PATH = os.path.join(
     os.path.dirname(__file__), "..", "..", "static", "LetterHead", "LetterHead.pdf"
 )
 
+
+class ConvocationStudentsListView(ListAPIView):
+    serializer_class = ConvocationStudentsSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        convocation_id = self.request.query_params.get("convocation_id")
+        if not convocation_id:
+            return Users.objects.none()
+        return Users.objects.filter(convocation=convocation_id)
+    
 
 class GenerateConvocationLetterAPIView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -72,6 +84,11 @@ class GenerateConvocationLetterAPIView(APIView):
         try:
 
             student = Users.objects.get(uu_id=student_id)
+            if student.convocation != convocation:
+                return Response(
+                    {"error": "Student is not assigned to this convocation"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except Users.DoesNotExist:
             return Response(
@@ -263,25 +280,27 @@ class GenerateConvocationLetterAPIView(APIView):
 
         elements += self.parse_html_to_reportlab_elements(content)
         # signature
-        signature_image.hAlign = 'LEFT'
-        
+        signature_image.hAlign = "LEFT"
+
         # Use the original image object with proper alignment
         signature_data = [
             signature_image,
             Paragraph(responsible_employee.name, signature_style),
             Paragraph(responsible_employee.designation, signature_style),
-            Paragraph(responsible_employee.dept.dept_name + " department", signature_style),
+            Paragraph(
+                responsible_employee.dept.dept_name + " department", signature_style
+            ),
         ]
         signature_table = Table([[s] for s in signature_data], colWidths=[350])
         signature_table.setStyle(
             TableStyle(
                 [
-                    ("LEFTPADDING", (0, 0), (-1, -1),52),  # Match document left indent
+                    ("LEFTPADDING", (0, 0), (-1, -1), 52),  # Match document left indent
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ]
             )
         )
-        signature_table.hAlign = 'LEFT'  # Align the entire table to the left
+        signature_table.hAlign = "LEFT"  # Align the entire table to the left
         elements.append(Spacer(1, 30))
         elements.append(signature_table)
         # Build the PDF
