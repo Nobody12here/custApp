@@ -371,11 +371,14 @@
         gap: 0.5rem;
         font-size: 14px;
         transition: all 0.2s ease;
+        color: #222 !important;
+        background-color: #fff !important;
     }
 
     .dropdown-item:hover {
-        background-color: #f8f9fa;
-        color: #0A369D;
+        background-color: #e3e8f0 !important;
+        color: #0A369D !important;
+        font-weight: 600;
     }
 
     .dropdown-item i.material-icons {
@@ -415,6 +418,12 @@
     .badge-secondary {
         background-color: #e2e3e5;
         color: #383d41;
+    }
+
+    /* Convocation instance table body */
+
+    #convocationTableBody>tr>td {
+        text-align: center;
     }
 </style>
 {% endblock %}
@@ -539,15 +548,15 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead class="text-primary">
+                    <table class="table table-sm table-hover text-center mb-0">
+                        <thead class="thead-light">
                             <tr>
                                 <th>Title</th>
                                 <th>Academic Year</th>
                                 <th>Registration Deadline</th>
                                 <th>Rehearsal Date</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="convocationTableBody">
@@ -628,10 +637,9 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="detail-item">
-                            <h6>Convocation Information</h6>
-                            <p><strong>Title:</strong> <span id="upload-convocation-title"></span></p>
-                            <p><strong>Academic Year:</strong> <span id="upload-academic-year"></span></p>
+                        <div class="detail-item py-2 px-3 mb-3" style="display: flex; align-items: center; gap: 2rem; background: #f8f9fa; border-left: 4px solid #0A369D;">
+                            <span><strong>Title:</strong> <span id="upload-convocation-title"></span></span>
+                            <span><strong>Academic Year:</strong> <span id="upload-academic-year"></span></span>
                         </div>
                     </div>
                 </div>
@@ -665,7 +673,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Assigned Students Table -->
                 <div class="row mt-4">
                     <div class="col-md-12">
@@ -673,8 +681,8 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0">Assigned Students</h6>
                                 <div class="d-flex align-items-center gap-2">
-                                    <input type="text" class="form-control form-control-sm mr-2" id="studentSearchInput" placeholder="Search students..." style="width: 200px;">
-                                    <button type="button" class="btn btn-sm btn-success" id="addStudentBtn">
+                                    <button type="button" class="btn btn-sm btn-success" id="addStudentBtn"
+                                        data-toggle="modal" data-target="#studentSearchModal">
                                         <i class="material-icons">person_add</i> Add Student
                                     </button>
                                     <button type="button" class="btn btn-sm btn-info ml-2" id="refreshStudentsBtn">
@@ -714,23 +722,48 @@
                 </div>
 
                 <!-- Student Search Table for Adding -->
-                <div class="row" id="studentSearchRow" style="display:none;">
-                    <div class="col-md-12">
-                        <div class="detail-item">
-                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                <table class="table table-sm table-hover">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Registration No</th>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="studentSearchResultsBody">
-                                        <tr><td colspan="4" class="text-center text-muted">Type to search students...</td></tr>
-                                    </tbody>
-                                </table>
+
+                <!-- Student Search Modal (for adding students to convocation) -->
+                <div class="modal fade" id="studentSearchModal" tabindex="-1" role="dialog"
+                    aria-labelledby="studentSearchModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="studentSearchModalLabel">
+                                    <i class="material-icons" style="vertical-align: middle;">person_add</i>
+                                    Add Student to Convocation
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <input type="text" class="form-control form-control-sm" id="studentSearchInput"
+                                        placeholder="Search students by name, registration no, or email...">
+                                </div>
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Registration No</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="studentSearchResultsBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">Type to search
+                                                    students...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
@@ -760,10 +793,9 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="detail-item">
-                            <h6>Convocation Information</h6>
-                            <p><strong>Title:</strong> <span id="letter-convocation-title"></span></p>
-                            <p><strong>Academic Year:</strong> <span id="letter-academic-year"></span></p>
+                        <div class="detail-item py-2 px-3 mb-3" style="display: flex; align-items: center; gap: 2rem; background: #f8f9fa; border-left: 4px solid #0A369D;">
+                            <span><strong>Title:</strong> <span id="letter-convocation-title"></span></span>
+                            <span><strong>Academic Year:</strong> <span id="letter-academic-year"></span></span>
                         </div>
                     </div>
                 </div>
@@ -820,10 +852,8 @@
 {% block extra_js %}
 <script src="{% static 'js/convocation.js' %}"></script>
 <script>
-
     $(document).ready(function () {
-        if (!checkAuth()) return;
-
+        if (!checkAuth(requiredType = 'admin')) return;
         // Date validation on change
         $('#registrationDate, #registrationDeadline, #rehearsalDate, #convocationDate').on('change', function () {
             validateDates();
@@ -1078,6 +1108,12 @@
             $('#modalApplicationTemplate').val('');
             $('#modalGenerateLetterBtn').prop('disabled', true);
             $('#modalLetterGenerationStatus').hide();
+        });
+
+        // Prevent closing parent modal when closing studentSearchModal
+        $('#studentSearchModal').on('hidden.bs.modal', function (e) {
+            // Only hide the search modal, do not affect the parent modal
+            $('body').addClass('modal-open');
         });
 
         // Initial load

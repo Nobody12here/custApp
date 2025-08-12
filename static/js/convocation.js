@@ -556,7 +556,7 @@ function loadApplicationTemplatesForModal() {
             if (response.length > 0) {
                 data.forEach(function (app) {
                     const option = `<option value="${app.id}" data-name="${app.name}" data-description="${app.description}">
-                            ${app.short_name}
+                            ${app.application_name}
                         </option>`;
                     select.append(option);
                 });
@@ -1126,24 +1126,6 @@ $(document).on('click', '.remove-student-btn', function () {
     });
 });
 
-// Add student modal (simple prompt for regno or uu_id)
-$('#addStudentBtn').on('click', function () {
-    const convocationId = $('#studentUploadModal').data('convocation-id');
-    const regno = prompt('Enter Registration No or Student ID to add:');
-    if (!regno || !convocationId) return;
-    $.ajax({
-        url: `/convocation/add-student/`,
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        data: { convocation_id: convocationId, regno: regno },
-        success: function () {
-            loadAssignedStudents(convocationId);
-        },
-        error: function (xhr) {
-            alert('Failed to add student.');
-        }
-    });
-});
 // Function to get status badge HTML
 function getStudentStatusBadge(status) {
     const statusClass = {
@@ -1225,6 +1207,7 @@ $(document).on('click', '.add-student-btn', function () {
         data: JSON.stringify({ convocation_id: convocationId, student_id: studentId }),
         success: function () {
             loadAssignedStudents(convocationId);
+            alert("user added successfully")
             $('#studentSearchInput').val('');
             $('#studentSearchRow').hide();
         },
