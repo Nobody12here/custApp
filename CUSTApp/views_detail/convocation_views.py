@@ -10,6 +10,7 @@ from rest_framework.generics import ListAPIView
 from CUSTApp.serializers import ConvocationStudentsSerializer
 from ApplicationTemplate.models import Applications
 from django.http import HttpResponse
+from django.core.mail import EmailMultiAlternatives
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -271,7 +272,8 @@ class GenerateConvocationLetterAPIView(APIView):
         )
         # Add letterhead image
         # Signature image
-        signature_image = Image(responsible_employee.signature, width=128, height=64)
+        with responsible_employee.signature.open("rb") as sig_file:
+            signature_image = Image(sig_file, width=128, height=64)
         # Add current date
         current_date = timezone.now().strftime("%B %d, %Y")
         elements.append(Spacer(1, 70))
@@ -338,7 +340,7 @@ class BulkGenerateConvocationLettersAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Generate convocation letters for all students in a convocation"""
-
+        application_id = request.data.get("application_id")
         convocation_id = request.data.get("convocation_id")
 
         if not convocation_id:
@@ -346,12 +348,22 @@ class BulkGenerateConvocationLettersAPIView(APIView):
                 {"error": "convocation_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        if not application_id:
+            return Response(
+                {"error": "application_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             convocation = Convocation.objects.get(id=convocation_id)
         except Convocation.DoesNotExist:
             return Response(
                 {"error": "Convocation not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        try:
+            application = Applications.objects.get(id=application_id)
+        except Applications.DoesNotExist:
+            return Response(
+                {"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         # Get all students assigned to this convocation
@@ -373,7 +385,7 @@ class BulkGenerateConvocationLettersAPIView(APIView):
                 # Create individual letter
                 letter_generator = GenerateConvocationLetterAPIView()
                 content = letter_generator.generate_convocation_content(
-                    convocation, student
+                    convocation, student, application
                 )
                 pdf_data = letter_generator.create_convocation_pdf(content)
 
@@ -406,6 +418,7 @@ class SendConvocationEmailsAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Send convocation invitation emails to students"""
+        application_id = request.data.get("application_id")
 
         convocation_id = request.data.get("convocation_id")
 
@@ -413,6 +426,17 @@ class SendConvocationEmailsAPIView(APIView):
             return Response(
                 {"error": "convocation_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not application_id:
+            return Response(
+                {"error": "application_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            application = Applications.objects.get(id=application_id)
+        except Applications.DoesNotExist:
+            return Response(
+                {"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         try:
@@ -430,6 +454,7 @@ class SendConvocationEmailsAPIView(APIView):
                 {"error": "No students found for this convocation"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        letter_generator = GenerateConvocationLetterAPIView()
 
         sent_emails = []
         errors = []
@@ -437,6 +462,14 @@ class SendConvocationEmailsAPIView(APIView):
         for student in students:
             try:
                 # Generate email content
+                content = letter_generator.generate_convocation_content(
+                    convocation, student, application
+                )
+
+                pdf_letter = letter_generator.create_convocation_pdf(
+                    content, application.default_responsible_employee
+                )
+
                 subject = (
                     f"Invitation to {convocation.title} - {convocation.academic_year}"
                 )
@@ -449,11 +482,11 @@ Congratulations! You are cordially invited to participate in the {convocation.ti
 IMPORTANT DETAILS:
 - Registration Deadline: {convocation.registration_deadline.strftime('%B %d, %Y')}
 - Rehearsal Date: {convocation.rehearsal_date.strftime('%B %d, %Y')} at {convocation.rehearsal_time.strftime('%I:%M %p')}
-- Registration Link: {convocation.registration_form_link}
+- Registration Link: 
 
 Please register before the deadline and attend the mandatory rehearsal.
 
-Your convocation letter can be downloaded from the student portal.
+Your convocation letter is attached below.
 
 Best regards,
 Capital University of Science & Technology
@@ -465,6 +498,11 @@ Capital University of Science & Technology
                     body=message,
                     from_email=settings.EMAIL_HOST_USER or "convocation@cust.edu.pk",
                     to=[student.email],
+                )
+                email_message.attach(
+                    filename=f"Convocation_Letter_{student.uu_id}",
+                    content=pdf_letter,
+                    mimetype="application/pdf",
                 )
                 email_message.send()
 

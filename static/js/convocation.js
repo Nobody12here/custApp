@@ -657,7 +657,8 @@ function handleModalFileUpload() {
 
             if (errorCount > 0) {
                 showUploadStatusModal('warning',
-                    `File uploaded with ${errorCount} errors. ${processedCount} records processed successfully.`);
+                    `File uploaded!, ${processedCount} records processed successfully.${errorCount} records were not uploaded`);
+
             } else {
                 showUploadStatusModal('success',
                     `File uploaded successfully! ${processedCount} student records processed.`);
@@ -820,11 +821,17 @@ function bulkGenerateLetters() {
 
 function sendConvocationEmails() {
     const convocationId = $('#viewDetailsModal').data('convocation-id');
+
     if (!convocationId) {
         alert('No convocation selected');
         return;
     }
-
+    // Check if application template is selected
+    const selectedTemplate = getSelectedApplicationTemplate();
+    if (!selectedTemplate) {
+        alert('Please select an application letter template first');
+        return;
+    }
     if (!confirm('This will send convocation invitation emails to all students. Continue?')) {
         return;
     }
@@ -842,7 +849,8 @@ function sendConvocationEmails() {
             'Authorization': 'Bearer ' + localStorage.getItem('access_token')
         },
         data: {
-            convocation_id: convocationId
+            convocation_id: convocationId,
+            application_id: selectedTemplate.id
         },
         success: function (response) {
             alert(`Successfully sent ${response.sent_count} convocation emails. ${response.error_count > 0 ? response.error_count + ' emails failed to send.' : ''}`);
@@ -978,6 +986,13 @@ function bulkGenerateLettersFromModal() {
 
 function sendConvocationEmailsFromModal() {
     const convocationId = $('#letterGenerationModal').data('convocation-id');
+    // Check if application template is selected
+    const selectedTemplate = getSelectedApplicationTemplateFromModal();
+    if (!selectedTemplate) {
+        alert('Please select an application letter template first');
+        return;
+    }
+
     if (!convocationId) {
         alert('No convocation selected');
         return;
@@ -1000,7 +1015,8 @@ function sendConvocationEmailsFromModal() {
             'Authorization': 'Bearer ' + localStorage.getItem('access_token')
         },
         data: {
-            convocation_id: convocationId
+            convocation_id: convocationId,
+            application_id: selectedTemplate.id
         },
         success: function (response) {
             alert(`Successfully sent ${response.sent_count} convocation emails. ${response.error_count > 0 ? response.error_count + ' emails failed to send.' : ''}`);
