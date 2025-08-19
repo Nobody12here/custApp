@@ -723,7 +723,8 @@
     function saveTemplate() {
         const templateName = $('#templateName').val();
         const templateContentHTML = editorInstance.getData();
-        const templateContent = $('<div>').html(templateContentHTML).text(); // Convert HTML to plain text
+        const templateContent = templateContentHTML // Save as html
+        console.log(templateContent);
         const departmentId = $('#departmentSelect').val();
         const employeeId = $('#employeeSelect').val();
         let applicationFee = $('#applicationFee').val();

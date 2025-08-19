@@ -1,18 +1,25 @@
 from io import BytesIO
+from bs4 import BeautifulSoup
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from CUSTApp.models import Users, Convocation
+from rest_framework.generics import ListAPIView
+from CUSTApp.serializers import ConvocationStudentsSerializer
 from ApplicationTemplate.models import Applications
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
+from django.core.mail import EmailMultiAlternatives
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from django.utils import timezone
-import qrcode
+from reportlab.platypus import Image, Table, TableStyle
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.platypus import Image as RLImage
+from reportlab.platypus import Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 
 import os
 
@@ -20,6 +27,18 @@ import os
 LETTERHEAD_PATH = os.path.join(
     os.path.dirname(__file__), "..", "..", "static", "LetterHead", "LetterHead.pdf"
 )
+
+
+class ConvocationStudentsListView(ListAPIView):
+    serializer_class = ConvocationStudentsSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        convocation_id = self.request.query_params.get("convocation_id")
+        if not convocation_id:
+            return Users.objects.none()
+        return Users.objects.filter(convocation=convocation_id)
 
 
 class GenerateConvocationLetterAPIView(APIView):
@@ -66,6 +85,11 @@ class GenerateConvocationLetterAPIView(APIView):
         try:
 
             student = Users.objects.get(uu_id=student_id)
+            if student.convocation != convocation:
+                return Response(
+                    {"error": "Student is not assigned to this convocation"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except Users.DoesNotExist:
             return Response(
@@ -87,7 +111,8 @@ class GenerateConvocationLetterAPIView(APIView):
             )
 
         # Generate PDF
-        pdf_data = self.create_convocation_pdf(content, convocation, student)
+        responsible_employee = application.default_responsible_employee
+        pdf_data = self.create_convocation_pdf(content, responsible_employee)
 
         # Return PDF response
         response = HttpResponse(content_type="application/pdf")
@@ -109,7 +134,6 @@ class GenerateConvocationLetterAPIView(APIView):
 
         # Generate content based on student details
         template_content = application.application_desc
-        print(template_content)
         template_data = {
             "registration_deadline": registration_deadline,
             "rehearsal_date": rehearsal_date,
@@ -120,7 +144,6 @@ class GenerateConvocationLetterAPIView(APIView):
             ),
             "rehearsal_time": rehearsal_time,
             "academic_year": convocation.academic_year,
-            "registration_form_link": convocation.registration_form_link,
         }
         try:
             content = template_content.format_map(template_data)
@@ -128,7 +151,60 @@ class GenerateConvocationLetterAPIView(APIView):
             raise ValueError(f"Missing template variable: {str(e)}")
         return content
 
-    def create_convocation_pdf(self, content, convocation, student):
+    def parse_html_to_reportlab_elements(self, html_content: str) -> list:
+        """Converts HTML content into ReportLab flowables (Paragraphs, Spacers)."""
+        styles = getSampleStyleSheet()
+
+        # Define reusable styles
+        body_style = ParagraphStyle(
+            name="BodyText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=11,
+            leading=14,
+            alignment=TA_JUSTIFY,
+            leftIndent=52,
+            rightIndent=52,
+            spaceBefore=0,
+            spaceAfter=8,
+        )
+
+        title_style = ParagraphStyle(
+            name="TitleText",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=14,
+            leading=18,
+            alignment=TA_CENTER,
+            leftIndent=52,
+            rightIndent=52,
+            spaceBefore=20,
+            spaceAfter=20,
+        )
+
+        elements = []
+
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        for tag in soup.find_all(["p", "br"]):
+            if tag.name == "br":
+                elements.append(Spacer(1, 12))
+                continue
+
+            inner_html = tag.decode_contents().strip()
+
+            if not inner_html or inner_html == "&nbsp;":
+                elements.append(Spacer(1, 12))
+                continue
+
+            if "INVITATION TO CONVOCATION CEREMONY" in inner_html:
+                elements.append(Paragraph(inner_html, title_style))
+            else:
+                elements.append(Paragraph(inner_html, body_style))
+
+        return elements
+
+    def create_convocation_pdf(self, content: str, responsible_employee: Users):
         """Create PDF with letterhead and convocation content"""
 
         content_buffer = BytesIO()
@@ -141,11 +217,6 @@ class GenerateConvocationLetterAPIView(APIView):
             bottomMargin=0,
         )
         elements = []
-
-        # Import required modules
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.platypus import Image, Table, TableStyle
-        from reportlab.lib import colors
 
         # Define custom styles
         styles = getSampleStyleSheet()
@@ -163,7 +234,17 @@ class GenerateConvocationLetterAPIView(APIView):
             spaceBefore=0,
             spaceAfter=8,
         )
-
+        # Signature style (left-aligned, with indent matching letter format)
+        signature_style = ParagraphStyle(
+            name="SignatureText",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=12,
+            leading=14,
+            alignment=0,  # Left align
+            leftIndent=0,  # Match the document's left indent
+            rightIndent=0,
+        )
         # Title style
         title_style = ParagraphStyle(
             name="TitleText",
@@ -189,83 +270,41 @@ class GenerateConvocationLetterAPIView(APIView):
             rightIndent=72,
             leftIndent=0,
         )
-
+        # Add letterhead image
+        # Signature image
+        with responsible_employee.signature.open("rb") as sig_file:
+            signature_image = Image(sig_file, width=128, height=64)
         # Add current date
         current_date = timezone.now().strftime("%B %d, %Y")
         elements.append(Spacer(1, 70))
         elements.append(Paragraph(current_date, date_style))
         elements.append(Spacer(1, 40))
 
-        # Process content line by line
-        lines = content.strip().split("\n")
-        for line in lines:
-            if line.strip():
-                if line.strip() == "INVITATION TO CONVOCATION CEREMONY":
-                    elements.append(Paragraph(line.strip(), title_style))
-                elif line.strip().endswith(":") and line.strip().isupper():
-                    # Section headers
-                    header_style = ParagraphStyle(
-                        name="HeaderText",
-                        parent=styles["Normal"],
-                        fontName="Helvetica-Bold",
-                        fontSize=12,
-                        leading=16,
-                        alignment=0,
-                        leftIndent=52,
-                        rightIndent=52,
-                        spaceBefore=15,
-                        spaceAfter=8,
-                    )
-                    elements.append(Paragraph(line.strip(), header_style))
-                else:
-                    elements.append(Paragraph(line.strip(), body_style))
-            else:
-                elements.append(Spacer(1, 8))
+        elements += self.parse_html_to_reportlab_elements(content)
+        # signature
+        signature_image.hAlign = "LEFT"
 
-        # Add footer with verification QR code
-        verify_url = (
-            f"https://custapp.pk/convocation/verify/{convocation.id}/{student.uu_id}/"
-        )
-
-        # Generate QR code
-        qr = qrcode.QRCode(box_size=3, border=2)
-        qr.add_data(verify_url)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
-        qr_buffer = BytesIO()
-        qr_img.save(qr_buffer, format="PNG")
-        qr_buffer.seek(0)
-        qr_image = RLImage(qr_buffer, width=60, height=60)
-
-        # QR verification note
-        verify_note_style = ParagraphStyle(
-            name="VerifyNote",
-            parent=styles["Normal"],
-            fontSize=8,
-            leading=10,
-            alignment=1,  # Center
-            textColor=colors.grey,
-        )
-
-        qr_note = Paragraph(
-            "Scan QR code to verify this convocation letter", verify_note_style
-        )
-
-        # Create QR table
-        qr_table = Table([[qr_image], [qr_note]], colWidths=[150])
-        qr_table.setStyle(
+        # Use the original image object with proper alignment
+        signature_data = [
+            signature_image,
+            Paragraph(responsible_employee.name, signature_style),
+            Paragraph(responsible_employee.designation, signature_style),
+            Paragraph(
+                responsible_employee.dept.dept_name + " department", signature_style
+            ),
+        ]
+        signature_table = Table([[s] for s in signature_data], colWidths=[350])
+        signature_table.setStyle(
             TableStyle(
                 [
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 52),  # Match document left indent
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                    ("TOPPADDING", (0, 0), (-1, -1), 10),
                 ]
             )
         )
-
+        signature_table.hAlign = "LEFT"  # Align the entire table to the left
         elements.append(Spacer(1, 30))
-        elements.append(qr_table)
-
+        elements.append(signature_table)
         # Build the PDF
         doc.build(elements)
         content_buffer.seek(0)
@@ -301,7 +340,7 @@ class BulkGenerateConvocationLettersAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Generate convocation letters for all students in a convocation"""
-
+        application_id = request.data.get("application_id")
         convocation_id = request.data.get("convocation_id")
 
         if not convocation_id:
@@ -309,12 +348,22 @@ class BulkGenerateConvocationLettersAPIView(APIView):
                 {"error": "convocation_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        if not application_id:
+            return Response(
+                {"error": "application_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             convocation = Convocation.objects.get(id=convocation_id)
         except Convocation.DoesNotExist:
             return Response(
                 {"error": "Convocation not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        try:
+            application = Applications.objects.get(id=application_id)
+        except Applications.DoesNotExist:
+            return Response(
+                {"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         # Get all students assigned to this convocation
@@ -336,11 +385,9 @@ class BulkGenerateConvocationLettersAPIView(APIView):
                 # Create individual letter
                 letter_generator = GenerateConvocationLetterAPIView()
                 content = letter_generator.generate_convocation_content(
-                    convocation, student
+                    convocation, student, application
                 )
-                pdf_data = letter_generator.create_convocation_pdf(
-                    content, convocation, student
-                )
+                pdf_data = letter_generator.create_convocation_pdf(content)
 
                 generated_letters.append(
                     {
@@ -371,6 +418,7 @@ class SendConvocationEmailsAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Send convocation invitation emails to students"""
+        application_id = request.data.get("application_id")
 
         convocation_id = request.data.get("convocation_id")
 
@@ -378,6 +426,17 @@ class SendConvocationEmailsAPIView(APIView):
             return Response(
                 {"error": "convocation_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not application_id:
+            return Response(
+                {"error": "application_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            application = Applications.objects.get(id=application_id)
+        except Applications.DoesNotExist:
+            return Response(
+                {"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         try:
@@ -395,6 +454,7 @@ class SendConvocationEmailsAPIView(APIView):
                 {"error": "No students found for this convocation"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        letter_generator = GenerateConvocationLetterAPIView()
 
         sent_emails = []
         errors = []
@@ -402,6 +462,14 @@ class SendConvocationEmailsAPIView(APIView):
         for student in students:
             try:
                 # Generate email content
+                content = letter_generator.generate_convocation_content(
+                    convocation, student, application
+                )
+
+                pdf_letter = letter_generator.create_convocation_pdf(
+                    content, application.default_responsible_employee
+                )
+
                 subject = (
                     f"Invitation to {convocation.title} - {convocation.academic_year}"
                 )
@@ -414,11 +482,11 @@ Congratulations! You are cordially invited to participate in the {convocation.ti
 IMPORTANT DETAILS:
 - Registration Deadline: {convocation.registration_deadline.strftime('%B %d, %Y')}
 - Rehearsal Date: {convocation.rehearsal_date.strftime('%B %d, %Y')} at {convocation.rehearsal_time.strftime('%I:%M %p')}
-- Registration Link: {convocation.registration_form_link}
+- Registration Link: 
 
 Please register before the deadline and attend the mandatory rehearsal.
 
-Your convocation letter can be downloaded from the student portal.
+Your convocation letter is attached below.
 
 Best regards,
 Capital University of Science & Technology
@@ -430,6 +498,11 @@ Capital University of Science & Technology
                     body=message,
                     from_email=settings.EMAIL_HOST_USER or "convocation@cust.edu.pk",
                     to=[student.email],
+                )
+                email_message.attach(
+                    filename=f"Convocation_Letter_{student.uu_id}",
+                    content=pdf_letter,
+                    mimetype="application/pdf",
                 )
                 email_message.send()
 

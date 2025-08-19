@@ -9,6 +9,10 @@ class Applications(models.Model):
         (1, "Enabled"),
         (0, "Disabled"),
     ]
+    application_types = [
+        ("General", "General"),
+        ("Convocation", "Convocation"),
+    ]
 
     id = models.AutoField(primary_key=True)
     application_name = models.CharField(max_length=255)  # Template name
@@ -20,6 +24,9 @@ class Applications(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    application_type = models.CharField(
+        max_length=50, default="General", choices=application_types
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     default_responsible_employee = models.ForeignKey(
         Users,

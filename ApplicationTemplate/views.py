@@ -20,11 +20,14 @@ class ApplicationTemplateViewset(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.action == "list":
-            return Applications.objects.filter(
-                status=1,
-            )
-        return super().get_queryset()
+        queryset = Applications.objects.filter(status=1)
+        if (
+            self.request.user.user_type == "Admin"
+            or self.request.user.user_type == "Exam"
+        ):
+            return queryset
+        else:
+            return queryset.filter(application_type="General")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

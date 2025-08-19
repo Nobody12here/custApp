@@ -10,6 +10,11 @@ class ConvocationSerializer(serializers.ModelSerializer):
         convocation = Convocation.objects.create(**validated_data)
         convocation.save()
         return convocation
+class ConvocationStudentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields=["name","email","uu_id","convocation"]
+
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
