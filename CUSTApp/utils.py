@@ -213,7 +213,7 @@ def send_alert_email(
     )
 
     email = EmailMultiAlternatives(
-        subject, text_content, "support@custapp.pk", [to_email]
+        subject, text_content, "custapp@cust.edu.pk", [to_email]
     )
     email.attach_alternative(html_content, "text/html")
     email.connection = None
