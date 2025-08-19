@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConvocationView(ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = ConvocationSerializer
 
     def get_queryset(self):
