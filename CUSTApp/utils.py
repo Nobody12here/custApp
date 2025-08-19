@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from firebase_admin import messaging
@@ -213,7 +214,10 @@ def send_alert_email(
     )
 
     email = EmailMultiAlternatives(
-        subject, text_content, "custapp@cust.edu.pk", [to_email]
+        subject,
+        text_content,
+        f"No Reply <{settings.EMAIL_HOST_USER}>",  # <-- sender name and email
+        [to_email]
     )
     email.attach_alternative(html_content, "text/html")
     email.connection = None

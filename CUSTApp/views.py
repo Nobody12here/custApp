@@ -6,7 +6,7 @@ import qrcode
 from reportlab.platypus import Image as RLImage
 import re
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser,JSONParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -102,7 +102,7 @@ class UploadStudentData(APIView):
 
 class UploadConvocationData(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser,JSONParser]  # Will set per-method
+    parser_classes = [MultiPartParser, JSONParser]  # Will set per-method
 
     def post(self, request):
         convocation_id = request.data.get("convocation_id")
@@ -138,6 +138,7 @@ class UploadConvocationData(APIView):
                 {"error": f"Failed to process file: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
     def put(self, request):
         convocation_id = request.data.get("convocation_id")
         student_id = request.data.get("student_id")
@@ -151,12 +152,14 @@ class UploadConvocationData(APIView):
             student = Users.objects.get(uu_id=student_id, user_type="Student")
             student.convocation = convocation
             student.save()
-            return Response({"message": "Updated sucessfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Updated sucessfully"}, status=status.HTTP_200_OK
+            )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        student_id = request.data.get('student_id')
+        student_id = request.data.get("student_id")
         if not student_id:
             return Response(
                 {"error": "Student ID is required."},
@@ -166,9 +169,14 @@ class UploadConvocationData(APIView):
             student = Users.objects.get(uu_id=student_id, user_type="Student")
             student.convocation = None
             student.save()
-            return Response({"message": "Student deleted sucessfully!"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Student deleted sucessfully!"}, status=status.HTTP_200_OK
+            )
         except Users.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
 
 class UploadEmployeeSignature(APIView):
     permission_classes = [IsAuthenticated]
@@ -543,15 +551,18 @@ def complaints(request):
 def test_api_view(request):
     return render(request, "CUSTApp/test_api.html")
 
+
 from rest_framework.filters import SearchFilter
+
+
 # Generic API Views
 class UsersList(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
     filter_backends = [SearchFilter]
-    search_fields = ["name","uu_id"]
-    
+    search_fields = ["name", "uu_id"]
+
     def get_queryset(self):
         department = self.request.query_params.get("department")
         user_type = self.request.query_params.get("user_type")
@@ -706,7 +717,7 @@ class GetAttributesAPIView(APIView):
         user_type = request.GET.get("user_type", "")
         if not table:
             return Response([])
-        if table =="Convocation":
+        if table == "Convocation":
             attributes = self.get_model_fields("Convocation")
             print(attributes)
         elif table == "users":
@@ -804,9 +815,12 @@ class OTPSendView(APIView):
             settings.EMAIL_HOST_USER
             if settings.EMAIL_HOST_USER
             else "support@custapp.pk"
-        ) 
+        )
         email_message = EmailMultiAlternatives(
-            subject=subject, body=message, from_email=from_email, to=[email]
+            subject=subject,
+            body=message,
+            from_email=f"No Reply <{from_email}>",
+            to=[email],
         )
         email_message.attach_alternative(message, "text/html")
         email_message.send()
