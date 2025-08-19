@@ -803,7 +803,7 @@ class OTPSendView(APIView):
         from_email = (
             settings.DEFAULT_FROM_EMAIL
             if settings.DEFAULT_FROM_EMAIL
-            else "no-reply@custapp.pk"
+            else "no-reply@cust.edu.pk"
         )
         email_message = EmailMultiAlternatives(
             subject=subject, body=message, from_email=from_email, to=[email]
