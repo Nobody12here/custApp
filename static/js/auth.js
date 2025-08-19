@@ -1,4 +1,3 @@
-
 let isRefreshing = false;
 let refreshQueue = [];
 const USER_TYPES = {
@@ -24,7 +23,8 @@ function checkAuth(requiredUserType = USER_TYPES.STAFF) {
         return false;
     }
 
-    if ((userType !== requiredUserType) || (userType !== USER_TYPES.SECURITY)) {
+    // Fix user type check: allow STAFF or SECURITY
+    if (!(userType === requiredUserType || userType === USER_TYPES.SECURITY)) {
         console.log(userType)
         window.location.href = '/login/';
         return false;
