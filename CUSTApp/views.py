@@ -818,7 +818,7 @@ class OTPSendView(APIView):
             if settings.EMAIL_HOST_USER
             else "support@custapp.pk"
         )
-        threading.Thred(
+        threading.Thread(
             target=send_email_async,
             args=(subject,message,from_email,email)
         ).start()
