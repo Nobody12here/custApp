@@ -26,8 +26,8 @@ function checkAuth(requiredUserType = USER_TYPES.STAFF) {
 
     if ((userType !== requiredUserType) || (userType !== USER_TYPES.SECURITY)) {
         console.log(userType)
-        // window.location.href = '/login/';
-        // return false;
+        window.location.href = '/login/';
+        return false;
     }
 
     $.ajaxSetup({
