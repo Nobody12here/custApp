@@ -1,5 +1,6 @@
 # CUSTApp/views.py
 from datetime import datetime
+import threading
 from django.urls import reverse
 import pandas as pd
 import qrcode
@@ -40,6 +41,7 @@ from .utils import (
     notify_user_devices,
     extract_year_term,
     load_convocation_data,
+    send_email_async,
     upload_student_data,
 )
 from reportlab.lib.pagesizes import letter
@@ -816,14 +818,10 @@ class OTPSendView(APIView):
             if settings.EMAIL_HOST_USER
             else "support@custapp.pk"
         )
-        email_message = EmailMultiAlternatives(
-            subject=subject,
-            body=message,
-            from_email=f"No Reply <{from_email}>",
-            to=[email],
-        )
-        email_message.attach_alternative(message, "text/html")
-        email_message.send()
+        threading.Thred(
+            target=send_email_async,
+            args=(subject,message,from_email,email)
+        ).start()
 
         return Response(
             {"message": "OTP sent to your email."}, status=status.HTTP_200_OK
