@@ -154,9 +154,9 @@ EMAIL_HOST = "localhost"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = "support@custapp.pk"
-EMAIL_HOST_PASSWORD = "wnfm7gaqk8r7"  # Replace with the correct password
-DEFAULT_FROM_EMAIL = "support@custapp.pk"
+EMAIL_HOST_USER = "custapp@cust.edu.pk"
+EMAIL_HOST_PASSWORD = "W$795917084442ac"  # Replace with the correct password
+DEFAULT_FROM_EMAIL = "no-reply@custapp.pk"
 EMAIL_TIMEOUT = 30
 
 # Password validation
