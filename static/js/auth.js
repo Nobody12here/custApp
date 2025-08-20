@@ -2,7 +2,8 @@ let isRefreshing = false;
 let refreshQueue = [];
 const USER_TYPES = {
     STAFF: 'Staff',
-    SECURITY: 'Security'
+    SECURITY: 'Security',
+    ADMIN:'admin',
 }
 function addRequestToQueue(callback) {
     refreshQueue.push(callback);
@@ -23,8 +24,8 @@ function checkAuth(requiredUserType = USER_TYPES.STAFF) {
         return false;
     }
 
-    // Fix user type check: allow STAFF or SECURITY
-    if (!(userType === requiredUserType || userType === USER_TYPES.SECURITY)) {
+    // Allow STAFF, SECURITY, or ADMIN
+    if (!(userType === requiredUserType || userType === USER_TYPES.SECURITY || userType === USER_TYPES.ADMIN)) {
         console.log(userType)
         window.location.href = '/login/';
         return false;
