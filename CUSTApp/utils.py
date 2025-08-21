@@ -14,16 +14,21 @@ import re
 from requests.exceptions import RequestException
 from typing import Optional, Dict
 from openpyxl import load_workbook
+import logging
+logger = logging.getLogger(__name__)
 
 def send_email_async(subject, message, from_email, recipient):
-    email_message = EmailMultiAlternatives(
-        subject=subject,
-        body=message,
-        from_email=f"No Reply <{from_email}>",
-        to=[recipient],
-    )
-    email_message.attach_alternative(message, "text/html")
-    email_message.send()
+    try:
+        email_message = EmailMultiAlternatives(
+            subject=subject,
+            body=message,
+            from_email=f"No Reply <{from_email}>",
+            to=[recipient],
+        )
+        email_message.attach_alternative(message, "text/html")
+        email_message.send()
+    except Exception as e:
+        logger.error(f"Some error occured in send email, {e}")
     
 def format_phone_number(phone_number: str) -> Optional[str]:
     """
