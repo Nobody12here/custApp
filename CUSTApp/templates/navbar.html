@@ -13,40 +13,40 @@
     <!-- Right side -->
     <div class="navbar-collapse">
       <ul class="navbar-nav">
-
-
-        <!-- User Profile -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle user-profile" href="#" id="userDropdown" role="button"
-            data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="user-avatar-small profile-img">
-              <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar">
-            </div>
-            <span class="user-name d-none d-md-inline">-</span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
-            <div class="dropdown-header">
-              <div class="user-info">
-                <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" class="user-avatar-large profile-img">
-                <div class="user-details">
-                  <h6 class="user-name">-</h6>
-                  <p class="user-email">-</p>
+        <div id="userProfileDropdown" style="display:none;">
+          <!-- User Profile -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle user-profile" href="#" id="userDropdown" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="user-avatar-small profile-img">
+                <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar">
+              </div>
+              <span class="user-name d-none d-md-inline">-</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
+              <div class="dropdown-header">
+                <div class="user-info">
+                  <img src="{% static 'assets/img/faces/avatar.jpg' %}" alt="User Avatar" class="user-avatar-large profile-img">
+                  <div class="user-details">
+                    <h6 class="user-name">-</h6>
+                    <p class="user-email">-</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="/profile/">
-              <i class="material-icons">account_circle</i>
-              <span>My Profile</span>
-            </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/profile/">
+                <i class="material-icons">account_circle</i>
+                <span>My Profile</span>
+              </a>
 
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item text-danger" href="#" id="logoutButton">
-              <i class="material-icons">logout</i>
-              <span>Logout</span>
-            </a>
-          </div>
-        </li>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-danger" href="#" id="logoutButton">
+                <i class="material-icons">logout</i>
+                <span>Logout</span>
+              </a>
+            </div>
+          </li>
+        </div>
       </ul>
     </div>
   </div>
@@ -756,6 +756,10 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    // Show user profile dropdown only after page is fully loaded
+    window.addEventListener('load', function() {
+      document.getElementById('userProfileDropdown').style.display = '';
+    });
     $(".user-name").text(localStorage.getItem("user_name") || "User");
 
     // Mobile sidebar toggle
