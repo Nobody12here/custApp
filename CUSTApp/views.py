@@ -59,7 +59,7 @@ from rest_framework.viewsets import ModelViewSet
 import os
 from PyPDF2 import PdfReader, PdfWriter
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("custom_logger")
 
 
 class ConvocationView(ModelViewSet):
