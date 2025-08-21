@@ -53,6 +53,20 @@
 </nav>
 
 <style>
+  /* Prevent profile image jump on load */
+  .profile-img img,
+  .user-avatar-large.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #eee;
+    display: inline-block;
+  }
+  .user-avatar-large.profile-img {
+    width: 50px;
+    height: 50px;
+  }
   /* CSS Variables */
   :root {
     --navbar-height: 83px;

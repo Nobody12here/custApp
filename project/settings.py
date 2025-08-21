@@ -164,11 +164,11 @@ DATABASES = {
         "PORT": os.environ.get("DB_PORT", "3306"),
     }
 }
-# # myproject/settings.py (add at the bottom)
-# EMAIL_BACKEND = os.environ.get(
-#     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
-# )  # For testing
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# myproject/settings.py (add at the bottom)
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)  # For testing
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "mail.custapp.pk"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = False
