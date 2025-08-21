@@ -15,7 +15,7 @@ from requests.exceptions import RequestException
 from typing import Optional, Dict
 from openpyxl import load_workbook
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("custom_logger")
 
 def send_email_async(subject, message, from_email, recipient):
     try:
@@ -27,8 +27,9 @@ def send_email_async(subject, message, from_email, recipient):
         )
         email_message.attach_alternative(message, "text/html")
         email_message.send()
+        logger.debug("Email sent sucessfully")
     except Exception as e:
-        logger.error(f"Some error occured in send email, {e}")
+        logger.debug(f"Some error occured in send email, {e}")
     
 def format_phone_number(phone_number: str) -> Optional[str]:
     """

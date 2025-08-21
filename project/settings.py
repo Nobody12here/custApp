@@ -25,6 +25,25 @@ load_dotenv()
 #
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Loggin
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "custom.log"),
+        },
+    },
+    "loggers": {
+        "custom_logger": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
 
 # Firebase SDK initalizer
 FIREBASE_CRED_PATH = BASE_DIR / "project/firebase/key.json"
@@ -42,7 +61,7 @@ SECRET_KEY = "django-insecure-d#a3uafg!%xtie^5g((h$3(f+6f0oi=4#jg+oj6gqko9(_bdo#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 FCM_DJANGO_SETTINGS = {
-    'MYSQL_COMPATIBILITY': True,
+    "MYSQL_COMPATIBILITY": True,
 }
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
