@@ -199,3 +199,5 @@ project/middleware/__pycache__/__init__.cpython-313.pyc
 project/middleware/__pycache__/jwt_auth_middleware.cpython-313.pyc
 ./staticfiles/*
 ./staticfiles/
+staticfiles/*
+staticfiles/
