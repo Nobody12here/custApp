@@ -197,3 +197,4 @@ CUSTApp/migrations/__pycache__/0007_users_signature.cpython-313.pyc
 CUSTApp/migrations/__pycache__/0008_alter_users_picture.cpython-313.pyc
 project/middleware/__pycache__/__init__.cpython-313.pyc
 project/middleware/__pycache__/jwt_auth_middleware.cpython-313.pyc
+./staticfiles/*
