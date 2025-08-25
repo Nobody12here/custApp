@@ -272,8 +272,13 @@ class GenerateConvocationLetterAPIView(APIView):
         )
         # Add letterhead image
         # Signature image
-        with responsible_employee.signature.open("rb") as sig_file:
-            signature_image = Image(sig_file, width=128, height=64)
+        try:
+            with responsible_employee.signature.open("rb") as sig_file:
+                signature_image = Image(sig_file, width=128, height=64)
+        except Exception: # Use a default image if signature is missing
+            default_path = os.path.join(settings.STATIC_ROOT, "assets","img", "default-signature.jpg")
+            with open(default_path, "rb") as sig_file:
+                signature_image = Image(sig_file, width=128, height=64)
         # Add current date
         current_date = timezone.now().strftime("%B %d, %Y")
         elements.append(Spacer(1, 70))
