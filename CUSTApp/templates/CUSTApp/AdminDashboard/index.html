@@ -405,7 +405,8 @@
             <div class="card-body">
                 <form id="templateForm">
                     <div class="row">
-                        <div class="col-md-6">
+                        
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="templateName">
                                     <i class="material-icons"
@@ -416,7 +417,20 @@
                                     placeholder="Enter application name" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="templateType">
+                                    <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">category</i>
+                                    Application Template Type
+                                </label>
+                                <select class="form-control" id="templateType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="General">General</option>
+                                    <option value="Convocation">Convocation</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="applicationFee">
                                     <i class="material-icons"
@@ -530,12 +544,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js" defer></script>
+
 <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/core/popper.min.js' %}" defer></script>
-<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}" defer></script>
-<script src="{% static 'js/auth.js'%}" defer></script>
-<script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" defer></script>
+<script src="{% static 'assets/js/core/popper.min.js' %}" ></script>
+<script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
+<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}" ></script>
+<script src="{% static 'js/auth.js'%}" ></script>
+<script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" ></script>
 
 <script>
 
