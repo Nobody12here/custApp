@@ -26,6 +26,7 @@ from .views import (
     OTPVerifyView,
     verify_otp_page,
     ApplicationRequestAPIView,
+    AluminiSignupAPIView,
     ProgramView,  # Added new view
 )
 
@@ -46,6 +47,7 @@ urlpatterns = [
     path("departments/", DepartmentList.as_view(), name="departments_list"),
     path("requests/", include("user_requests.urls"), name="requests_list"),
     path("request-otp/", OTPSendView.as_view(), name="otp_send"),
+    path('alumini-signup/',AluminiSignupAPIView.as_view(),name="alumini_signup"),
     path("otp/verify/", OTPVerifyView.as_view(), name="otp_verify"),
     path("otp/verifyAPI/", OTPVerifyView.as_view(), name="otp_verify"),
     path("verify_otp/", verify_otp_page, name="verify_otp_page"),

@@ -24,6 +24,7 @@ from ApplicationTemplate.models import Applications, Request
 from .models import Program, Users, Department, Convocation
 from ApplicationTemplate.serializers import ApplicationsSerializer, RequestSerializer
 from .serializers import (
+    AluminiSerializer,
     ProgramSerializer,
     UserUpdateSerializer,
     UsersSerializer,
@@ -755,6 +756,30 @@ class GetAttributesAPIView(APIView):
         return Response(attributes)
 
 
+class AluminiSignupAPIView(APIView):
+    
+    permission_classes = [AllowAny]
+    serializer_class = AluminiSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data.get("email")
+        phone_number = serializer.validated_data.get("phone_number")
+        try:
+            user = Users.objects.get(cgpa=serializer.validated_data['cgpa'],uu_id=serializer.validated_data["uu_id"])
+        except Users.DoesNotExist:
+            print("The user does not exists")
+            return Response(
+                {"error":"The user with specified data does not exists!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if email:
+            user.email = email
+        if phone_number:
+            user.phone_number = phone_number
+        user.save()
+        return Response({"message":"Alumini Added sucessfully"},status=status.HTTP_200_OK)
 # OTP APIs with jwt token
 class OTPSendView(APIView):
     permission_classes = [AllowAny]
@@ -819,8 +844,7 @@ class OTPSendView(APIView):
             else "support@custapp.pk"
         )
         threading.Thread(
-            target=send_email_async,
-            args=(subject,message,from_email,email)
+            target=send_email_async, args=(subject, message, from_email, email)
         ).start()
 
         return Response(

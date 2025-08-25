@@ -1,24 +1,36 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from .models import Users, Department, TemplateAttributes, Program,Convocation
+from .models import Users, Department, TemplateAttributes, Program, Convocation
+
 
 class ConvocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Convocation
-        exclude = ['created_at','updated_at']
+        exclude = ["created_at", "updated_at"]
+
     def create(self, validated_data):
         convocation = Convocation.objects.create(**validated_data)
         convocation.save()
         return convocation
+
+
 class ConvocationStudentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields=["name","email","uu_id","convocation"]
+        fields = ["name", "email", "uu_id", "convocation"]
+
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         exclude = ["password"]  # Exclude password field from serialization
+
+
+class AluminiSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ["email", "phone_number", "father_name", "cgpa", "uu_id"]
+        extra_kwargs = {"uu_id": {"validators": []}}
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
