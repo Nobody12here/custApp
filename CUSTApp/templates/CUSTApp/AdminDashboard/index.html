@@ -739,7 +739,7 @@
             contentType: 'application/json',
             data: JSON.stringify({
                 application_name: templateName,
-                short_name: templateName,
+                short_name: templateName.substring(0, 9),
                 application_desc: templateContent,
                 responsible_dept: departmentId,
                 status: 1,
