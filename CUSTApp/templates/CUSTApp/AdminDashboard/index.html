@@ -405,7 +405,7 @@
             <div class="card-body">
                 <form id="templateForm">
                     <div class="row">
-                        
+
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="templateName">
@@ -420,7 +420,8 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="templateType">
-                                    <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">category</i>
+                                    <i class="material-icons"
+                                        style="font-size: 16px; vertical-align: middle; margin-right: 4px;">category</i>
                                     Application Template Type
                                 </label>
                                 <select class="form-control" id="templateType" required>
@@ -546,11 +547,11 @@
 {% block extra_js %}
 
 <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/core/popper.min.js' %}" ></script>
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/jquery-jvectormap.js' %}"></script>
-<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}" ></script>
-<script src="{% static 'js/auth.js'%}" ></script>
-<script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2" ></script>
+<script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
+<script src="{% static 'js/auth.js'%}"></script>
+<script src="{% static 'assets/js/material-dashboard.js' %}?v=2.2.2"></script>
 
 <script>
 
@@ -722,13 +723,13 @@
         const templateName = $('#templateName').val();
         const templateContentHTML = editorInstance.getData();
         const templateContent = templateContentHTML // Save as html
-        console.log(templateContent);
         const departmentId = $('#departmentSelect').val();
         const employeeId = $('#employeeSelect').val();
+        const templateType = $('#templateType').val();
         let applicationFee = $('#applicationFee').val();
 
-        if (!templateName || !templateContent || !departmentId || !employeeId) {
-            console.log('Error', 'Please fill in All the fields', 'error');
+        if (!templateName || !templateType || !templateContent || !departmentId || !employeeId) {
+                alert('Error: Please fill in all the fields.');
             return;
         }
 
@@ -742,25 +743,25 @@
                 application_desc: templateContent,
                 responsible_dept: departmentId,
                 status: 1,
+                application_type: templateType,
                 amount: applicationFee,
                 default_responsible_employee: employeeId,
             }),
             dataType: 'json',
             success: function (response) {
-                console.log(response);
                 if (response.success) {
-                    console.log('Success', response.success, 'success');
+                        alert('Success: ' + response.success);
                     $('#templateForm')[0].reset();
                     editorInstance.setData('');
                     $('#attributeSelect').prop('disabled', true).empty().append('<option value="">Select Attribute</option>');
                     $('#userTypeSelect').prop('disabled', true).val('');
                     $('#tableSelect').val('');
                 } else {
-                    console.log('Error', response.error || 'Failed to save application', 'error');
+                        alert('Error: ' + (response.error || 'Failed to save application'));
                 }
             },
             error: function (xhr, status, error) {
-                console.log('Error', 'Failed to save application: ' + error, 'error');
+                    alert('Error: Failed to save application: ' + error);
                 console.error('Save application error:', xhr.responseText);
             }
         });
@@ -770,7 +771,7 @@
         const templateName = $('#templateName').val();
         const templateContent = editorInstance.getData();
         if (!templateName || !templateContent) {
-            console.log('Error', 'Please fill in both application name and content.', 'error');
+                alert('Error: Please fill in both application name and content.');
             return;
         }
 
@@ -788,10 +789,10 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                console.log('Success', 'PDF generated successfully', 'success');
+                    alert('Success: PDF generated successfully');
             },
             error: function (xhr, status, error) {
-                console.log('Error', 'Failed to generate PDF: ' + error, 'error');
+                    alert('Error: Failed to generate PDF: ' + error);
             }
         });
     }

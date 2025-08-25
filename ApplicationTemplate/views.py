@@ -22,7 +22,7 @@ class ApplicationTemplateViewset(ModelViewSet):
     def get_queryset(self):
         queryset = Applications.objects.filter(status=1)
         if (
-            self.request.user.user_type == "Admin"
+            self.request.user.user_type == "admin"
             or self.request.user.user_type == "Exam"
         ):
             return queryset
