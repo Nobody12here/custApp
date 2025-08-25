@@ -109,39 +109,58 @@ function loadConvocations(searchTerm = '', showActiveOnly = false) {
                 const deadlineStr = registrationDeadline.toLocaleDateString();
                 const rehearsalDateStr = rehearsalDate.toLocaleDateString();
 
-                const row = `
-                        <tr>
-                            <td>${convocation.title}</td>
-                            <td>${convocation.academic_year}</td>
-                            <td>${deadlineStr}</td>
-                            <td>${rehearsalDateStr} ${rehearsalTime}</td>
-                            <td>
-                                <span class="status-badge ${convocation.status.toLowerCase()}">
-                                    ${convocation.status}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn btn-info btn-sm" onclick="viewConvocationDetails(${convocation.id})">
-                                    <i class="material-icons">visibility</i> View
-                                </button>
-                                <div class="dropdown d-inline-block ml-2">
-                                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton${convocation.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="material-icons">more_vert</i>
+                        let dropdownItems = '';
+                        dropdownItems += `<a class="dropdown-item" href="#" onclick="openStudentUploadModal(${convocation.id})">
+                            <i class="material-icons">cloud_upload</i> Upload Student Data
+                        </a>`;
+                        dropdownItems += `<a class="dropdown-item" href="#" onclick="openLetterGenerationModal(${convocation.id})">
+                            <i class="material-icons">description</i> Generate Letters
+                        </a>`;
+
+                        // If only one convocation instance, add a dummy disabled item for spacing
+                        if (filteredConvocations.length === 1) {
+                            dropdownItems += `<a class="dropdown-item disabled" tabindex="-1" style="opacity:0;pointer-events:none;">&nbsp;</a>`;
+                        }
+
+                        const extraPadding = (filteredConvocations.length === 1) ? 'style="padding-bottom:48px;"' : '';
+                        const row = `
+                            <tr>
+                                <td>${convocation.title}</td>
+                                <td>${convocation.academic_year}</td>
+                                <td>${deadlineStr}</td>
+                                <td>${rehearsalDateStr} ${rehearsalTime}</td>
+                                <td>
+                                    <span class="status-badge ${convocation.status.toLowerCase()}">
+                                        ${convocation.status}
+                                    </span>
+                                </td>
+                                <td ${extraPadding}>
+                                    <button class="btn btn-info btn-sm" onclick="viewConvocationDetails(${convocation.id})">
+                                        <i class="material-icons">visibility</i> View
                                     </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton${convocation.id}">
-                                        <a class="dropdown-item" href="#" onclick="openStudentUploadModal(${convocation.id})">
-                                            <i class="material-icons">cloud_upload</i> Upload Student Data
-                                        </a>
-                                        <a class="dropdown-item" href="#" onclick="openLetterGenerationModal(${convocation.id})">
-                                            <i class="material-icons">description</i> Generate Letters
-                                        </a>
+                                    <div class="dropdown d-inline-block ml-2">
+                                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton${convocation.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="material-icons">more_vert</i>
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton${convocation.id}">
+                                            ${dropdownItems}
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                tbody.append(row);
-            });
+                                </td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+
+                    // Add extra spacing below the table if only one convocation instance
+                    const tableContainer = $('#convocationTable').parent();
+                    if (filteredConvocations.length === 1) {
+                        if ($('#convocation-table-spacer').length === 0) {
+                            tableContainer.append('<div id="convocation-table-spacer" style="height: 80px;"></div>');
+                        }
+                    } else {
+                        $('#convocation-table-spacer').remove();
+                    }
         },
         error: function () {
             $('#convocationTableBody').html('<tr><td colspan="6" class="text-center">Error loading convocation instances</td></tr>');
